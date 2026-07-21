@@ -1,0 +1,16 @@
+{
+  "name": "ehealth-server",
+  "version": "1.0.0",
+  "description": "eHealth DICT eGov Organ & Blood Matching Platform Backend API",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}
