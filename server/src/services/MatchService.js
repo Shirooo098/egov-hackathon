@@ -1,11 +1,11 @@
 /**
- * eHealth - Blood & Organ Match Service
+ * eBuhay - Blood & Organ Match Service
  * ABO/Rh compatibility matrix + organ matching algorithm
  */
 
 // ============================================================
 // ABO/Rh Blood Type Compatibility Matrix
-// Key: recipient blood type â†’ array of compatible donor types
+// Key: recipient blood type → array of compatible donor types
 // ============================================================
 const BLOOD_COMPATIBILITY = {
   'O-':  ['O-'],

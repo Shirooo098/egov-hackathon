@@ -1,7 +1,7 @@
 {
-  "name": "ehealth-server",
+  "name": "ebuhay-server",
   "version": "1.0.0",
-  "description": "eHealth DICT eGov Organ & Blood Matching Platform Backend API",
+  "description": "eBuhay DICT eGov Organ & Blood Matching Platform Backend API",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",

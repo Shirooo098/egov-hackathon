@@ -9,7 +9,7 @@ async function anchor(req, res, next) {
     const consentData = {
       matchId, donorId, recipientId, donorSignature, recipientSignature,
       timestamp: new Date().toISOString(),
-      platform: 'eHealth DICT eGov Platform'
+      platform: 'eBuhay DICT eGov Platform'
     };
     const result = await anchorConsent(consentData);
     res.json({ success: true, data: result });

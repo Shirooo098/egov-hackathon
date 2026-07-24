@@ -3,27 +3,64 @@ import React, { useState, useRef, useEffect } from 'react';
 const DEMO = [
   { id:1, sender:'donor',     text:'Hi! I saw I am a match for your blood type. I am happy to donate!',              time:'10:30 AM' },
   { id:2, sender:'recipient', text:'Thank you so much! This means everything to me and my family.',                    time:'10:32 AM' },
-  { id:3, sender:'donor',     text:'I can go this week. The doctor has reached out. Let me know your schedule!',      time:'10:33 AM' },
+  { id:3, sender:'donor',     text:'I can go this week. Let me know your schedule once confirmed by attending doctor!', time:'10:33 AM' },
 ];
 
-export default function ChatBox({ currentRole = 'recipient' }) {
+export default function ChatBox({ currentRole = 'recipient', consentSigned, doctorApproved = false }) {
   const [messages, setMessages] = useState(DEMO);
   const [text, setText] = useState('');
+  const [approvedByDoctor, setApprovedByDoctor] = useState(doctorApproved);
   const endRef = useRef();
 
+  useEffect(() => { setApprovedByDoctor(doctorApproved); }, [doctorApproved]);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior:'smooth' }); }, [messages]);
 
   const send = () => {
-    if (!text.trim()) return;
+    if (!text.trim() || !approvedByDoctor) return;
     setMessages(p => [...p, { id:Date.now(), sender:currentRole, text:text.trim(), time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) }]);
     setText('');
   };
 
-  const other = currentRole === 'donor' ? 'Ana Reyes' : 'Juan Dela Cruz';
+  const other = consentSigned
+    ? (currentRole === 'donor' ? 'Ana Reyes' : 'Juan Dela Cruz')
+    : (currentRole === 'donor' ? 'Anonymous Recipient #9C41' : 'Anonymous Donor #7C2A');
   const role  = currentRole === 'donor' ? 'Recipient' : 'Donor';
 
+  // STRICT LOCK SCREEN: Prohibit chat unless approved by doctor
+  if (!approvedByDoctor) {
+    return (
+      <div className="card anim-in" style={{ padding: 40, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 460, gap: 16, background: 'white' }}>
+        <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(245,158,11,0.1)', color: 'var(--sun)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>
+          🔒
+        </div>
+        <div>
+          <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Messaging Prohibited (Doctor Approval Required)</h3>
+          <p style={{ fontSize: 13, color: 'var(--foreground-muted)', maxWidth: 440, lineHeight: 1.6 }}>
+            Direct recipient-donor communication is strictly restricted under National Organ Transplantation Regulations until an attending physician reviews clinical compatibility and issues official match clearance.
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', background: 'var(--background-alt)', padding: '10px 16px', borderRadius: 'var(--r-full)', border: '1px solid var(--border)', fontSize: 12 }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--sun)' }} />
+          <span style={{ fontWeight: 700 }}>Current Match Status:</span>
+          <span style={{ color: 'var(--sun)', fontWeight: 600 }}>Pending Doctor Clinical Review ⏳</span>
+        </div>
+
+        <button 
+          type="button" 
+          className="btn btn-primary" 
+          onClick={() => setApprovedByDoctor(true)}
+          style={{ marginTop: 8 }}
+        >
+          Grant Doctor Match Approval (Demo Control) ✓
+        </button>
+      </div>
+    );
+  }
+
+  // ACTIVE UNLOCKED CHAT ROOM
   return (
-    <div className="card" style={{ padding:0, display:'flex', flexDirection:'column', height:460, overflow:'hidden' }}>
+    <div className="card anim-in" style={{ padding:0, display:'flex', flexDirection:'column', height:500, overflow:'hidden' }}>
       {/* Header */}
       <div style={{ padding:'14px 20px', borderBottom:'1px solid var(--border)', background:'var(--background-alt)', display:'flex', alignItems:'center', gap:12 }}>
         <div style={{ width:38,height:38,borderRadius:'50%', background:'linear-gradient(135deg, var(--primary), #0284C7)', display:'flex',alignItems:'center',justifyContent:'center', fontFamily:'var(--font-heading)',fontWeight:800,color:'white',fontSize:15 }}>
@@ -31,12 +68,12 @@ export default function ChatBox({ currentRole = 'recipient' }) {
         </div>
         <div style={{ flex:1 }}>
           <div style={{ fontWeight:700, fontSize:14 }}>{other}</div>
-          <div style={{ fontSize:11, color:'var(--emerald)', fontWeight:600, display:'flex', alignItems:'center', gap:4 }}>
-            <span style={{ width:6,height:6,borderRadius:'50%',background:'var(--emerald)',display:'inline-block' }} />
-            Online Â· eVerified {role}
+          <div style={{ fontSize:11, color: 'var(--emerald)', fontWeight:600, display:'flex', alignItems:'center', gap:4 }}>
+            <span style={{ width:6,height:6,borderRadius:'50%',background: 'var(--emerald)',display:'inline-block' }} />
+            Online · Doctor Approved Match ✓
           </div>
         </div>
-        <span className="badge badge-verified">PhilSys âœ“</span>
+        <span className="badge badge-verified">PhilSys ✓</span>
       </div>
 
       {/* Messages */}
@@ -55,7 +92,15 @@ export default function ChatBox({ currentRole = 'recipient' }) {
 
       {/* Input */}
       <div style={{ padding:'12px 16px', borderTop:'1px solid var(--border)', background:'var(--background-alt)', display:'flex', gap:8, alignItems:'flex-end' }}>
-        <textarea className="input" value={text} onChange={e => setText(e.target.value)} onKeyDown={e => { if (e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); }}} placeholder="Type a messageâ€¦ (Enter to send)" rows={1} style={{ resize:'none',lineHeight:1.5,minHeight:40,flex:1 }} />
+        <textarea 
+          className="input" 
+          value={text} 
+          onChange={e => setText(e.target.value)} 
+          onKeyDown={e => { if (e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); }}} 
+          placeholder="Type a message… (Enter to send)" 
+          rows={1} 
+          style={{ resize:'none',lineHeight:1.5,minHeight:40,flex:1 }} 
+        />
         <button onClick={send} disabled={!text.trim()} className="btn btn-primary btn-icon" style={{ height:40, width:44, flexShrink:0 }}>
           <SendIcon />
         </button>

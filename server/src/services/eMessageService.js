@@ -1,5 +1,5 @@
 /**
- * eHealth - DICT eMessage SMS Notification Service
+ * eBuhay - DICT eMessage SMS Notification Service
  * Sends SMS push notifications to citizens via DICT eMessage API
  */
 
@@ -25,8 +25,8 @@ async function sendSMS(number, message) {
     body: JSON.stringify({ number, message })
   });
 
-  if (res.status === 400) throw new Error('eMessage: Bad request â€” check phone number format (E.164 required)');
-  if (res.status === 422) throw new Error('eMessage: Unprocessable entity â€” invalid payload');
+  if (res.status === 400) throw new Error('eMessage: Bad request — check phone number format (E.164 required)');
+  if (res.status === 422) throw new Error('eMessage: Unprocessable entity — invalid payload');
   if (!res.ok) throw new Error(`eMessage SMS failed (${res.status})`);
 
   return { success: true };
@@ -35,22 +35,22 @@ async function sendSMS(number, message) {
 // === Pre-built SMS template helpers ===
 
 async function notifyMatchFound(phone, donorName, matchType) {
-  const msg = `[eHealth] A ${matchType} match has been found for you! Donor: ${donorName}. Log in to ehealth.e.gov.ph to view details and initiate contact.`;
+  const msg = `[eBuhay] A ${matchType} match has been found for you! Donor: ${donorName}. Log in to ebuhay.e.gov.ph to view details and initiate contact.`;
   return sendSMS(phone, msg);
 }
 
 async function notifyAppointmentConfirmed(phone, dateTime, doctorName) {
-  const msg = `[eHealth] Your consultation with Dr. ${doctorName} is confirmed on ${dateTime}. Please arrive 15 minutes early. Ref: ehealth.e.gov.ph`;
+  const msg = `[eBuhay] Your consultation with Dr. ${doctorName} is confirmed on ${dateTime}. Please arrive 15 minutes early. Ref: ebuhay.e.gov.ph`;
   return sendSMS(phone, msg);
 }
 
 async function notifyChatMessage(phone, senderName) {
-  const msg = `[eHealth] You have a new message from ${senderName}. Log in to ehealth.e.gov.ph to reply.`;
+  const msg = `[eBuhay] You have a new message from ${senderName}. Log in to ebuhay.e.gov.ph to reply.`;
   return sendSMS(phone, msg);
 }
 
 async function notifyConsentSigned(phone, role) {
-  const msg = `[eHealth] Your consent agreement as ${role} has been digitally signed and anchored to the blockchain. Ref: ehealth.e.gov.ph`;
+  const msg = `[eBuhay] Your consent agreement as ${role} has been digitally signed and anchored to the blockchain. Ref: ebuhay.e.gov.ph`;
   return sendSMS(phone, msg);
 }
 

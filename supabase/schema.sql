@@ -1,4 +1,4 @@
--- eHealth DICT eGov Platform - PostgreSQL Schema
+-- eBuhay DICT eGov Platform - PostgreSQL Schema
 -- Supabase compatible DDL
 
 -- Enable UUID extension
@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS blockchain_anchors (
 -- Demo Doctor
 INSERT INTO users (id, role, first_name, last_name, email, phone, blood_type, location_city, location_province, everify_status, everify_tier)
 VALUES
-  ('11111111-1111-1111-1111-111111111111', 'doctor', 'Maria', 'Santos', 'dr.santos@ehealth.gov.ph', '+639171234567', 'O+', 'Manila', 'Metro Manila', 'verified', 'Tier II'),
+  ('11111111-1111-1111-1111-111111111111', 'doctor', 'Maria', 'Santos', 'dr.santos@ebuhay.gov.ph', '+639171234567', 'O+', 'Manila', 'Metro Manila', 'verified', 'Tier II'),
   ('22222222-2222-2222-2222-222222222222', 'donor', 'Juan', 'Dela Cruz', 'juan.delacruz@example.ph', '+639289876543', 'O-', 'Quezon City', 'Metro Manila', 'verified', 'Tier I'),
   ('33333333-3333-3333-3333-333333333333', 'recipient', 'Ana', 'Reyes', 'ana.reyes@example.ph', '+639151122334', 'A+', 'Makati City', 'Metro Manila', 'verified', 'Tier I')
 ON CONFLICT (id) DO NOTHING;

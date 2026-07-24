@@ -1,25 +1,10 @@
-import React, { useState } from 'react';
-import { api } from '../services/api';
+import React from 'react';
 
-const ROLES = [
-  { id: 'recipient', label: 'Recipient' },
-  { id: 'donor',     label: 'Donor'     },
-  { id: 'doctor',    label: 'Doctor'    },
-];
-
-export default function Navbar({ currentRole, onRoleChange }) {
-  const [verifying, setVerifying] = useState(false);
-  const [verified,  setVerified]  = useState(false);
-  const [tier,      setTier]      = useState('');
-
-  const handleVerify = async () => {
-    setVerifying(true);
-    try {
-      const r = await api.verify({ first_name:'Juan', last_name:'Dela Cruz', birth_date:'1992-05-15', face_liveness_session_id:'demo-001' });
-      setTier(r.data.meta?.tier_level || 'Tier I');
-      setVerified(true);
-    } catch { /* demo mode */ setVerified(true); setTier('Tier I'); }
-    finally { setVerifying(false); }
+export default function Navbar({ currentRole, verified, tier, userProfile, onSignOut }) {
+  const roleLabels = {
+    recipient: 'Recipient',
+    donor: 'Donor',
+    doctor: 'Medical Doctor',
   };
 
   return (
@@ -30,25 +15,37 @@ export default function Navbar({ currentRole, onRoleChange }) {
         <div className="brand">
           <div className="brand-mark">e</div>
           <div>
-            <div className="brand-name">eHealth</div>
+            <div className="brand-name">eBuhay</div>
             <div className="brand-sub">DICT eGov Platform</div>
           </div>
         </div>
 
-        {/* Role switcher */}
-        <div className="role-switcher">
-          {ROLES.map(r => (
-            <button key={r.id} className={`role-btn${currentRole === r.id ? ' active' : ''}`} onClick={() => onRoleChange(r.id)}>
-              {r.label}
-            </button>
-          ))}
-        </div>
+        {/* Center / Right info based on session state */}
+        {currentRole && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            {/* Active Role Label */}
+            <span className={`badge badge-${currentRole === 'doctor' ? 'moderate' : currentRole === 'donor' ? 'success' : 'primary'}`}>
+              {roleLabels[currentRole]} Portal
+            </span>
 
-        {/* eVerify */}
-        <button className={`ev-pill${verified ? ' done' : ''}`} onClick={handleVerify} disabled={verifying || verified}>
-          {verifying ? <span className="spinner" style={{width:12,height:12}} /> : <ShieldIcon />}
-          {verifying ? 'Verifyingâ€¦' : verified ? `PhilSys ${tier}` : 'Verify ID'}
-        </button>
+            {/* Global eVerify status */}
+            <div className={`ev-pill${verified ? ' done' : ''}`} style={{ padding: '6px 14px' }}>
+              <ShieldIcon />
+              <span>{verified ? `PhilSys ${tier}` : 'Unverified'}</span>
+            </div>
+
+            {/* Profile greeting & Sign out */}
+            {userProfile && (
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--foreground-muted)' }}>
+                {userProfile.first_name} {userProfile.last_name}
+              </span>
+            )}
+
+            <button className="btn btn-ghost btn-sm" onClick={onSignOut} style={{ height: 32, padding: '0 12px' }}>
+              Exit Role
+            </button>
+          </div>
+        )}
       </div>
     </nav>
   );

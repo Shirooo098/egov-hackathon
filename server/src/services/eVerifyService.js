@@ -1,9 +1,9 @@
 /**
- * eHealth - DICT eVerify PhilSys Identity Verification Service
+ * eBuhay - DICT eVerify PhilSys Identity Verification Service
  * Handles token exchange and demographic verification via PhilSys
  */
 
-// In-memory token cache (server-side only â€” never expose to client)
+// In-memory token cache (server-side only — never expose to client)
 let tokenCache = { token: null, expiresAt: null };
 
 /**
@@ -86,7 +86,7 @@ async function verifyIdentity({ first_name, last_name, birth_date, middle_name, 
     body: JSON.stringify({ first_name, last_name, birth_date, middle_name, suffix, face_liveness_session_id })
   });
 
-  if (res.status === 401) throw new Error('eVerify token expired â€” please retry');
+  if (res.status === 401) throw new Error('eVerify token expired — please retry');
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(`eVerify verification failed (${res.status}): ${err.message || 'Unknown error'}`);
@@ -111,7 +111,7 @@ async function decodeQR(qr_value) {
     body: JSON.stringify({ qr_value })
   });
 
-  if (res.status === 422) throw new Error('Malformed QR value â€” please scan again');
+  if (res.status === 422) throw new Error('Malformed QR value — please scan again');
   if (!res.ok) throw new Error(`QR decode failed (${res.status})`);
 
   return res.json();
