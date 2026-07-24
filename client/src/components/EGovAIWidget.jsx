@@ -25,17 +25,17 @@ export default function EGovAIWidget() {
 
   return (
     <div className="card">
-      {/* Header â€” mimics API catalog card style */}
+      {/* Header — mimics API catalog card style */}
       <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:22 }}>
         <div className="icon-badge icon-badge-lg icon-badge-navy"><ScaleIcon /></div>
         <div>
           <div style={{ fontWeight:700, fontSize:15 }}>PH Health Laws Assistant</div>
-          <div style={{ fontSize:12, color:'var(--foreground-muted)', marginTop:2 }}>Powered by DICT eGovAI Â· Laws &amp; Regulations API</div>
+          <div style={{ fontSize:12, color:'var(--foreground-muted)', marginTop:2 }}>Powered by DICT eGovAI · Laws &amp; Regulations API</div>
         </div>
         <span className="badge badge-primary" style={{ marginLeft:'auto' }}>eGovAI</span>
       </div>
 
-      {/* Quick questions â€” pill chips like the site's tag-style */}
+      {/* Quick questions — pill chips like the site's tag-style */}
       <div className="section-title">Quick Questions</div>
       <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginBottom:20 }}>
         {QUICK.map(q => (
@@ -47,7 +47,7 @@ export default function EGovAIWidget() {
 
       {/* Input */}
       <div style={{ display:'flex', gap:10, marginBottom:16 }}>
-        <textarea className="input" value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Ask about organ donation laws, blood donation regulationsâ€¦" rows={2} style={{ flex:1 }} />
+        <textarea className="input" value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Ask about organ donation laws, blood donation regulations…" rows={2} style={{ flex:1 }} />
         <button onClick={() => ask()} disabled={!prompt.trim() || loading} className="btn btn-primary" style={{ alignSelf:'flex-end', height:40, padding:'0 18px' }}>
           {loading ? <span className="spinner" /> : <SendIcon />}
         </button>
@@ -57,11 +57,11 @@ export default function EGovAIWidget() {
       {loading && (
         <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:12, padding:'24px 0' }}>
           <div className="spinner spinner-lg" />
-          <p style={{ fontSize:13, color:'var(--foreground-muted)' }}>Querying DICT eGovAIâ€¦</p>
+          <p style={{ fontSize:13, color:'var(--foreground-muted)' }}>Querying DICT eGovAI…</p>
         </div>
       )}
 
-      {/* Response â€” styled like the feature docs panel on the site */}
+      {/* Response — styled like the feature docs panel on the site */}
       {response && !loading && (
         <div style={{ background:'var(--background-alt)', border:'1px solid var(--border)', borderRadius:'var(--r-lg)', padding:'18px 20px', borderLeft:'3px solid var(--primary)', animation:'fadeIn 0.3s ease' }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>

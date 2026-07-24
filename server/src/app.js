@@ -27,7 +27,7 @@ app.use('/api/egovai', require('./routes/egovai'));
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'eHealth DICT eGov Platform API is operational',
+    message: 'eBuhay DICT eGov Platform API is operational',
     version: '1.0.0',
     timestamp: new Date().toISOString(),
     services: {
@@ -57,7 +57,7 @@ app.use((err, req, res, next) => {
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`===================================================`);
-    console.log(`  eHealth DICT API Server Running on port ${PORT}  `);
+    console.log(`  eBuhay DICT API Server Running on port ${PORT}  `);
     console.log(`  Health: http://localhost:${PORT}/api/health       `);
     console.log(`  Match:  http://localhost:${PORT}/api/matches/find `);
     console.log(`===================================================`);

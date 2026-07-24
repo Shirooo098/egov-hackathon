@@ -1,5 +1,5 @@
 /**
- * eHealth - DICT Hyperledger Besu Blockchain Service
+ * eBuhay - DICT Hyperledger Besu Blockchain Service
  * Anchors e-signature consent hashes on zero-fee QBFT Besu chain (Chain ID 13371)
  */
 

@@ -1,5 +1,5 @@
 /**
- * eHealth - DICT eGovAI Service
+ * eBuhay - DICT eGovAI Service
  * Handles AI token lifecycle, Laws & Regulations Q&A, and AI-assisted scheduling
  */
 
@@ -55,7 +55,7 @@ async function askLawsAndRegulations(prompt, category = 'PH') {
       success: true,
       demo: true,
       session_id: 'demo-session-' + Date.now(),
-      data: `[Demo Response] Under Republic Act 7170 (Organ Donation Act of the Philippines), organ donation requires the explicit written consent of the donor. The Department of Health oversees all organ donation operations. For blood donations, RA 7719 (National Blood Services Act) governs voluntary blood donation. For more information, visit the Philippine Health Service portal at ehealth.e.gov.ph.`,
+      data: `[Demo Response] Under Republic Act 7170 (Organ Donation Act of the Philippines), organ donation requires the explicit written consent of the donor. The Department of Health oversees all organ donation operations. For blood donations, RA 7719 (National Blood Services Act) governs voluntary blood donation. For more information, visit the Philippine Health Service portal at ebuhay.e.gov.ph.`,
       prompt
     };
   }
@@ -79,7 +79,7 @@ async function askLawsAndRegulations(prompt, category = 'PH') {
  * Uses eGovAI general assistant to generate conflict-free consultation slots
  */
 async function generateScheduleSlots({ doctorAvailability, donorAvailability, recipientAvailability, urgencyLevel }) {
-  const prompt = `As an AI medical scheduling assistant for the Philippine eHealth platform:
+  const prompt = `As an AI medical scheduling assistant for the Philippine eBuhay platform:
 Generate 3 optimal diagnostic consultation appointment slots for:
 - Doctor availability windows: ${JSON.stringify(doctorAvailability)}
 - Donor availability windows: ${JSON.stringify(donorAvailability)}
@@ -103,7 +103,7 @@ Return ONLY a valid JSON array of exactly 3 slot objects.`;
         {
           start: new Date(now.getTime() + 2 * 3600 * 1000).toISOString(),
           end: new Date(now.getTime() + 3 * 3600 * 1000).toISOString(),
-          notes: 'Earliest available slot â€” recommended for urgent cases'
+          notes: 'Earliest available slot — recommended for urgent cases'
         },
         {
           start: new Date(now.getTime() + 26 * 3600 * 1000).toISOString(),
