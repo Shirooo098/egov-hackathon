@@ -6,6 +6,7 @@ import OrganAnalytics from '../components/OrganAnalytics';
 import { useToast } from '../context/ToastContext';
 import { ClinicalTriageTab } from '../components/HospitalTabComponents';
 import { STATIC_MATCHES, URGENCY_BADGES, URGENCY_LABELS, getLiveMatchAsItem, filterMatches } from '../services/domain';
+import { usePersistedStaticMatches } from '../context/usePersistedStaticMatches';
 import { ClipIcon, ScaleIcon, AnalyticsIcon, HospitalIcon } from '../components/Icons';
 
 export default function HospitalDashboard() {
@@ -13,7 +14,7 @@ export default function HospitalDashboard() {
   const { toast } = useToast();
   
   const [tab, setTab] = useState('matches');
-  const [staticState, setStaticState] = useState(STATIC_MATCHES);
+  const [staticState, setStaticState] = usePersistedStaticMatches(STATIC_MATCHES);
 
   const handleApproveMatch = (matchId) => {
     if (matchId === match.id) {

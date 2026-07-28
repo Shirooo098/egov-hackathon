@@ -14,12 +14,12 @@ import { api } from '../services/api';
 const DEMO_NOTIFY_NUMBER = '+639763098967';
 
 export default function RecipientDashboard({ onboardingHealth }) {
-  const { match, isApproved, consentSigned } = useMatch();
+  const { match, isApproved, consentSigned, updateMatchFromProfile } = useMatch();
   const [tab, setTab] = useState('mymatch'); // Automate matchmaking display upon portal load (Issue #006)
   const [requestType, setRequestType] = useState(onboardingHealth?.request_type || 'organ');
-  const [bloodTypeNeeded, setBloodTypeNeeded] = useState(onboardingHealth?.blood_type_needed || 'B+');
-  const [organNeeded, setOrganNeeded] = useState(onboardingHealth?.organ_needed || 'Kidney');
-  const [urgencyLevel, setUrgencyLevel] = useState('urgent');
+  const [bloodTypeNeeded, setBloodTypeNeeded] = useState(() => match.recipient?.blood_type_needed || onboardingHealth?.blood_type_needed || 'B+');
+  const [organNeeded, setOrganNeeded] = useState(() => match.recipient?.organ_needed || onboardingHealth?.organ_needed || 'Kidney');
+  const [urgencyLevel, setUrgencyLevel] = useState(() => match.recipient?.urgency || match.urgencyLevel || 'urgent');
   const { toast } = useToast();
 
   // Guards against double-fire (e.g. React StrictMode double-invoking effects in dev)
@@ -45,7 +45,12 @@ export default function RecipientDashboard({ onboardingHealth }) {
 
   const saveProfile = (e) => {
     e.preventDefault();
-    toast.success('Recipient medical evaluation preferences and PhilSys verification updated.', { title: 'Preferences Saved', duration: 4000 });
+    const res = updateMatchFromProfile('recipient', { bloodTypeNeeded, organNeeded, urgencyLevel });
+    if (res.success) {
+      toast.success('Recipient medical evaluation preferences and PhilSys verification updated.', { title: 'Preferences Saved', duration: 4000 });
+    } else {
+      toast.warning(res.error || 'Failed to update preferences', { title: 'Sync Warning', duration: 4000 });
+    }
   };
 
   const isScheduleUnlocked = isApproved || match.status !== 'pending_hospital_approval';
