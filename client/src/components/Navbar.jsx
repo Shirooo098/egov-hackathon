@@ -1,10 +1,15 @@
 import React from 'react';
+import { useLocation, Link } from 'react-router-dom';
 
 export default function Navbar({ currentRole, verified, tier, userProfile, onSignOut }) {
+  const location = useLocation();
+  const isHospitalRoute = location.pathname === '/hospital-dashboard';
+
   const roleLabels = {
     recipient: 'Recipient',
     donor: 'Donor',
     doctor: 'Medical Doctor',
+    hospital: 'Hospital Administration'
   };
 
   return (
@@ -12,38 +17,68 @@ export default function Navbar({ currentRole, verified, tier, userProfile, onSig
       {/* rainbow stripe rendered via CSS ::before */}
       <div className="container navbar-inner">
         {/* Brand */}
-        <div className="brand">
-          <div className="brand-mark">e</div>
-          <div>
-            <div className="brand-name">eBuhay</div>
-            <div className="brand-sub">DICT eGov Platform</div>
-          </div>
-        </div>
-
-        {/* Center / Right info based on session state */}
-        {currentRole && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            {/* Active Role Label */}
-            <span className={`badge badge-${currentRole === 'doctor' ? 'moderate' : currentRole === 'donor' ? 'success' : 'primary'}`}>
-              {roleLabels[currentRole]} Portal
-            </span>
-
-            {/* Global eVerify status */}
-            <div className={`ev-pill${verified ? ' done' : ''}`} style={{ padding: '6px 14px' }}>
-              <ShieldIcon />
-              <span>{verified ? `PhilSys ${tier}` : 'Unverified'}</span>
+        <Link to={isHospitalRoute ? '/hospital-dashboard' : '/'} style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+            <div className="brand-mark" style={{ background: isHospitalRoute ? 'var(--emerald)' : undefined }}>
+              {isHospitalRoute ? '🏥' : 'e'}
             </div>
+            <div>
+              <div className="brand-name">{isHospitalRoute ? 'Philippine General Hospital' : 'eBuhay'}</div>
+              <div className="brand-sub">{isHospitalRoute ? 'Clinical Governance Triage & On-Chain Vault' : 'DICT eGov Platform'}</div>
+            </div>
+          </div>
+        </Link>
 
-            {/* Profile greeting & Sign out */}
-            {userProfile && (
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--foreground-muted)' }}>
-                {userProfile.first_name} {userProfile.last_name}
-              </span>
+        {/* Conditional Navigation / Actions */}
+        {isHospitalRoute ? (
+          /* Institutional Hospital Context */
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <span className="badge badge-success" style={{ background: 'var(--emerald)', color: 'white', fontWeight: 700, padding: '4px 10px' }}>
+              Institutional Triage Portal
+            </span>
+            <span style={{ fontSize: 12, color: 'var(--foreground-muted)', fontWeight: 600 }}>
+              Facility ID: PGH-MNL-1000
+            </span>
+            <Link to="/" className="btn btn-outline btn-sm" style={{ height: 34, padding: '0 14px', textDecoration: 'none', fontWeight: 600 }}>
+              ← Back to Citizen Portal
+            </Link>
+          </div>
+        ) : (
+          /* Citizen Portal Context */
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            {/* Optional link for presentation evaluators / judges if no role active */}
+            {!currentRole && (
+              <Link to="/hospital-dashboard" className="btn btn-ghost btn-sm" style={{ height: 32, padding: '0 12px', fontSize: 12, color: 'var(--emerald)', border: '1px dashed var(--emerald)' }}>
+                🏥 Hospital Triage Console
+              </Link>
             )}
 
-            <button className="btn btn-ghost btn-sm" onClick={onSignOut} style={{ height: 32, padding: '0 12px' }}>
-              Exit Role
-            </button>
+            {currentRole && (
+              <>
+                {/* Active Role Label */}
+                <span className={`badge badge-${currentRole === 'doctor' || currentRole === 'hospital' ? 'moderate' : currentRole === 'donor' ? 'success' : 'primary'}`}>
+                  {roleLabels[currentRole] || 'Citizen'} Portal
+                </span>
+
+                {/* Global eVerify status */}
+                <div className={`ev-pill${verified ? ' done' : ''}`} style={{ padding: '6px 14px' }}>
+                  <ShieldIcon />
+                  <span>{verified ? `PhilSys ${tier || 'Verified'}` : 'Unverified'}</span>
+                </div>
+
+                {/* Profile greeting */}
+                {userProfile && (
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--foreground-muted)' }}>
+                    {userProfile.first_name} {userProfile.last_name}
+                  </span>
+                )}
+
+                {/* Exit Role control */}
+                <button className="btn btn-ghost btn-sm" onClick={onSignOut} style={{ height: 32, padding: '0 12px' }}>
+                  Exit Role
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
