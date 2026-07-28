@@ -4,6 +4,7 @@ import RecipientDashboard from './pages/RecipientDashboard';
 import DonorDashboard from './pages/DonorDashboard';
 import SignatureUploader from './components/SignatureUploader';
 import { api } from './services/api';
+import { useToast } from './context/ToastContext';
 import './styles/global.css';
 
 // Onboarding Steps Enum
@@ -16,6 +17,7 @@ const STEPS = {
 };
 
 export default function App() {
+  const { toast } = useToast();
   const [role, setRole] = useState(null); // null means onboarding/selection
   const [step, setStep] = useState(STEPS.DEMOGRAPHICS);
   const [verified, setVerified] = useState(false);
@@ -87,6 +89,7 @@ export default function App() {
       });
       // Proceed to Liveness Scan
       setStep(STEPS.LIVENESS);
+      toast.success('Identity verified', { title: 'Verified' });
     } catch {
       // Offline/Demo mode check bypass
       setTier('Tier I (Demo Bypass)');
@@ -95,6 +98,7 @@ export default function App() {
         last_name: formData.last_name,
       });
       setStep(STEPS.LIVENESS);
+      toast.info('Running in demo mode — bypassing PhilSys registry', { title: 'Demo Mode' });
     } finally {
       setVerifying(false);
     }
@@ -150,7 +154,12 @@ export default function App() {
   // Recipient Health Submit
   const handleRecipientHealthSubmit = (e) => {
     e.preventDefault();
+    if (!recipientHealth.signatureFile) {
+      toast.error('Please upload your e-signature document', { title: 'Signature Required' });
+      return;
+    }
     setRole('recipient');
+    toast.success('Health declaration submitted', { title: 'Registered' });
   };
 
   // Donor Organ Pledge Submit (frames selection as an e-signature document and anchors on blockchain)
@@ -182,6 +191,7 @@ export default function App() {
     setTimeout(() => {
       setAnchoringPledge(false);
       setRole('donor');
+      toast.success('Organ pledge registered on-chain', { title: 'Pledge Anchored' });
     }, 1800);
   };
 
@@ -191,8 +201,10 @@ export default function App() {
     const cleanKey = licenseKey.trim().toUpperCase();
     if (cleanKey === 'PRC-123456' || cleanKey === '123456') {
       setRole('doctor');
+      toast.success('PRC license verified', { title: 'Verified' });
     } else {
       setLicenseError('Verification failed: License ID not found in DOH / PRC registry. (Hint: Use PRC-123456)');
+      toast.error('Invalid PRC license key', { title: 'Verification Failed' });
     }
   };
 
@@ -204,10 +216,15 @@ export default function App() {
     setLicenseKey('');
     setLicenseError('');
     setPledgeAnchor(null);
+    toast.info('Signed out successfully', { title: 'Signed Out' });
   };
 
   return (
     <>
+      {/* Skip to main content link for keyboard accessibility */}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <Navbar
         currentRole={role}
         verified={verified}
@@ -222,7 +239,7 @@ export default function App() {
           <DonorDashboard consentSigned={consentSigned} setConsentSigned={setConsentSigned} onboardingPledge={donorPledge} />
         )
       ) : (
-        <div className="page-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--background-alt)', minHeight: 'calc(100vh - 62px)', padding: '24px 0' }}>
+        <div id="main-content" className="page-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--background-alt)', minHeight: 'calc(100vh - 62px)', padding: '24px 0' }}>
           <div className="container" style={{ maxWidth: 800, width: '100%' }}>
             
             {/* Onboarding Box */}
@@ -239,7 +256,7 @@ export default function App() {
 
               {/* STEP 1: DEMOGRAPHICS */}
               {step === STEPS.DEMOGRAPHICS && (
-                <form onSubmit={handleDemographicsSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                <form onSubmit={handleDemographicsSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--s6)' }}>
                   <div className="grid-2">
                     <div className="field">
                       <label className="label">First Name</label>
@@ -262,7 +279,7 @@ export default function App() {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="field">
                     <label className="label">Birth Date</label>
                     <input

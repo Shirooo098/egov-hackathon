@@ -77,12 +77,17 @@ export default function ChatBox({ currentRole = 'recipient', consentSigned, doct
       </div>
 
       {/* Messages */}
-      <div style={{ flex:1, overflow:'auto', padding:'16px 20px', display:'flex', flexDirection:'column', gap:10, background:'white' }}>
+      <div
+        role="log"
+        aria-live="polite"
+        aria-label="Chat messages"
+        style={{ flex:1, overflow:'auto', padding:'16px 20px', display:'flex', flexDirection:'column', gap:10, background:'white' }}
+      >
         {messages.map(m => {
           const self = m.sender === currentRole;
           return (
             <div key={m.id} style={{ display:'flex', flexDirection:'column', alignItems: self ? 'flex-end' : 'flex-start', gap:3, animation:'fadeIn 0.2s ease' }}>
-              <div className={`bubble ${self ? 'bubble-sent' : 'bubble-recv'}`}>{m.text}</div>
+              <div className={`bubble ${self ? 'bubble-sent' : 'bubble-recv'}`} aria-label={self ? 'You' : other}>{m.text}</div>
               <span style={{ fontSize:10, color:'var(--foreground-subtle)', paddingInline:4 }}>{m.time}</span>
             </div>
           );
@@ -92,16 +97,17 @@ export default function ChatBox({ currentRole = 'recipient', consentSigned, doct
 
       {/* Input */}
       <div style={{ padding:'12px 16px', borderTop:'1px solid var(--border)', background:'var(--background-alt)', display:'flex', gap:8, alignItems:'flex-end' }}>
-        <textarea 
-          className="input" 
-          value={text} 
-          onChange={e => setText(e.target.value)} 
-          onKeyDown={e => { if (e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); }}} 
-          placeholder="Type a message… (Enter to send)" 
-          rows={1} 
-          style={{ resize:'none',lineHeight:1.5,minHeight:40,flex:1 }} 
+        <textarea
+          className="input"
+          value={text}
+          onChange={e => setText(e.target.value)}
+          onKeyDown={e => { if (e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); send(); }}}
+          placeholder="Type a message… (Enter to send)"
+          rows={1}
+          style={{ resize:'none',lineHeight:1.5,minHeight:40,flex:1 }}
+          aria-label="Message input"
         />
-        <button onClick={send} disabled={!text.trim()} className="btn btn-primary btn-icon" style={{ height:40, width:44, flexShrink:0 }}>
+        <button onClick={send} disabled={!text.trim()} className="btn btn-primary btn-icon" style={{ height:40, width:44, flexShrink:0 }} aria-label="Send message">
           <SendIcon />
         </button>
       </div>

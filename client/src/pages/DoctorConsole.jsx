@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import BlockchainBadge from '../components/BlockchainBadge';
 import EGovAIWidget from '../components/EGovAIWidget';
 import OrganAnalytics from '../components/OrganAnalytics';
+import { useToast } from '../context/ToastContext';
 
 const CASES = [
   { id: 'case-001', donor: 'Juan Dela Cruz', recipient: 'Ana Reyes', type: 'blood', match: 'O- → A+', urgency: 'urgent', score: 102 },
   { id: 'case-002', donor: 'Rosa Magtanggol', recipient: 'Carlos Santos', type: 'organ', match: 'AB- → AB-', urgency: 'critical', score: 98 },
   { id: 'case-003', donor: 'Pedro Reyes', recipient: 'Luz Garcia', type: 'blood', match: 'A+ → A+', urgency: 'moderate', score: 90 },
 ];
-const U_BADGE = { critical: 'badge-critical', urgent: 'badge-warning', moderate: 'badge-moderate' };
+const U_BADGE = { critical: 'badge-critical', urgent: 'badge-urgent', moderate: 'badge-moderate' };
 const U_LABEL = { critical: 'Critical', urgent: 'Urgent', moderate: 'Moderate' };
 
 export default function DoctorConsole() {
@@ -18,9 +19,32 @@ export default function DoctorConsole() {
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(false);
   const [approved, setApproved] = useState(new Set());
+  const [activeUrgency, setActiveUrgency] = useState('urgent');
 
-  const genSlots = async (urgency) => { setLoading(true); try { const r = await api.optimizeSchedule({ urgencyLevel: urgency }); setSlots(r.data.slots || []); } catch { } finally { setLoading(false); } };
-  const approve = id => setApproved(p => new Set([...p, id]));
+  const { toast } = useToast();
+
+  const genSlots = async (urgency) => {
+    setLoading(true);
+    setActiveUrgency(urgency);
+    try {
+      const r = await api.optimizeSchedule({ urgencyLevel: urgency });
+      setSlots(r.data.slots || []);
+      if (r.data.slots?.length > 0) {
+        toast.success('AI scheduler generated optimal slots', { title: 'Schedule Ready' });
+      } else {
+        toast.warning('No available slots found for this urgency level', { title: 'No Slots' });
+      }
+    } catch (err) {
+      toast.error('Failed to generate schedule. Please try again.', { title: 'Scheduling Failed' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const approve = (id) => {
+    setApproved(p => new Set([...p, id]));
+    toast.success('Case approved and ready for consent anchoring', { title: 'Approved' });
+  };
 
   const pending = CASES.filter(c => !approved.has(c.id));
   const resolved = CASES.filter(c => approved.has(c.id));
@@ -33,7 +57,7 @@ export default function DoctorConsole() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--background)' }}>
+    <div id="main-content" className="min-h-screen" style={{ background: 'var(--background)' }}>
 
       {/* -- Hero -- (navy card style from the site for stats row) */}
       <section className="hero">
@@ -137,7 +161,7 @@ export default function DoctorConsole() {
                 </div>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   {['moderate', 'urgent', 'critical'].map(u => (
-                    <button key={u} className="btn btn-ghost btn-sm" onClick={() => genSlots(u)}>
+                    <button key={u} className={`btn btn-ghost btn-sm ${activeUrgency === u ? 'btn-primary' : ''}`} onClick={() => genSlots(u)}>
                       Generate ({u})
                     </button>
                   ))}

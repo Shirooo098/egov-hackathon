@@ -18,13 +18,40 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Local environment variables
+# Local environment variables (CRITICAL - contains API credentials)
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+client/.env
+server/.env
 
-# Optional IDE or system files
-.DS_Store
+# Project-specific directories
+egov-hackathon/client/dist/
+egov-hackathon/server/dist/
+egov-hackathon/client/node_modules/
+egov-hackathon/server/node_modules/
+
+# IDE and editor files
 .vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Traces
+ehthumbs.db
+Thumbs.db
+
+# Test artifacts
+server/tests/*.log
+*.test.log
+
+# Optional: Demo mode configuration (uncomment to exclude demo credentials)
+# server/.env.example
