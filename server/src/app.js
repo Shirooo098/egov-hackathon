@@ -22,6 +22,8 @@ app.use('/api/matches', require('./routes/match'));
 app.use('/api/schedule', require('./routes/schedule'));
 app.use('/api/blockchain', require('./routes/blockchain'));
 app.use('/api/egovai', require('./routes/egovai'));
+app.use('/api/egov', require('./routes/egov'));
+console.log("✅ Registered /api/egov routes");
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
