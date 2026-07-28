@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ChatBox from '../components/ChatBox';
 import GovernmentAgreement from '../components/GovernmentAgreement';
 import ClinicalMatchCard from '../components/ClinicalMatchCard';
@@ -7,6 +7,11 @@ import { useMatch } from '../context/MatchContext';
 import { DonorProfileTab } from '../components/DonorTabComponents';
 import { ALL_ORGANS, BLOOD_TYPES } from '../services/domain';
 import { UserIcon, MatchIcon, ChatIcon, ChainIcon, DropIcon } from '../components/Icons';
+import { api } from '../services/api';
+
+// Demo-only: static donor phone number for the "match found" SMS notification.
+// Swap this out once real donor phone numbers are collected during onboarding.
+const DEMO_NOTIFY_NUMBER = '+639763098967';
 
 export default function DonorDashboard({ onboardingPledge }) {
   const { match, isApproved, consentSigned, updateMatchFromProfile } = useMatch();
@@ -17,6 +22,26 @@ export default function DonorDashboard({ onboardingPledge }) {
   const [avail, setAvail] = useState(true);
   const { toast } = useToast();
 
+  // Guards against double-fire (e.g. React StrictMode double-invoking effects in dev)
+  const smsFiredRef = useRef(false);
+
+  useEffect(() => {
+    if (smsFiredRef.current) return;
+    smsFiredRef.current = true;
+
+    const message =
+      "eBuhay: A potential recipient match has been found based on your donation pledge. " +
+      "Please log in to the app to review the match details.";
+
+    api.sendSms(DEMO_NOTIFY_NUMBER, message)
+      .then(() => {
+        console.log('✅ Match-found SMS sent to', DEMO_NOTIFY_NUMBER);
+      })
+      .catch((err) => {
+        // Don't block the dashboard UI on SMS failure — just log it.
+        console.error('eMessage SMS failed:', err.message);
+      });
+  }, []);
   const handleAvailChange = (valOrFn) => {
     const nextAvail = typeof valOrFn === 'function' ? valOrFn(avail) : valOrFn;
     if (!nextAvail && !['rejected', 'ready_for_transplant'].includes(match.status)) {
