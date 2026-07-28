@@ -148,7 +148,7 @@ describe('Ticket #017 & #018 - Profile to Match propagation and validation guard
     assert.equal(res.success, true);
     assert.equal(res.updatedMatch.donor.blood_type, 'O+');
     assert.deepEqual(res.updatedMatch.donor.organ_pledged, ['kidney', 'cornea']);
-    assert.equal(res.updatedMatch.organ, 'Kidney'); // keeps recipient organ_needed casing or matched
+    assert.equal(res.updatedMatch.organ, 'kidney'); // matched organ from array
   });
 
   test('calculateUpdatedMatchFromProfile allows donor avail off when status rejected or ready_for_transplant', async () => {

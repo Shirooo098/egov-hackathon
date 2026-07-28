@@ -175,7 +175,7 @@ export function calculateUpdatedMatchFromProfile(match, role, profileFields) {
       updatedMatch.donor.organ_pledged = organs;
       const matched = organs.find(o => o.toLowerCase() === (updatedMatch.recipient?.organ_needed || '').toLowerCase());
       if (matched) {
-        updatedMatch.organ = updatedMatch.recipient.organ_needed || matched;
+        updatedMatch.organ = matched;
       }
     }
     return { success: true, updatedMatch };

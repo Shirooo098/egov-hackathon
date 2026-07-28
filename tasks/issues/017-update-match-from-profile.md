@@ -18,7 +18,7 @@ Add a new `updateMatchFromProfile(role, profileFields)` action to `MatchContext`
 - `organNeeded` → `match.recipient.organ_needed` and `match.organ`
 - `urgencyLevel` → `match.urgencyLevel` and `match.recipient.urgency`
 
-**Fields that do NOT map to the Match:** `isBlood`, `requestType` (`matchType` is immutable post-pairing), `avail` (guarded separately).
+**Fields that do NOT map to the Match:** `isBlood`, `requestType` (`matchType` is immutable post-Match establishment), `avail` (guarded separately).
 
 **Validation guards (run before any write):**
 1. Organ removal guard (Donor): if `organs` contains no organ matching `match.recipient.organ_needed` (case-insensitive), return an error and abort the write.

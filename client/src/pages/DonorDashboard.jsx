@@ -35,8 +35,6 @@ export default function DonorDashboard({ onboardingPledge }) {
     const res = updateMatchFromProfile('donor', { bloodType, organs, avail });
     if (!res.success) {
       toast.warning(res.error, { title: 'Profile Sync Warning', duration: 5000 });
-      setBloodType(match.donor?.blood_type || 'O-');
-      setOrgans(Array.isArray(match.donor?.organ_pledged) ? match.donor.organ_pledged : ['kidney', 'cornea']);
       return;
     }
     toast.success('PhilSys Tier I Donor Profile preferences synchronized.', { title: 'Profile Saved', duration: 4000 });
