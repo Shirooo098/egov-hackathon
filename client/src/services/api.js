@@ -32,5 +32,12 @@ export const api = {
   getChainInfo: () => request('/blockchain/chain-info'),
 
   // eGovAI Laws
-  askLaws: (prompt, category = 'PH') => request('/egovai/laws', { method: 'POST', body: JSON.stringify({ prompt, category }) })
+  askLaws: (prompt, category = 'PH') => request('/egovai/laws', { method: 'POST', body: JSON.stringify({ prompt, category }) }),
+
+  // eMessage SMS
+  // number must be E.164 format, e.g. "+639090000000"
+  sendSms: (number, message) => request('/emessage/sms/push', {
+    method: 'POST',
+    body: JSON.stringify({ number, message }),
+  }),
 };

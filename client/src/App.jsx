@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import FloatingAIChat from './components/FloatingAIChat';
 import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import RecipientDashboard from './pages/RecipientDashboard';
@@ -246,107 +247,110 @@ export default function App() {
   const goBackTo = (targetStep) => setStep(targetStep);
 
   return (
-    <Routes>
-      <Route path="/hospital-dashboard" element={
-        <>
-          <a href="#main-content" className="skip-link">Skip to main content</a>
-          <Navbar currentRole={null} verified={true} tier="Hospital Authority" userProfile={null} onSignOut={() => { }} />
-          <HospitalDashboard />
-        </>
-      } />
-      <Route path="/" element={
-        <>
-          <a href="#main-content" className="skip-link">Skip to main content</a>
-          <Navbar
-            currentRole={role}
-            verified={verified}
-            tier={tier}
-            userProfile={userProfile}
-            onSignOut={handleSignOut}
-          />
-          {role ? (
-            role === 'recipient' ? (
-              <RecipientDashboard consentSigned={consentSigned} setConsentSigned={setConsentSigned} onboardingHealth={recipientHealth} />
+    <>
+      <Routes>
+        <Route path="/hospital-dashboard" element={
+          <>
+            <a href="#main-content" className="skip-link">Skip to main content</a>
+            <Navbar currentRole={null} verified={true} tier="Hospital Authority" userProfile={null} onSignOut={() => { }} />
+            <HospitalDashboard />
+          </>
+        } />
+        <Route path="/" element={
+          <>
+            <a href="#main-content" className="skip-link">Skip to main content</a>
+            <Navbar
+              currentRole={role}
+              verified={verified}
+              tier={tier}
+              userProfile={userProfile}
+              onSignOut={handleSignOut}
+            />
+            {role ? (
+              role === 'recipient' ? (
+                <RecipientDashboard consentSigned={consentSigned} setConsentSigned={setConsentSigned} onboardingHealth={recipientHealth} />
+              ) : (
+                <DonorDashboard consentSigned={consentSigned} setConsentSigned={setConsentSigned} onboardingPledge={donorPledge} />
+              )
             ) : (
-              <DonorDashboard consentSigned={consentSigned} setConsentSigned={setConsentSigned} onboardingPledge={donorPledge} />
-            )
-          ) : (
-            <div id="main-content" className="page-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--background-alt)', minHeight: 'calc(100vh - 62px)', padding: '24px 0' }}>
-              <div className="container" style={{ maxWidth: 800, width: '100%' }}>
-                <div className="card anim-up" style={{ padding: '40px', maxWidth: 640, margin: '0 auto', background: 'white' }}>
+              <div id="main-content" className="page-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--background-alt)', minHeight: 'calc(100vh - 62px)', padding: '24px 0' }}>
+                <div className="container" style={{ maxWidth: 800, width: '100%' }}>
+                  <div className="card anim-up" style={{ padding: '40px', maxWidth: 640, margin: '0 auto', background: 'white' }}>
 
-                  {step !== STEPS.LIVENESS && (
-                    <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                      <div style={{ width: 48, height: 48, borderRadius: 12, background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 900, margin: '0 auto 16px' }}>e</div>
-                      <h2 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>Secure eBuhay Onboarding</h2>
-                      <p style={{ fontSize: 14, color: 'var(--foreground-muted)' }}>National platform secured with eGov Single Sign-On and Face Liveness verification.</p>
-                    </div>
-                  )}
+                    {step !== STEPS.LIVENESS && (
+                      <div style={{ textAlign: 'center', marginBottom: 32 }}>
+                        <div style={{ width: 48, height: 48, borderRadius: 12, background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 900, margin: '0 auto 16px' }}>e</div>
+                        <h2 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>Secure eBuhay Onboarding</h2>
+                        <p style={{ fontSize: 14, color: 'var(--foreground-muted)' }}>National platform secured with eGov Single Sign-On and Face Liveness verification.</p>
+                      </div>
+                    )}
 
-                  {/* STEP 1: ROLE SELECT */}
-                  {step === STEPS.ROLE_SELECT && <RoleSelectCard choosePortal={choosePortal} />}
+                    {/* STEP 1: ROLE SELECT */}
+                    {step === STEPS.ROLE_SELECT && <RoleSelectCard choosePortal={choosePortal} />}
 
-                  {/* STEP 2: AUTH CHOICE */}
-                  {step === STEPS.AUTH_CHOICE && (
-                    <AuthChoiceCard
-                      pendingRole={pendingRole}
-                      chooseAuthMode={chooseAuthMode}
-                      onBack={() => goBackTo(STEPS.ROLE_SELECT)}
-                    />
-                  )}
+                    {/* STEP 2: AUTH CHOICE */}
+                    {step === STEPS.AUTH_CHOICE && (
+                      <AuthChoiceCard
+                        pendingRole={pendingRole}
+                        chooseAuthMode={chooseAuthMode}
+                        onBack={() => goBackTo(STEPS.ROLE_SELECT)}
+                      />
+                    )}
 
-                  {/* STEP 3: SSO EXCHANGE */}
-                  {step === STEPS.SSO_PENDING && (
-                    <EgovSsoForm
-                      pendingRole={pendingRole}
-                      authMode={authMode}
-                      exchangeCode={exchangeCode}
-                      setExchangeCode={setExchangeCode}
-                      ssoError={ssoError}
-                      ssoLoading={ssoLoading}
-                      onSubmit={handleSsoSubmit}
-                      onBack={() => goBackTo(STEPS.AUTH_CHOICE)}
-                    />
-                  )}
+                    {/* STEP 3: SSO EXCHANGE */}
+                    {step === STEPS.SSO_PENDING && (
+                      <EgovSsoForm
+                        pendingRole={pendingRole}
+                        authMode={authMode}
+                        exchangeCode={exchangeCode}
+                        setExchangeCode={setExchangeCode}
+                        ssoError={ssoError}
+                        ssoLoading={ssoLoading}
+                        onSubmit={handleSsoSubmit}
+                        onBack={() => goBackTo(STEPS.AUTH_CHOICE)}
+                      />
+                    )}
 
-                  {/* STEP 4: FACE LIVENESS */}
-                  {step === STEPS.LIVENESS && (
-                    <FaceLivenessCheck
-                      livenessStage={livenessStage}
-                      setLivenessStage={setLivenessStage}
-                      livenessMessage={livenessMessage}
-                      onBack={() => goBackTo(STEPS.AUTH_CHOICE)}
-                    />
-                  )}
+                    {/* STEP 4: FACE LIVENESS */}
+                    {step === STEPS.LIVENESS && (
+                      <FaceLivenessCheck
+                        livenessStage={livenessStage}
+                        setLivenessStage={setLivenessStage}
+                        livenessMessage={livenessMessage}
+                        onBack={() => goBackTo(STEPS.AUTH_CHOICE)}
+                      />
+                    )}
 
-                  {/* STEP 5a: RECIPIENT HEALTH DECLARATION (sign-up only) */}
-                  {step === STEPS.RECIPIENT_HEALTH && (
-                    <RecipientHealthForm
-                      recipientHealth={recipientHealth}
-                      setRecipientHealth={setRecipientHealth}
-                      onSubmit={handleRecipientHealthSubmit}
-                      onBack={() => goBackTo(STEPS.AUTH_CHOICE)}
-                    />
-                  )}
+                    {/* STEP 5a: RECIPIENT HEALTH DECLARATION (sign-up only) */}
+                    {step === STEPS.RECIPIENT_HEALTH && (
+                      <RecipientHealthForm
+                        recipientHealth={recipientHealth}
+                        setRecipientHealth={setRecipientHealth}
+                        onSubmit={handleRecipientHealthSubmit}
+                        onBack={() => goBackTo(STEPS.AUTH_CHOICE)}
+                      />
+                    )}
 
-                  {/* STEP 5b: DONOR ORGAN PLEDGE (sign-up only) */}
-                  {step === STEPS.DONOR_PLEDGE && (
-                    <DonorPledgeForm
-                      donorPledge={donorPledge}
-                      setDonorPledge={setDonorPledge}
-                      onSubmit={handleDonorPledgeSubmit}
-                      onBack={() => goBackTo(STEPS.AUTH_CHOICE)}
-                      anchoringPledge={anchoringPledge}
-                      pledgeAnchor={pledgeAnchor}
-                    />
-                  )}
+                    {/* STEP 5b: DONOR ORGAN PLEDGE (sign-up only) */}
+                    {step === STEPS.DONOR_PLEDGE && (
+                      <DonorPledgeForm
+                        donorPledge={donorPledge}
+                        setDonorPledge={setDonorPledge}
+                        onSubmit={handleDonorPledgeSubmit}
+                        onBack={() => goBackTo(STEPS.AUTH_CHOICE)}
+                        anchoringPledge={anchoringPledge}
+                        pledgeAnchor={pledgeAnchor}
+                      />
+                    )}
 
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </>
-      } />
-    </Routes>
+            )}
+          </>
+        } />
+      </Routes>
+      <FloatingAIChat />
+    </>
   );
 }

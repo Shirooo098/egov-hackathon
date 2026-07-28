@@ -1,17 +1,21 @@
 /**
- * eBuhay - eGov SSO + Face Liveness client service
+ * eBuhay - eGov SSO + Face Liveness + AI Assistant client service
  *
- * IMPORTANT: partner_secret must never live in the browser. These calls hit
- * YOUR backend (/api/egov/*), which holds partner_secret / apiKey server-side
- * and proxies through to eGov's endpoints documented in the Postman collection:
+ * IMPORTANT: partner_secret / access_code must never live in the browser.
+ * These calls hit YOUR backend (/api/egov/*), which holds partner_secret /
+ * apiKey / access_code server-side and proxies through to eGov's endpoints
+ * documented in the Postman collection:
  *   - POST /api/token                       (SSO: exchange_code -> access_token)
  *   - POST /api/partner/sso_authentication   (SSO: access_token -> profile)
  *   - POST /v1/liveness/session              (Liveness: create session -> url + token)
  *   - GET  /v1/liveness/result/:sessionToken (Liveness: poll for result)
+ *   - POST /api/v1/egov/integration/token                      (AI: access_code -> access_token)
+ *   - POST /api/v1/egov/integration/ai_assistant/generate       (AI: prompt -> answer)
  *
  * If you don't have a backend proxy yet, point BASE to your backend and add
- * these four routes there — do NOT call eGov directly from the browser with
- * partner_secret/x-api-key, they'd be exposed to anyone reading network tab.
+ * these routes there — do NOT call eGov directly from the browser with
+ * partner_secret/x-api-key/access_code, they'd be exposed to anyone reading
+ * the network tab.
  */
 
 const BASE = '/api/egov';
@@ -104,5 +108,16 @@ export const egovApi = {
       await new Promise((r) => setTimeout(r, intervalMs));
     }
     throw new Error('Liveness verification timed out. Please try again.');
+  },
+
+  /**
+   * eGov AI Assistant: ask a natural-language question, scoped to a
+   * category/country code (e.g. 'PH'). Backend mints and caches its own
+   * access_token via POST {{base}}/api/v1/egov/integration/token and calls
+   * POST {{base}}/api/v1/egov/integration/ai_assistant/generate.
+   * Returns { data: "<answer text>", session_id: "..." }
+   */
+  async askAI(prompt, category = 'PH') {
+    return postJSON(`${BASE}/ai/chat`, { prompt, category });
   },
 };
