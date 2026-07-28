@@ -1,7 +1,7 @@
 # Issue #017: Add updateMatchFromProfile to MatchContext with Validation Guards
 
 > **Labels:** `ready-for-agent`, `tracer-bullet`
-> **Status:** Open
+> **Status:** Completed
 > **GitHub:** https://github.com/Shirooo098/egov-hackathon/issues/17
 > **Parent:** [Issue #012: Profile Field Changes Propagate Into the Live Match](./012-profile-to-match-propagation-spec.md)
 
@@ -28,13 +28,13 @@ Add a new `updateMatchFromProfile(role, profileFields)` action to `MatchContext`
 
 ## Acceptance criteria
 
-- [ ] `updateMatchFromProfile('donor', { bloodType: 'B+' })` updates `match.donor.blood_type` to `'B+'` and writes to localStorage
-- [ ] `updateMatchFromProfile('recipient', { urgencyLevel: 'critical' })` updates both `match.urgencyLevel` and `match.recipient.urgency`
-- [ ] `updateMatchFromProfile('donor', { organs: ['cornea'] })` when Recipient needs `'Kidney'` returns a validation error and leaves the Match unchanged
-- [ ] `updateMatchFromProfile('donor', { avail: false })` when `match.status` is `'approved'` returns a validation error and leaves the Match unchanged
-- [ ] `match.matchType` is never modified by any profile save
-- [ ] `match.compatibilityScore` is never modified by any profile save
-- [ ] `updateMatchFromProfile` is exported from `useMatch()` and available to all consuming components
+- [x] `updateMatchFromProfile('donor', { bloodType: 'B+' })` updates `match.donor.blood_type` to `'B+'` and writes to localStorage
+- [x] `updateMatchFromProfile('recipient', { urgencyLevel: 'critical' })` updates both `match.urgencyLevel` and `match.recipient.urgency`
+- [x] `updateMatchFromProfile('donor', { organs: ['cornea'] })` when Recipient needs `'Kidney'` returns a validation error and leaves the Match unchanged
+- [x] `updateMatchFromProfile('donor', { avail: false })` when `match.status` is `'approved'` returns a validation error and leaves the Match unchanged
+- [x] `match.matchType` is never modified by any profile save
+- [x] `match.compatibilityScore` is never modified by any profile save
+- [x] `updateMatchFromProfile` is exported from `useMatch()` and available to all consuming components
 
 ## Blocked by
 

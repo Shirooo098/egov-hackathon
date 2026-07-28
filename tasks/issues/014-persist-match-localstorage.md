@@ -1,7 +1,7 @@
 # Issue #014: Persist Match to localStorage for Refresh Survival
 
 > **Labels:** `ready-for-agent`, `tracer-bullet`
-> **Status:** Open
+> **Status:** Completed
 > **GitHub:** https://github.com/Shirooo098/egov-hackathon/issues/14
 > **Parent:** [Issue #011: Persist Match State to localStorage with Live Cross-Tab Sync](./011-persist-match-localstorage-spec.md)
 
@@ -13,11 +13,11 @@ Demoable: Hospital approves the Match in Tab 1 → Donor refreshes Tab 2 → Don
 
 ## Acceptance criteria
 
-- [ ] Refreshing any dashboard tab restores the Match to its last known lifecycle stage
-- [ ] `resetMatch` clears `ebuhay_match` from localStorage and all tabs that subsequently refresh start from `pending_hospital_approval`
-- [ ] If `localStorage` contains an unparseable value for `ebuhay_match`, the context silently falls back to `INITIAL_DEMO_MATCH` without throwing
-- [ ] No eMessage toast is re-fired on page load when restoring from localStorage
-- [ ] All existing Match mutation actions (approve, reject, schedule, sign, anchor) continue to work correctly
+- [x] Refreshing any dashboard tab restores the Match to its last known lifecycle stage
+- [x] `resetMatch` clears `ebuhay_match` from localStorage and all tabs that subsequently refresh start from `pending_hospital_approval`
+- [x] If `localStorage` contains an unparseable value for `ebuhay_match`, the context silently falls back to `INITIAL_DEMO_MATCH` without throwing
+- [x] No eMessage toast is re-fired on page load when restoring from localStorage
+- [x] All existing Match mutation actions (approve, reject, schedule, sign, anchor) continue to work correctly
 
 ## Blocked by
 

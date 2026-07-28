@@ -1,7 +1,7 @@
 # Issue #015: Live Cross-Tab Match Sync via Storage Event
 
 > **Labels:** `ready-for-agent`, `tracer-bullet`
-> **Status:** Open
+> **Status:** Completed
 > **GitHub:** https://github.com/Shirooo098/egov-hackathon/issues/15
 > **Parent:** [Issue #011: Persist Match State to localStorage with Live Cross-Tab Sync](./011-persist-match-localstorage-spec.md)
 
@@ -15,11 +15,11 @@ Demoable: Hospital approves in Tab 1 → Donor's Tab 2 updates instantly without
 
 ## Acceptance criteria
 
-- [ ] A Match status change in one tab is reflected live in all other open tabs within one render cycle
-- [ ] `resetMatch` in one tab causes all other open tabs to snap back to `pending_hospital_approval` live
-- [ ] eMessage toasts do NOT re-fire in tabs that receive a `storage` event update — only the originating tab shows toasts
-- [ ] The event listener is properly cleaned up when `MatchContext` unmounts
-- [ ] Simulating a `storage` event with `newValue: null` resets the Match to `INITIAL_DEMO_MATCH` without throwing
+- [x] A Match status change in one tab is reflected live in all other open tabs within one render cycle
+- [x] `resetMatch` in one tab causes all other open tabs to snap back to `pending_hospital_approval` live
+- [x] eMessage toasts do NOT re-fire in tabs that receive a `storage` event update — only the originating tab shows toasts
+- [x] The event listener is properly cleaned up when `MatchContext` unmounts
+- [x] Simulating a `storage` event with `newValue: null` resets the Match to `INITIAL_DEMO_MATCH` without throwing
 
 ## Blocked by
 

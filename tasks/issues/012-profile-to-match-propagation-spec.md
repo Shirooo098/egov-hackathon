@@ -1,7 +1,7 @@
 # Issue #012: Profile Field Changes Propagate Into the Live Match
 
 > **Labels:** `ready-for-agent`, `spec`
-> **Status:** Open
+> **Status:** Completed
 > **GitHub:** https://github.com/Shirooo098/egov-hackathon/issues/12
 
 ## Problem Statement

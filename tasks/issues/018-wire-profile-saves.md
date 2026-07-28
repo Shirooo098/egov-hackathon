@@ -1,7 +1,7 @@
 # Issue #018: Wire Donor and Recipient Profile Save Buttons to updateMatchFromProfile
 
 > **Labels:** `ready-for-agent`, `tracer-bullet`
-> **Status:** Open
+> **Status:** Completed
 > **GitHub:** https://github.com/Shirooo098/egov-hackathon/issues/18
 > **Parent:** [Issue #012: Profile Field Changes Propagate Into the Live Match](./012-profile-to-match-propagation-spec.md)
 
@@ -18,12 +18,12 @@ Demoable: Donor changes blood type from `O-` to `B+` and clicks Save → Hospita
 
 ## Acceptance criteria
 
-- [ ] Donor clicks Save Profile → `match.donor.blood_type` updates and the Hospital triage table reflects the change live in another tab
-- [ ] Recipient clicks Synchronize Medical Preferences → `match.recipient.blood_type_needed`, `match.recipient.organ_needed`, `match.urgencyLevel`, and `match.organ` update and propagate cross-tab
-- [ ] If Donor removes all organs matching the Recipient's need, clicking Save shows a toast warning and leaves the Match and profile fields unchanged
-- [ ] If Donor toggles availability off while a Match is in-flight, a toast warning appears and the toggle reverts
-- [ ] `isBlood` and `requestType` changes have no effect on `match.matchType`
-- [ ] A successful save shows a success toast confirming the profile was synchronized
+- [x] Donor clicks Save Profile → `match.donor.blood_type` updates and the Hospital triage table reflects the change live in another tab
+- [x] Recipient clicks Synchronize Medical Preferences → `match.recipient.blood_type_needed`, `match.recipient.organ_needed`, `match.urgencyLevel`, and `match.organ` update and propagate cross-tab
+- [x] If Donor removes all organs matching the Recipient's need, clicking Save shows a toast warning and leaves the Match and profile fields unchanged
+- [x] If Donor toggles availability off while a Match is in-flight, a toast warning appears and the toggle reverts
+- [x] `isBlood` and `requestType` changes have no effect on `match.matchType`
+- [x] A successful save shows a success toast confirming the profile was synchronized
 
 ## Blocked by
 
