@@ -1,7 +1,7 @@
 # Issue #008: Interactive Schedule Handshake & Rejection Fallback
 
 > **Labels:** `ready-for-agent`, `ticket`, `tracer-bullet`  
-> **Status:** Open  
+> **Status:** Completed  
 > **Parent:** [Issue #003: eBuhay Clinical Workflow & Platform Redesign](./003-ebuhay-workflow-redesign-spec.md)
 
 ## What to build
@@ -10,11 +10,11 @@ Unlock an interactive scheduling interface in the Recipient portal once a match 
 
 ## Acceptance criteria
 
-- [ ] When a match reaches `approved` status, a dedicated *Schedule* tab (or embedded scheduling UI within My Match) automatically unlocks on the Recipient portal.
-- [ ] Submitting a proposed appointment date transitions match status to `waiting_donor_confirmation` and surfaces the proposed date/time on the Donor’s *My Match* interface.
-- [ ] The Donor can click "Confirm Schedule" to immediately advance match status to `scheduled`.
-- [ ] The Donor can select "Suggest Alternative Date" (counter-proposal), allowing them to input a new date/time which updates the proposal on the Recipient's view for 1-click confirmation.
-- [ ] If a match status enters `rejected` (from hospital decline or total donor opt-out), the Recipient dashboard hides match details and renders an interactive animated state reading *"Searching for compatible donors in national registry..."*.
+- [x] When a match reaches `approved` status, a dedicated *Schedule* tab (or embedded scheduling UI within My Match) automatically unlocks on the Recipient portal.
+- [x] Submitting a proposed appointment date transitions match status to `waiting_donor_confirmation` and surfaces the proposed date/time on the Donor’s *My Match* interface.
+- [x] The Donor can click "Confirm Schedule" to immediately advance match status to `scheduled`.
+- [x] The Donor can select "Suggest Alternative Date" (counter-proposal), allowing them to input a new date/time which updates the proposal on the Recipient's view for 1-click confirmation.
+- [x] If a match status enters `rejected` (from hospital decline or total donor opt-out), the Recipient dashboard hides match details and renders an interactive animated state reading *"Searching for compatible donors in national registry..."*.
 
 ## Blocked by
 

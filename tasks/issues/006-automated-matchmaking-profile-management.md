@@ -1,7 +1,7 @@
 # Issue #006: Automated Matchmaking & Citizen Profile Management
 
 > **Labels:** `ready-for-agent`, `ticket`, `tracer-bullet`  
-> **Status:** Open  
+> **Status:** Completed  
 > **Parent:** [Issue #003: eBuhay Clinical Workflow & Platform Redesign](./003-ebuhay-workflow-redesign-spec.md)
 
 ## What to build
@@ -10,11 +10,11 @@ Eliminate legacy manual search forms, multi-step declaration wizards, and self-s
 
 ## Acceptance criteria
 
-- [ ] All "Simulate Doctor Approval" buttons and manual match search initiation buttons are completely removed from both Donor and Recipient citizen portals.
-- [ ] The Recipient dashboard loads directly into a clean tab interface (*My Profile* and *My Match*) and automatically exhibits a matched compatible donor without manual query execution.
-- [ ] The Donor dashboard loads directly into an equivalent tab structure showing the reciprocal kidney transplant match.
-- [ ] The *My Profile* tab allows users in either role to view and modify their initial health declarations (blood group, organ criteria, urgency/availability) and persist updates.
-- [ ] The *My Match* tab clearly renders a compatibility score card and exhibits a status indicator noting that medical evaluation by Philippine General Hospital is currently pending.
+- [x] All "Simulate Doctor Approval" buttons and manual match search initiation buttons are completely removed from both Donor and Recipient citizen portals.
+- [x] The Recipient dashboard loads directly into a clean tab interface (*My Profile* and *My Match*) and automatically exhibits a matched compatible donor without manual query execution.
+- [x] The Donor dashboard loads directly into an equivalent tab structure showing the reciprocal kidney transplant match.
+- [x] The *My Profile* tab allows users in either role to view and modify their initial health declarations (blood group, organ criteria, urgency/availability) and persist updates.
+- [x] The *My Match* tab clearly renders a compatibility score card and exhibits a status indicator noting that medical evaluation by Philippine General Hospital is currently pending.
 
 ## Blocked by
 

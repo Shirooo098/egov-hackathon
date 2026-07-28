@@ -1,9 +1,10 @@
 import React from 'react';
 
-export default function MatchReviewModal({ match, role, consentSigned, doctorApproved = false, onClose, onAcceptChat, onSchedule }) {
+export default function MatchReviewModal({ match, role, consentSigned, doctorApproved = false, hospitalApproved = false, onClose, onAcceptChat, onSchedule }) {
   const [isMatched, setIsMatched] = React.useState(false);
   if (!match) return null;
 
+  const isApproved = hospitalApproved || doctorApproved;
   const isRecipientView = role === 'recipient';
 
   // Determine participant details
@@ -112,14 +113,14 @@ export default function MatchReviewModal({ match, role, consentSigned, doctorApp
         <div style={{ padding: 14, background: 'var(--primary-10)', border: '1px solid rgba(0,56,168,0.12)', borderRadius: 'var(--r-md)', fontSize: 12, lineHeight: 1.6 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
             <div style={{ fontWeight: 700, color: 'var(--primary)' }}>Clinical Match Summary</div>
-            <span className={`badge ${doctorApproved ? 'badge-success' : isMatched ? 'badge-sun' : 'badge-primary'}`} style={{ fontSize: 9 }}>
-              {doctorApproved ? 'Doctor Approved ✓' : isMatched ? 'Awaiting Doctor Approval ⏳' : 'Match Evaluation'}
+            <span className={`badge ${isApproved ? 'badge-success' : isMatched ? 'badge-sun' : 'badge-primary'}`} style={{ fontSize: 9 }}>
+              {isApproved ? 'Hospital Approved ✓' : isMatched ? 'Awaiting Hospital Approval ⏳' : 'Match Evaluation'}
             </span>
           </div>
           {isRecipientView ? (
-            <div>Verified donor registered with active organ pledges ({match.donor?.donor_profile?.organ_pledges?.join(', ') || 'Kidney, Cornea'}). Direct messaging requires physician match clearance.</div>
+            <div>Verified donor registered with active organ pledges ({match.donor?.donor_profile?.organ_pledges?.join(', ') || 'Kidney, Cornea'}). Direct messaging requires institutional hospital clearance.</div>
           ) : (
-            <div>Recipient is currently under medical evaluation. ABO blood type O- matches recipient requirement. Direct messaging requires physician match clearance.</div>
+            <div>Recipient is currently under institutional medical evaluation. ABO blood type O- matches recipient requirement. Direct messaging requires institutional hospital clearance.</div>
           )}
         </div>
 
@@ -127,7 +128,7 @@ export default function MatchReviewModal({ match, role, consentSigned, doctorApp
         {!consentSigned && (
           <div style={{ fontSize: 11, color: 'var(--foreground-subtle)', display: 'flex', alignItems: 'center', gap: 6 }}>
             <span>🔒</span>
-            <span>Citizen name is masked for privacy. Real name is revealed upon mutual e-signature consent.</span>
+            <span>Citizen name is masked for privacy. Real name is revealed upon mutual e-signature execution.</span>
           </div>
         )}
 
@@ -138,10 +139,10 @@ export default function MatchReviewModal({ match, role, consentSigned, doctorApp
           </button>
           {onSchedule && (
             <button className="btn btn-outline" onClick={() => { onClose(); onSchedule(); }} style={{ flex: 1.2 }}>
-              AI Schedule
+              Clinical Schedule
             </button>
           )}
-          {doctorApproved ? (
+          {isApproved ? (
             <button className="btn btn-primary" onClick={() => { onClose(); onAcceptChat(); }} style={{ flex: 1.8 }}>
               Accept &amp; Chat →
             </button>
@@ -151,7 +152,7 @@ export default function MatchReviewModal({ match, role, consentSigned, doctorApp
             </button>
           ) : (
             <button className="btn btn-outline" disabled style={{ flex: 1.8, opacity: 0.7, cursor: 'not-allowed' }}>
-              🔒 Awaiting Doctor Approval
+              🔒 Awaiting Hospital Approval
             </button>
           )}
         </div>

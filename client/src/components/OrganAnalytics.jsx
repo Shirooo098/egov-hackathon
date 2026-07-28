@@ -32,7 +32,7 @@ export default function OrganAnalytics({ role }) {
           <span style={{ fontSize: 12, color: 'var(--emerald)', fontWeight: 600 }}>DICT Audit Certified</span>
         </div>
         <div className="card card-sm" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>Consents Secured</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>Donation Agreements Secured</span>
           <strong style={{ fontSize: 28, fontWeight: 800, color: 'var(--destructive)' }}>100%</strong>
           <span style={{ fontSize: 12, color: 'var(--foreground-subtle)' }}>Encrypted Audit Registry</span>
         </div>
@@ -76,7 +76,7 @@ export default function OrganAnalytics({ role }) {
               <h3 style={{ fontSize: 16, fontWeight: 800 }}>
                 {role === 'recipient' && 'Transplant Match Insights'}
                 {role === 'donor' && 'Pledge Legacy Impact'}
-                {role === 'doctor' && 'Clinical Command Indicators'}
+                {role === 'hospital' && 'Institutional Command Indicators'}
               </h3>
               <span className="badge badge-muted">Role Analytics</span>
             </div>
@@ -86,7 +86,7 @@ export default function OrganAnalytics({ role }) {
                 <div style={{ padding: '14px', background: 'var(--background-alt)', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
                   <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Average Queue Duration</div>
                   <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--primary)' }}>18.4 Days</div>
-                  <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 4 }}>Time elapsed from initial request verification to doctor diagnosis schedule proposal.</p>
+                  <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 4 }}>Time elapsed from initial request verification to clinical schedule proposal.</p>
                 </div>
                 <div style={{ padding: '14px', background: 'var(--background-alt)', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
                   <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Transplant Success Rate</div>
@@ -100,7 +100,7 @@ export default function OrganAnalytics({ role }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div style={{ padding: '14px', background: 'var(--background-alt)', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
                   <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Forecasted Lives Restored</div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--emerald)' }}>192 Patients</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--emerald)' }}>192 Citizens</div>
                   <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 4 }}>Calculated capacity from cumulative active pledges across the region.</p>
                 </div>
                 <div style={{ padding: '14px', background: 'var(--background-alt)', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
@@ -111,17 +111,17 @@ export default function OrganAnalytics({ role }) {
               </div>
             )}
 
-            {role === 'doctor' && (
+            {role === 'hospital' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div style={{ padding: '14px', background: 'var(--background-alt)', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>AI Scheduler Accuracy</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Schedule Proposal Accuracy</div>
                   <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--primary)' }}>99.2%</div>
-                  <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 4 }}>Percentage of scheduling slots accepted by doctors, donors, and recipients.</p>
+                  <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 4 }}>Percentage of schedule proposals accepted by hospitals, donors, and recipients.</p>
                 </div>
                 <div style={{ padding: '14px', background: 'var(--background-alt)', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
                   <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Total System Transactions</div>
                   <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--destructive)' }}>4,821 Blocks</div>
-                  <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 4 }}>Total legal consents anchored on-chain for transplantation procedures.</p>
+                  <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 4 }}>Total donation agreements anchored on-chain for clinical procedures.</p>
                 </div>
               </div>
             )}

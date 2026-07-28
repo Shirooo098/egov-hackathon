@@ -1,7 +1,7 @@
 # Issue #004: Core Navigation Seam (`react-router-dom` & Conditional Navbar)
 
 > **Labels:** `ready-for-agent`, `ticket`, `tracer-bullet`  
-> **Status:** Open  
+> **Status:** Completed  
 > **Parent:** [Issue #003: eBuhay Clinical Workflow & Platform Redesign](./003-ebuhay-workflow-redesign-spec.md)
 
 ## What to build
@@ -10,11 +10,11 @@ Establish client-side URL routing supporting exactly two authoritative boundarie
 
 ## Acceptance criteria
 
-- [ ] `react-router-dom` is installed and configured in the client application with two top-level routes: `/` and `/hospital-dashboard`.
-- [ ] Visiting `/hospital-dashboard` renders the institutional view directly without redirecting to citizen liveness onboarding or SSO login prompts.
-- [ ] On the `/` route, the navigation bar renders citizen attributes (eVerify PhilSys badge, portal role badge, user greeting, and "Exit Role" button).
-- [ ] On the `/hospital-dashboard` route, the navigation bar renders institutional branding ("🏥 Philippine General Hospital"), conceals citizen-specific eVerify badges and greetings, and replaces the "Exit Role" button with a "← Back to Citizen Portal" navigation link.
-- [ ] Automated or manual browser verification confirms seamless route transitions back and forth between citizen and hospital views without full page reloads.
+- [x] `react-router-dom` is installed and configured in the client application with two top-level routes: `/` and `/hospital-dashboard`.
+- [x] Visiting `/hospital-dashboard` renders the institutional view directly without redirecting to citizen liveness onboarding or SSO login prompts.
+- [x] On the `/` route, the navigation bar renders citizen attributes (eVerify PhilSys badge, portal role badge, user greeting, and "Exit Role" button).
+- [x] On the `/hospital-dashboard` route, the navigation bar renders institutional branding ("🏥 Philippine General Hospital"), conceals citizen-specific eVerify badges and greetings, and replaces the "Exit Role" button with a "← Back to Citizen Portal" navigation link.
+- [x] Automated or manual browser verification confirms seamless route transitions back and forth between citizen and hospital views without full page reloads.
 
 ## Blocked by
 

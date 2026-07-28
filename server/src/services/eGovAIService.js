@@ -166,7 +166,7 @@ For complete regulatory text, refer to DOH Administrative Order 2023-005.`;
    • Replacement donation prohibited
 
 3. BLOOD CATEGORY GUIDELINES
-   • O-: Universal donor (1 unit = 6 patients)
+   • O-: Universal donor (1 unit = 6 citizens)
    • A+: Common recipient type (35% population)
    • AB-: Universal plasma donor (rare type)
 
@@ -206,13 +206,13 @@ For specific legal questions, please consult the DOH Legal Office or a qualified
  * AI-assisted tri-party schedule optimization
  * Uses eGovAI general assistant to generate conflict-free consultation slots
  */
-async function generateScheduleSlots({ doctorAvailability, donorAvailability, recipientAvailability, urgencyLevel }) {
+async function generateScheduleSlots({ hospitalAvailability, doctorAvailability, donorAvailability, recipientAvailability, urgencyLevel }) {
   // Demo mode path
   if (DEMO_MODE) {
     await simulateDelay(1800, 2200);
 
     // Generate realistic slots based on availability inputs
-    const slots = generateDemoSlots({ doctorAvailability, donorAvailability, recipientAvailability, urgencyLevel });
+    const slots = generateDemoSlots({ hospitalAvailability: hospitalAvailability || doctorAvailability, donorAvailability, recipientAvailability, urgencyLevel });
 
     return {
       success: true,
@@ -228,14 +228,14 @@ async function generateScheduleSlots({ doctorAvailability, donorAvailability, re
   // Real API call path
   const prompt = `As an AI medical scheduling assistant for the Philippine eBuhay platform:
 Generate 3 optimal diagnostic consultation appointment slots for:
-- Doctor availability windows: ${JSON.stringify(doctorAvailability)}
+- Hospital availability windows: ${JSON.stringify(hospitalAvailability || doctorAvailability)}
 - Donor availability windows: ${JSON.stringify(donorAvailability)}
 - Recipient availability windows: ${JSON.stringify(recipientAvailability)}
-- Case urgency level: ${urgencyLevel}
+- Procedure urgency level: ${urgencyLevel}
 
 Rules:
-1. All 3 parties (Doctor, Donor, Recipient) must be available simultaneously.
-2. Prioritize earlier slots for "critical" urgency cases.
+1. All 3 parties (Hospital, Donor, Recipient) must be available simultaneously.
+2. Prioritize earlier slots for "critical" urgency procedures.
 3. Slots must be at least 1 hour long.
 4. Format each slot as: { "start": "ISO8601", "end": "ISO8601", "notes": "reason for slot" }
 
@@ -266,7 +266,7 @@ Return ONLY a valid JSON array of exactly 3 slot objects.`;
 /**
  * Generate realistic schedule slots for demo mode
  */
-function generateDemoSlots({ doctorAvailability, donorAvailability, recipientAvailability, urgencyLevel }) {
+function generateDemoSlots({ hospitalAvailability, doctorAvailability, donorAvailability, recipientAvailability, urgencyLevel }) {
   const now = new Date();
   const slots = [];
   const urgencyMultipliers = { critical: 1.5, urgent: 1.2, moderate: 1.0 };
@@ -292,9 +292,9 @@ function generateDemoSlots({ doctorAvailability, donorAvailability, recipientAva
 
     // Add urgency-based notes
     const urgencyNote = {
-      critical: 'Priority case - expedited processing',
-      urgent: 'High-priority case - recommended early slot',
-      moderate: 'Standard case - regular processing'
+      critical: 'Priority procedure - expedited processing',
+      urgent: 'High-priority procedure - recommended early slot',
+      moderate: 'Standard procedure - regular processing'
     }[urgencyLevel] || '';
 
     slots.push({

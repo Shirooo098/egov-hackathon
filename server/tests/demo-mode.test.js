@@ -83,7 +83,7 @@ async function runTests() {
     console.log('  ✓ notifyMatchFound() passed');
 
     console.log('  - Testing notifyAppointmentConfirmed()...');
-    const apptNotify = await eMessage.notifyAppointmentConfirmed('+639171234567', 'July 28, 2026 10:00 AM', 'Dr. Santos');
+    const apptNotify = await eMessage.notifyAppointmentConfirmed('+639171234567', 'July 28, 2026 10:00 AM', 'PGH Clinical Evaluation Center');
     assert.strictEqual(apptNotify.success, true, 'notifyAppointmentConfirmed should return success');
 
     console.log('  ✓ notifyAppointmentConfirmed() passed');
@@ -114,7 +114,7 @@ async function runTests() {
 
     console.log('  - Testing generateScheduleSlots()...');
     const scheduleResult = await eGovAI.generateScheduleSlots({
-      doctorAvailability: [{ start: '2026-07-28T08:00:00Z', end: '2026-07-28T17:00:00Z' }],
+      hospitalAvailability: [{ start: '2026-07-28T08:00:00Z', end: '2026-07-28T17:00:00Z' }],
       donorAvailability: [{ start: '2026-07-28T09:00:00Z', end: '2026-07-28T15:00:00Z' }],
       recipientAvailability: [{ start: '2026-07-28T10:00:00Z', end: '2026-07-28T16:00:00Z' }],
       urgencyLevel: 'moderate'

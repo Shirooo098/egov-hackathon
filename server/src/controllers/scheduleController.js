@@ -2,7 +2,7 @@ const { generateScheduleSlots } = require('../services/eGovAIService');
 
 async function optimizeSchedule(req, res, next) {
   try {
-    const { doctorAvailability, donorAvailability, recipientAvailability, urgencyLevel } = req.body;
+    const { hospitalAvailability, doctorAvailability, donorAvailability, recipientAvailability, urgencyLevel } = req.body;
 
     // Default demo availability windows if not provided
     const now = new Date();
@@ -12,7 +12,7 @@ async function optimizeSchedule(req, res, next) {
     ];
 
     const result = await generateScheduleSlots({
-      doctorAvailability: doctorAvailability || defaultAvail,
+      hospitalAvailability: hospitalAvailability || doctorAvailability || defaultAvail,
       donorAvailability: donorAvailability || defaultAvail,
       recipientAvailability: recipientAvailability || defaultAvail,
       urgencyLevel: urgencyLevel || 'moderate'

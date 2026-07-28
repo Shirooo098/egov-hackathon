@@ -99,8 +99,8 @@ async function notifyMatchFound(phone, donorName, matchType) {
   return sendSMS(phone, msg);
 }
 
-async function notifyAppointmentConfirmed(phone, dateTime, doctorName) {
-  const msg = `[eBuhay] Your consultation with Dr. ${doctorName} is confirmed on ${dateTime}. Please arrive 15 minutes early. Ref: ebuhay.e.gov.ph`;
+async function notifyAppointmentConfirmed(phone, dateTime, hospitalName) {
+  const msg = `[eBuhay] Your procedure appointment at ${hospitalName} is confirmed on ${dateTime}. Please arrive 15 minutes early. Ref: ebuhay.e.gov.ph`;
   return sendSMS(phone, msg);
 }
 
@@ -109,10 +109,12 @@ async function notifyChatMessage(phone, senderName) {
   return sendSMS(phone, msg);
 }
 
-async function notifyConsentSigned(phone, role) {
-  const msg = `[eBuhay] Your consent agreement as ${role} has been digitally signed and anchored to the blockchain. Ref: ebuhay.e.gov.ph`;
+async function notifyAgreementFinalized(phone, role) {
+  const msg = `[eBuhay] Your donation agreement as ${role} has been digitally executed and anchored to the Hyperledger Besu blockchain. Ref: ebuhay.e.gov.ph`;
   return sendSMS(phone, msg);
 }
+
+const notifyConsentSigned = notifyAgreementFinalized;
 
 /**
  * Get all demo messages (for debugging/testing)
@@ -133,6 +135,7 @@ module.exports = {
   notifyMatchFound,
   notifyAppointmentConfirmed,
   notifyChatMessage,
+  notifyAgreementFinalized,
   notifyConsentSigned,
   getDemoMessages,
   clearDemoMessages,

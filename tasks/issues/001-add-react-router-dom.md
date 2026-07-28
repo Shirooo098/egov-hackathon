@@ -1,7 +1,7 @@
 # Issue #001: Add `react-router-dom` for Hospital Dashboard routing
 
 > **Priority:** High  
-> **Status:** Open  
+> **Status:** Completed  
 > **Decision Ref:** [grilling-decisions.md — Decision 8](../research/grilling-decisions.md)  
 > **Created:** 2026-07-29
 
@@ -24,13 +24,13 @@ Add `react-router-dom` with a **minimal 2-route** setup:
 
 ## Implementation Steps
 
-- [ ] `npm install react-router-dom` in `client/`
-- [ ] Wrap app in `<BrowserRouter>` in `main.jsx`
-- [ ] Define `<Routes>` with the 2 routes above
-- [ ] Extract current `App.jsx` content into a route-able component (or keep as `/` default)
-- [ ] Create `HospitalDashboard.jsx` page shell (replacing `DoctorConsole.jsx`)
-- [ ] Add navigation link/button in `Navbar.jsx` for Hospital Dashboard (optional — judges can also use URL directly)
-- [ ] Verify Vite dev server handles client-side routing (may need `historyApiFallback` or Vite equivalent)
+- [x] `npm install react-router-dom` in `client/`
+- [x] Wrap app in `<BrowserRouter>` in `main.jsx`
+- [x] Define `<Routes>` with the 2 routes above
+- [x] Extract current `App.jsx` content into a route-able component (or keep as `/` default)
+- [x] Create `HospitalDashboard.jsx` page shell (replacing `DoctorConsole.jsx`)
+- [x] Add navigation link/button in `Navbar.jsx` for Hospital Dashboard (optional — judges can also use URL directly)
+- [x] Verify Vite dev server handles client-side routing (may need `historyApiFallback` or Vite equivalent)
 
 ## Acceptance Criteria
 

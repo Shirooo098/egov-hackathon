@@ -1,7 +1,7 @@
 # Issue #002: Create shared `MatchContext` for match lifecycle state
 
 > **Priority:** High  
-> **Status:** Open  
+> **Status:** Completed  
 > **Decision Ref:** [grilling-decisions.md — Decision 9](../research/grilling-decisions.md)  
 > **Depends on:** Issue #001 (react-router-dom) — context must wrap both routes  
 > **Created:** 2026-07-29
@@ -49,14 +49,14 @@ Pending Hospital Approval → Approved → Waiting for Donor Confirmation → Sc
 
 ## Implementation Steps
 
-- [ ] Create `client/src/context/MatchContext.jsx` with provider and hook
-- [ ] Pre-seed with one demo match (auto-generated from existing seed data)
-- [ ] Wrap `<BrowserRouter>` children with `<MatchProvider>` in `main.jsx`
-- [ ] Replace `DonorDashboard` internal match state with `useMatch()` context hook
-- [ ] Replace `RecipientDashboard` internal match state with `useMatch()` context hook
-- [ ] Replace `consentSigned` / `setConsentSigned` prop drilling from `App.jsx` with context
-- [ ] Wire `HospitalDashboard` approve/reject actions to `advanceStatus()`
-- [ ] Update `BlockchainBadge`, `ChatBox`, `MatchReviewModal` to consume context instead of props
+- [x] Create `client/src/context/MatchContext.jsx` with provider and hook
+- [x] Pre-seed with one demo match (auto-generated from existing seed data)
+- [x] Wrap `<BrowserRouter>` children with `<MatchProvider>` in `main.jsx`
+- [x] Replace `DonorDashboard` internal match state with `useMatch()` context hook
+- [x] Replace `RecipientDashboard` internal match state with `useMatch()` context hook
+- [x] Replace `consentSigned` / `setConsentSigned` prop drilling from `App.jsx` with context
+- [x] Wire `HospitalDashboard` approve/reject actions to `advanceStatus()`
+- [x] Update `BlockchainBadge`, `ChatBox`, `MatchReviewModal` to consume context instead of props
 
 ## Acceptance Criteria
 
