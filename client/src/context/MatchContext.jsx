@@ -1,71 +1,38 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { useToast } from './ToastContext';
 import { api } from '../services/api';
+import {
+  INITIAL_DEMO_MATCH,
+  MATCH_STORAGE_KEY,
+  getInitialMatch,
+  saveMatchToStorage,
+  clearMatchFromStorage,
+  clearStaticMatchesFromStorage,
+  parseStorageEventValue,
+  calculateUpdatedMatchFromProfile,
+} from './matchHelpers.js';
 
 const MatchContext = createContext(null);
 
-// Canonical 7-stage lifecycle state enum:
-// pending_hospital_approval -> approved -> waiting_donor_confirmation -> scheduled -> contract_signed -> ready_for_transplant [or rejected]
-
-const INITIAL_DEMO_MATCH = {
-  id: 'demo-match-pgh-001',
-  matchType: 'organ',
-  organ: 'Kidney',
-  compatibilityScore: 98,
-  urgencyLevel: 'urgent',
-  status: 'pending_hospital_approval', // starting state
-  hospital: {
-    id: '11111111-1111-1111-1111-111111111111',
-    name: 'Philippine General Hospital (PGH)',
-    facility: 'National Kidney Institute & PGH Organ Transplant Center',
-    location: 'Manila, Metro Manila',
-    email: 'triage@pgh.gov.ph',
-    verified: true,
-  },
-  donor: {
-    id: '22222222-2222-2222-2222-222222222222',
-    first_name: 'Juan',
-    last_name: 'Dela Cruz',
-    blood_type: 'O-',
-    organ_pledged: 'Kidney',
-    location_city: 'Quezon City',
-    location_province: 'Metro Manila',
-    age: 32,
-    everify_status: 'verified',
-    everify_tier: 'Tier I',
-    philsys_pcn: 'PH-9823-1122-3344',
-  },
-  recipient: {
-    id: '33333333-3333-3333-3333-333333333333',
-    first_name: 'Ana',
-    last_name: 'Reyes',
-    blood_type_needed: 'A+',
-    organ_needed: 'Kidney',
-    location_city: 'Makati City',
-    location_province: 'Metro Manila',
-    urgency: 'urgent',
-    description: 'Urgent kidney transplant required following stage IV chronic renal disease.',
-    everify_status: 'verified',
-    everify_tier: 'Tier I',
-    philsys_pcn: 'PH-8844-5566-7788',
-  },
-  proposedSchedule: null, // { date, time, location, proposedBy }
-  scheduledDate: null,
-  scheduledTime: null,
-  scheduledLocation: null,
-  donorSigned: false,
-  recipientSigned: false,
-  blockchainAnchor: null,
-  createdAt: new Date().toISOString(),
-};
-
 export function MatchProvider({ children }) {
-  const [match, setMatch] = useState(INITIAL_DEMO_MATCH);
+  const [match, setMatch] = useState(() => getInitialMatch());
   const toast = useToast();
+
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === MATCH_STORAGE_KEY) {
+        const updated = parseStorageEventValue(e.newValue);
+        setMatch(updated);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const advanceStatus = useCallback((newStatus) => {
     setMatch((prev) => {
       const updated = { ...prev, status: newStatus };
+      saveMatchToStorage(updated);
       
       // Emit simulated DICT eMessage push notifications on state transitions (Issue #010)
       if (newStatus === 'approved') {
@@ -133,23 +100,29 @@ export function MatchProvider({ children }) {
           );
         }
       }, 100);
-      return {
+      const updated = {
         ...prev,
         proposedSchedule: { date, time, location, proposedBy },
         status: nextStatus,
       };
+      saveMatchToStorage(updated);
+      return updated;
     });
   }, [toast]);
 
   const setScheduledDate = useCallback((date, time = '10:00 AM', location = 'Philippine General Hospital (PGH)') => {
-    setMatch((prev) => ({
-      ...prev,
-      scheduledDate: date,
-      scheduledTime: time,
-      scheduledLocation: location,
-      proposedSchedule: { date, time, location, confirmed: true },
-      status: 'scheduled',
-    }));
+    setMatch((prev) => {
+      const updated = {
+        ...prev,
+        scheduledDate: date,
+        scheduledTime: time,
+        scheduledLocation: location,
+        proposedSchedule: { date, time, location, confirmed: true },
+        status: 'scheduled',
+      };
+      saveMatchToStorage(updated);
+      return updated;
+    });
     setTimeout(() => {
       toast.success(
         `📱 DICT eMessage SMS Sent to all parties: Appointment officially confirmed on ${date} at ${time} (${location}). Official Government Donation Agreement unlocked.`,
@@ -160,7 +133,11 @@ export function MatchProvider({ children }) {
 
   const anchorToBlockchain = useCallback(async (customAnchorData = null) => {
     if (customAnchorData) {
-      setMatch((prev) => ({ ...prev, blockchainAnchor: customAnchorData }));
+      setMatch((prev) => {
+        const updated = { ...prev, blockchainAnchor: customAnchorData };
+        saveMatchToStorage(updated);
+        return updated;
+      });
       return customAnchorData;
     }
     
@@ -173,7 +150,11 @@ export function MatchProvider({ children }) {
         recipientSignature: `sig_${match.recipient.first_name.toLowerCase()}_${Date.now()}`,
       });
       const anchor = res.data;
-      setMatch((prev) => ({ ...prev, blockchainAnchor: anchor, status: 'ready_for_transplant' }));
+      setMatch((prev) => {
+        const updated = { ...prev, blockchainAnchor: anchor, status: 'ready_for_transplant' };
+        saveMatchToStorage(updated);
+        return updated;
+      });
       return anchor;
     } catch (_err) {
       const mockAnchor = {
@@ -182,7 +163,11 @@ export function MatchProvider({ children }) {
         blockNumber: 154209,
         timestamp: new Date().toISOString(),
       };
-      setMatch((prev) => ({ ...prev, blockchainAnchor: mockAnchor, status: 'ready_for_transplant' }));
+      setMatch((prev) => {
+        const updated = { ...prev, blockchainAnchor: mockAnchor, status: 'ready_for_transplant' };
+        saveMatchToStorage(updated);
+        return updated;
+      });
       return mockAnchor;
     }
   }, [match.id, match.donor, match.recipient]);
@@ -204,7 +189,9 @@ export function MatchProvider({ children }) {
           anchorToBlockchain();
         }, 100);
       }
-      return { ...prev, donorSigned, recipientSigned, status };
+      const updated = { ...prev, donorSigned, recipientSigned, status };
+      saveMatchToStorage(updated);
+      return updated;
     });
   }, [anchorToBlockchain, toast]);
 
@@ -214,14 +201,29 @@ export function MatchProvider({ children }) {
       signAgreement('donor');
       signAgreement('recipient');
     } else {
-      setMatch((prev) => ({ ...prev, donorSigned: false, recipientSigned: false }));
+      setMatch((prev) => {
+        const updated = { ...prev, donorSigned: false, recipientSigned: false };
+        saveMatchToStorage(updated);
+        return updated;
+      });
     }
   }, [signAgreement]);
 
   const resetMatch = useCallback(() => {
     setMatch(INITIAL_DEMO_MATCH);
+    clearMatchFromStorage();
+    clearStaticMatchesFromStorage();
     toast.info('Match demo state reset to initial pending institutional review.', { title: 'State Reset' });
   }, [toast]);
+
+  const updateMatchFromProfile = useCallback((role, profileFields) => {
+    const result = calculateUpdatedMatchFromProfile(match, role, profileFields);
+    if (result.success && result.updatedMatch) {
+      setMatch(result.updatedMatch);
+      saveMatchToStorage(result.updatedMatch);
+    }
+    return result;
+  }, [match]);
 
   // Derived convenience attributes for components
   const isApproved = useMemo(() => {
@@ -247,13 +249,14 @@ export function MatchProvider({ children }) {
     anchorToBlockchain,
     setConsentSigned,
     resetMatch,
+    updateMatchFromProfile,
     isApproved,
     hospitalApproved,
     doctorApproved,
     consentSigned,
     isAgreementFinalized,
     agreementSigned
-  }), [match, advanceStatus, proposeSchedule, setScheduledDate, signAgreement, anchorToBlockchain, setConsentSigned, resetMatch, isApproved, hospitalApproved, doctorApproved, consentSigned, isAgreementFinalized, agreementSigned]);
+  }), [match, advanceStatus, proposeSchedule, setScheduledDate, signAgreement, anchorToBlockchain, setConsentSigned, resetMatch, updateMatchFromProfile, isApproved, hospitalApproved, doctorApproved, consentSigned, isAgreementFinalized, agreementSigned]);
 
   return (
     <MatchContext.Provider value={value}>

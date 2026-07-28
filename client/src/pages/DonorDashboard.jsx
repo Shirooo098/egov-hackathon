@@ -9,17 +9,36 @@ import { ALL_ORGANS, BLOOD_TYPES } from '../services/domain';
 import { UserIcon, MatchIcon, ChatIcon, ChainIcon, DropIcon } from '../components/Icons';
 
 export default function DonorDashboard({ onboardingPledge }) {
-  const { match, isApproved, consentSigned } = useMatch();
+  const { match, isApproved, consentSigned, updateMatchFromProfile } = useMatch();
   const [tab, setTab] = useState('mymatch'); // Default to automatic match console upon portal load (Issue #006)
-  const [bloodType, setBloodType] = useState(onboardingPledge?.bloodType || 'O-');
+  const [bloodType, setBloodType] = useState(() => match.donor?.blood_type || onboardingPledge?.bloodType || 'O-');
   const [isBlood, setIsBlood] = useState(onboardingPledge?.isBlood !== undefined ? onboardingPledge.isBlood : true);
-  const [organs, setOrgans] = useState(onboardingPledge?.organs || ['kidney','cornea']);
+  const [organs, setOrgans] = useState(() => Array.isArray(match.donor?.organ_pledged) ? match.donor.organ_pledged : (onboardingPledge?.organs || ['kidney','cornea']));
   const [avail, setAvail] = useState(true);
   const { toast } = useToast();
+
+  const handleAvailChange = (valOrFn) => {
+    const nextAvail = typeof valOrFn === 'function' ? valOrFn(avail) : valOrFn;
+    if (!nextAvail && !['rejected', 'ready_for_transplant'].includes(match.status)) {
+      toast.warning(
+        'Cannot set availability to offline while clinical evaluation or procedure coordination is in-flight.',
+        { title: 'Availability Protected', duration: 5000 }
+      );
+      return;
+    }
+    setAvail(nextAvail);
+  };
 
   const toggleOrgan = o => setOrgans(p => p.includes(o) ? p.filter(x => x !== o) : [...p, o]);
 
   const saveProfile = () => {
+    const res = updateMatchFromProfile('donor', { bloodType, organs, avail });
+    if (!res.success) {
+      toast.warning(res.error, { title: 'Profile Sync Warning', duration: 5000 });
+      setBloodType(match.donor?.blood_type || 'O-');
+      setOrgans(Array.isArray(match.donor?.organ_pledged) ? match.donor.organ_pledged : ['kidney', 'cornea']);
+      return;
+    }
     toast.success('PhilSys Tier I Donor Profile preferences synchronized.', { title: 'Profile Saved', duration: 4000 });
   };
 
@@ -105,7 +124,7 @@ export default function DonorDashboard({ onboardingPledge }) {
           {tab === 'profile' && (
             <DonorProfileTab
               avail={avail}
-              setAvail={setAvail}
+              setAvail={handleAvailChange}
               bloodType={bloodType}
               setBloodType={setBloodType}
               isBlood={isBlood}
