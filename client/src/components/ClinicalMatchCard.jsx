@@ -13,6 +13,22 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
   const partnerName = role === 'donor' ? `${match.recipient.first_name} ${match.recipient.last_name}` : `${match.donor.first_name} ${match.donor.last_name}`;
   const partnerRole = role === 'donor' ? 'Recipient' : 'Donor';
 
+  const hasProposal = Boolean(match.proposedSchedule?.date);
+  const isProposedBySelf = hasProposal && match.proposedSchedule?.proposedBy === selfRole;
+  const isProposedByOther = hasProposal && match.proposedSchedule?.proposedBy !== selfRole;
+
+  const handlePropose = (e) => {
+    e.preventDefault();
+    proposeSchedule({ date: dateInput, time: timeInput, location: locationInput, proposedBy: selfRole });
+    setShowCounterForm(false);
+  };
+
+  const handleConfirm = () => {
+    if (match.proposedSchedule) {
+      setScheduledDate(match.proposedSchedule.date, match.proposedSchedule.time, match.proposedSchedule.location);
+    }
+  };
+
   // 1. REJECTION FALLBACK (Issue #008)
   if (match.status === 'rejected') {
     return (
