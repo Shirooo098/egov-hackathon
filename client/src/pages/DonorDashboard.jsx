@@ -53,6 +53,18 @@ export default function DonorDashboard({ onboardingPledge }) {
         console.error('eMessage SMS failed:', err.message);
       });
   }, []);
+  
+  const handleAvailChange = (valOrFn) => {
+    const nextAvail = typeof valOrFn === 'function' ? valOrFn(avail) : valOrFn;
+    if (!nextAvail && !['rejected', 'ready_for_transplant'].includes(match.status)) {
+      toast.warning(
+        'Cannot set availability to offline while clinical evaluation or procedure coordination is in-flight.',
+        { title: 'Availability Protected', duration: 5000 }
+      );
+      return;
+    }
+    setAvail(nextAvail);
+  };
 
   const toggleOrgan = o => setOrgans(p => p.includes(o) ? p.filter(x => x !== o) : [...p, o]);
 
