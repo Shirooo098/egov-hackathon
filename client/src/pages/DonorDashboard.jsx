@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ChatBox from '../components/ChatBox';
 import GovernmentAgreement from '../components/GovernmentAgreement';
 import ClinicalMatchCard from '../components/ClinicalMatchCard';
@@ -7,13 +7,18 @@ import { useMatch } from '../context/MatchContext';
 import { DonorProfileTab } from '../components/DonorTabComponents';
 import { ALL_ORGANS, BLOOD_TYPES } from '../services/domain';
 import { UserIcon, MatchIcon, ChatIcon, ChainIcon, DropIcon } from '../components/Icons';
+import { api } from '../services/api';
+
+// Demo-only: static donor phone number for the "match found" SMS notification.
+// Swap this out once real donor phone numbers are collected during onboarding.
+const DEMO_NOTIFY_NUMBER = '+639763098967';
 
 export default function DonorDashboard({ onboardingPledge }) {
   const { match, isApproved, consentSigned, updateMatchFromProfile } = useMatch();
   const [tab, setTab] = useState('mymatch'); // Default to automatic match console upon portal load (Issue #006)
   const [bloodType, setBloodType] = useState(() => match.donor?.blood_type || onboardingPledge?.bloodType || 'O-');
   const [isBlood, setIsBlood] = useState(onboardingPledge?.isBlood !== undefined ? onboardingPledge.isBlood : true);
-  const [organs, setOrgans] = useState(() => Array.isArray(match.donor?.organ_pledged) ? match.donor.organ_pledged : (onboardingPledge?.organs || ['kidney','cornea']));
+  const [organs, setOrgans] = useState(() => Array.isArray(match.donor?.organ_pledged) ? match.donor.organ_pledged : (onboardingPledge?.organs || ['kidney', 'cornea']));
   const [avail, setAvail] = useState(true);
   const { toast } = useToast();
 
@@ -28,6 +33,26 @@ export default function DonorDashboard({ onboardingPledge }) {
     }
     setAvail(nextAvail);
   };
+  // Guards against double-fire (e.g. React StrictMode double-invoking effects in dev)
+  const smsFiredRef = useRef(false);
+
+  useEffect(() => {
+    if (smsFiredRef.current) return;
+    smsFiredRef.current = true;
+
+    const message =
+      "eBuhay: A potential recipient match has been found based on your donation pledge. " +
+      "Please log in to the app to review the match details.";
+
+    api.sendSms(DEMO_NOTIFY_NUMBER, message)
+      .then(() => {
+        console.log('✅ Match-found SMS sent to', DEMO_NOTIFY_NUMBER);
+      })
+      .catch((err) => {
+        // Don't block the dashboard UI on SMS failure — just log it.
+        console.error('eMessage SMS failed:', err.message);
+      });
+  }, []);
 
   const toggleOrgan = o => setOrgans(p => p.includes(o) ? p.filter(x => x !== o) : [...p, o]);
 
@@ -85,7 +110,7 @@ export default function DonorDashboard({ onboardingPledge }) {
           </div>
         </div>
       </section>
-      
+
       {/* Network Marquee */}
       <div style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', padding: '14px 0', background: 'var(--background-alt)' }}>
         <div className="marquee-outer">

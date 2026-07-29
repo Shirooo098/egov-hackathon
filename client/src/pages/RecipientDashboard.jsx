@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ChatBox from '../components/ChatBox';
 import GovernmentAgreement from '../components/GovernmentAgreement';
 import ClinicalMatchCard from '../components/ClinicalMatchCard';
@@ -7,6 +7,11 @@ import { useToast } from '../context/ToastContext';
 import { useMatch } from '../context/MatchContext';
 import { ALL_ORGANS as ORGANS, BLOOD_TYPES } from '../services/domain';
 import { HeartIcon, MatchIcon, ChatIcon, ChainIcon, CalIcon } from '../components/Icons';
+import { api } from '../services/api';
+
+// Demo-only: static recipient phone number for the "match found" SMS notification.
+// Swap this out once real recipient phone numbers are collected during onboarding.
+const DEMO_NOTIFY_NUMBER = '+639763098967';
 
 export default function RecipientDashboard({ onboardingHealth }) {
   const { match, isApproved, consentSigned, updateMatchFromProfile } = useMatch();
@@ -16,6 +21,27 @@ export default function RecipientDashboard({ onboardingHealth }) {
   const [organNeeded, setOrganNeeded] = useState(() => match.recipient?.organ_needed || onboardingHealth?.organ_needed || 'Kidney');
   const [urgencyLevel, setUrgencyLevel] = useState(() => match.recipient?.urgency || match.urgencyLevel || 'urgent');
   const { toast } = useToast();
+
+  // Guards against double-fire (e.g. React StrictMode double-invoking effects in dev)
+  const smsFiredRef = useRef(false);
+
+  useEffect(() => {
+    if (smsFiredRef.current) return;
+    smsFiredRef.current = true;
+
+    const message =
+      "eBuhay: Good news! A potential donor match has been found for your request. " +
+      "Please log in to the app to review the match details.";
+
+    api.sendSms(DEMO_NOTIFY_NUMBER, message)
+      .then(() => {
+        console.log('✅ Match-found SMS sent to', DEMO_NOTIFY_NUMBER);
+      })
+      .catch((err) => {
+        // Don't block the dashboard UI on SMS failure — just log it.
+        console.error('eMessage SMS failed:', err.message);
+      });
+  }, []);
 
   const saveProfile = (e) => {
     e.preventDefault();

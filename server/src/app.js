@@ -24,6 +24,8 @@ app.use('/api/blockchain', require('./routes/blockchain'));
 app.use('/api/egovai', require('./routes/egovai'));
 app.use('/api/egov', require('./routes/egov'));
 console.log("✅ Registered /api/egov routes");
+app.use('/api/emessage', require('./routes/emessage'));
+console.log("✅ Registered /api/emessage routes");
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
