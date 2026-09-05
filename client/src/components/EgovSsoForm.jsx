@@ -1,4 +1,13 @@
 import React from 'react';
+import Stepper from './Stepper';
+
+const STEPS = [
+  { key: 'role', label: 'Role' },
+  { key: 'auth', label: 'Auth' },
+  { key: 'sso', label: 'SSO' },
+  { key: 'face', label: 'Liveness' },
+  { key: 'profile', label: 'Profile' },
+];
 
 export default function EgovSsoForm({
   pendingRole,
@@ -8,10 +17,12 @@ export default function EgovSsoForm({
   ssoError,
   ssoLoading,
   onSubmit,
+  onDemoSignIn,
   onBack,
 }) {
   return (
     <div className="anim-in">
+      <Stepper steps={STEPS} active={3} />
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--background-alt)', border: '1px solid var(--border)', padding: '12px 16px', borderRadius: 'var(--r-md)', marginBottom: 24, fontSize: 12, color: 'var(--foreground-muted)' }}>
         <span>{pendingRole === 'recipient' ? 'Recipient' : 'Donor'} portal — {authMode === 'signin' ? 'Sign In' : 'Sign Up'}</span>
         <button type="button" className="btn btn-ghost btn-sm" style={{ marginLeft: 'auto' }} onClick={onBack}>Back</button>
@@ -49,6 +60,37 @@ export default function EgovSsoForm({
           </button>
         </div>
       </form>
+
+      {onDemoSignIn && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '20px 0 14px', color: 'var(--foreground-subtle)', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <span style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            <span>Or shortcut for evaluators</span>
+            <span style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+          </div>
+
+          <button
+            type="button"
+            className="btn btn-demo btn-full"
+            onClick={onDemoSignIn}
+            disabled={ssoLoading}
+            style={{
+              borderColor: 'var(--emerald)',
+              color: 'var(--emerald)',
+              fontWeight: 800,
+              padding: '12px 18px',
+              fontSize: 14,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 2,
+            }}
+          >
+            <span>⚡ Quick Demo Sign-In</span>
+            <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--foreground-muted)' }}>(skips eGov network + liveness, lands you in the dashboard)</span>
+          </button>
+        </>
+      )}
     </div>
   );
 }

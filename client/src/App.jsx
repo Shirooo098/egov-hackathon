@@ -94,6 +94,27 @@ export default function App() {
     setStep(STEPS.SSO_PENDING);
   };
 
+  // Quick Demo Sign-In: bypasses the live eGov network and liveness steps,
+  // and lands the user straight into a verified dashboard with a fake profile.
+  // This is intended only for the live demo (when an evaluator doesn't have an
+  // active eGov account or partner credentials) — per DEMO_GUIDE.md.
+  const handleDemoSignIn = () => {
+    setSsoLoading(true);
+    setSsoError('');
+    // Simulate a fast eGov round-trip
+    setTimeout(() => {
+      const demoProfile = pendingRole === 'recipient'
+        ? { first_name: 'Carlos', last_name: 'Santos', email: '[email protected]', mobile: '+639170000001', pcn: '9284-1029-4810', birth_date: '1985-04-12' }
+        : { first_name: 'Maria', last_name: 'Reyes', email: '[email protected]', mobile: '+639170000002', pcn: '1092-7654-3320', birth_date: '1992-09-08' };
+      setUserProfile(demoProfile);
+      setTier('eGov Verified · Tier I');
+      setVerified(true);
+      setSsoLoading(false);
+      toast.success('Demo identity granted. Skipping live eGov + liveness.', { title: 'Quick Demo Sign-In' });
+      setRole(pendingRole);
+    }, 600);
+  };
+
   // ---------- STEP 3: eGov SSO (exchange_code -> access_token -> profile) ----------
   const handleSsoSubmit = async (e) => {
     e.preventDefault();
@@ -307,6 +328,7 @@ export default function App() {
                         ssoError={ssoError}
                         ssoLoading={ssoLoading}
                         onSubmit={handleSsoSubmit}
+                        onDemoSignIn={handleDemoSignIn}
                         onBack={() => goBackTo(STEPS.AUTH_CHOICE)}
                       />
                     )}

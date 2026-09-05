@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useToast } from '../context/ToastContext';
+import { maskedName } from '../utils/maskedName';
+import { eMessageToast } from '../utils/eMessageToast';
 
 const DEMO_MESSAGES = [
   { id: 1, sender: 'donor',     text: 'Good day! I have reviewed and completed my e-signature on our DOH clinical donation agreement.', time: '10:30 AM' },
@@ -22,18 +24,13 @@ export default function ChatBox({ currentRole = 'recipient', consentSigned = fal
     setText('');
 
     // Demonstrate SMS alert dispatch without blocking conversational interaction (Issue #010)
-    setTimeout(() => {
-      toast.info(
-        `📱 DICT eMessage SMS Push sent to ${other}: "You have received a new secure verified direct message regarding your DOH transplant procedure."`,
-        { title: 'eMessage Reactive SMS Push', duration: 6000 }
-      );
-    }, 200);
+    eMessageToast(toast, 'chat_message', { other });
   };
 
   // Reaching agreement submission removes all legacy anonymous name masking (Issue #010)
   const other = consentSigned
     ? (currentRole === 'donor' ? 'Ana Reyes' : 'Juan Dela Cruz')
-    : (currentRole === 'donor' ? 'Anonymous Recipient #9C41' : 'Anonymous Donor #7C2A');
+    : maskedName(currentRole === 'donor' ? 'recipient' : 'donor');
 
   // STRICT LOCK SCREEN: Prohibit chat unless approved by institutional clinical review
   if (!doctorApproved) {
@@ -43,16 +40,15 @@ export default function ChatBox({ currentRole = 'recipient', consentSigned = fal
           🔒
         </div>
         <div>
-          <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Messaging Restricted (Clinical Approval & Agreement Required)</h3>
+          <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Chat will open after the hospital approves your match</h3>
           <p style={{ fontSize: 13, color: 'var(--foreground-muted)', maxWidth: 460, lineHeight: 1.6 }}>
-            Direct recipient-donor communication is restricted under National Organ Transplantation Regulations until an attending medical specialist reviews compatibility, grants match clearance, and consultation scheduling is initiated.
+            You'll be able to talk to your match here once a doctor reviews your case and gives the go-ahead.
           </p>
         </div>
 
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', background: 'var(--background-alt)', padding: '10px 18px', borderRadius: 'var(--r-full)', border: '1px solid var(--border)', fontSize: 12 }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--sun)' }} />
-          <span style={{ fontWeight: 700 }}>Current Governance Status:</span>
-          <span style={{ color: 'var(--sun)', fontWeight: 600 }}>Awaiting Clinical Clearance ⏳</span>
+          <span style={{ fontWeight: 600, color: 'var(--sun)' }}>Waiting for hospital approval</span>
         </div>
       </div>
     );

@@ -47,7 +47,7 @@ export default function FloatingAIChat() {
   return (
     <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12 }}>
       {open && (
-        <div className="card anim-in" style={{ width: 360, maxWidth: '90vw', height: 480, display: 'flex', flexDirection: 'column', overflow: 'hidden', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-md)', background: 'white' }}>
+        <div className="floating-ai-panel card anim-in" style={{ width: 360, maxWidth: '90vw', height: 480, display: 'flex', flexDirection: 'column', overflow: 'hidden', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-md)', background: 'white' }}>
           {/* Header */}
           <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)', background: 'var(--background-alt)', display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), #0284C7)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 15 }}>
@@ -129,6 +129,7 @@ export default function FloatingAIChat() {
       <button
         onClick={() => setOpen(o => !o)}
         aria-label={open ? 'Close AI assistant' : 'Open AI assistant'}
+        className="floating-ai-launcher"
         style={{
           width: 58, height: 58, borderRadius: '50%',
           background: 'linear-gradient(135deg, var(--primary), #0284C7)',

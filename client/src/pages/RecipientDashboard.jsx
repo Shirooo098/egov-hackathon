@@ -3,9 +3,14 @@ import ChatBox from '../components/ChatBox';
 import GovernmentAgreement from '../components/GovernmentAgreement';
 import ClinicalMatchCard from '../components/ClinicalMatchCard';
 import CalendarScheduleView from '../components/CalendarScheduleView';
+import LockedTabPanel from '../components/LockedTabPanel';
+import LockGlyph from '../components/LockGlyph';
+import LiveDot from '../components/LiveDot';
+import LifecycleStrip from '../components/LifecycleStrip';
 import { useToast } from '../context/ToastContext';
 import { useMatch } from '../context/MatchContext';
 import { ALL_ORGANS as ORGANS, BLOOD_TYPES } from '../services/domain';
+import { formatStatus, statusPillClass } from '../utils/matchStatus';
 import { HeartIcon, MatchIcon, ChatIcon, ChainIcon, CalIcon } from '../components/Icons';
 import { api } from '../services/api';
 
@@ -58,11 +63,11 @@ export default function RecipientDashboard({ onboardingHealth }) {
   const isChatUnlocked = consentSigned || ['agreement_finalized', 'contract_signed', 'ready_for_transplant'].includes(match.status);
 
   const TABS = [
-    { id: 'mymatch', label: 'My Match (Live)', icon: <MatchIcon />, activeIndicator: true },
-    { id: 'profile', label: 'My Medical Profile', icon: <HeartIcon />, badge: 'Tier I ✓' },
-    { id: 'schedule', label: isScheduleUnlocked ? 'Consultation Schedule' : 'Schedule 🔒', icon: <CalIcon /> },
-    { id: 'agreement', label: isAgreementUnlocked ? 'Donation Agreement' : 'Agreement 🔒', icon: <ChainIcon /> },
-    { id: 'chat', label: isChatUnlocked ? 'Clinical Chat' : 'Chat 🔒', icon: <ChatIcon /> },
+    { id: 'mymatch', label: 'My Match', shortLabel: 'Match', icon: <MatchIcon />, activeIndicator: true },
+    { id: 'profile', label: 'My Profile', shortLabel: 'Profile', icon: <HeartIcon /> },
+    { id: 'schedule', label: isScheduleUnlocked ? 'Schedule' : 'Schedule', shortLabel: 'Schedule', icon: <CalIcon />, locked: !isScheduleUnlocked },
+    { id: 'agreement', label: isAgreementUnlocked ? 'Agreement' : 'Agreement', shortLabel: 'Agreement', icon: <ChainIcon />, locked: !isAgreementUnlocked },
+    { id: 'chat', label: isChatUnlocked ? 'Chat' : 'Chat', shortLabel: 'Chat', icon: <ChatIcon />, locked: !isChatUnlocked },
   ];
 
   return (
@@ -72,31 +77,24 @@ export default function RecipientDashboard({ onboardingHealth }) {
         <div className="hero-blob" style={{ width: 400, height: 400, background: 'rgba(0,56,168,0.06)', top: -100, right: '5%' }} />
         <div className="container" style={{ position: 'relative' }}>
           <div className="hero-eyebrow anim-up" style={{ color: 'var(--primary)' }}>
-            <HeartIcon size={14} /> Recipient Command Portal · PhilSys eVerify Tier I
+            <HeartIcon size={14} /> Recipient Portal · PhilSys Tier I
           </div>
-          <h1 className="hero-h1 anim-up-d1">Find your <span style={{ color: 'var(--primary)' }}>life-saving</span> match</h1>
+          <h1 className="hero-h1 anim-up-d1">We're <span style={{ color: 'var(--primary)' }}>looking for you</span></h1>
           <p className="hero-p anim-up-d2">
-            The DOH National Registry automatically scans verified citizen profiles for biological compatibility upon portal access. Track institutional PGH clearance and secure interactive scheduling in real-time.
+            We're searching for a match that fits. You'll get a message here as soon as we find one.
           </p>
 
-          <div className="hero-stats anim-up-d3" style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', background: 'var(--card)', padding: '16px 24px', borderRadius: 'var(--r-lg)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', marginTop: 24 }}>
-            <div className="hero-stat">
-              <div className="hero-stat-val" style={{ color: 'var(--destructive)', fontSize: 24, fontWeight: 900 }}>{bloodTypeNeeded}</div>
-              <div className="hero-stat-lbl" style={{ fontSize: 12, color: 'var(--foreground-muted)' }}>Required Blood</div>
-            </div>
-            <div className="hero-stat" style={{ borderLeft: '1px solid var(--border)', paddingLeft: 20 }}>
-              <div className="hero-stat-val" style={{ color: 'var(--primary)', fontSize: 24, fontWeight: 900 }}>{organNeeded}</div>
-              <div className="hero-stat-lbl" style={{ fontSize: 12, color: 'var(--foreground-muted)' }}>Anatomical Need</div>
-            </div>
-            <div className="hero-stat" style={{ borderLeft: '1px solid var(--border)', paddingLeft: 20 }}>
-              <div className="hero-stat-val" style={{ color: 'var(--destructive)', fontSize: 22, fontWeight: 800, textTransform: 'uppercase' }}>{urgencyLevel}</div>
-              <div className="hero-stat-lbl" style={{ fontSize: 12, color: 'var(--foreground-muted)' }}>Triage Urgency</div>
-            </div>
-            <div className="hero-stat" style={{ borderLeft: '1px solid var(--border)', paddingLeft: 20 }}>
-              <div className="hero-stat-val" style={{ color: 'var(--emerald)', fontSize: 20, fontWeight: 800, textTransform: 'capitalize' }}>
-                {match.status.replace(/_/g, ' ')}
-              </div>
-              <div className="hero-stat-lbl" style={{ fontSize: 12, color: 'var(--foreground-muted)' }}>Match Lifecycle Stage</div>
+          {/* Big status pill */}
+          <div className="anim-up-d3" style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+            <span className={statusPillClass(match.status)}>
+              {formatStatus(match.status)}
+            </span>
+            <div className="hero-stat-strip" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', fontSize: 13, color: 'var(--foreground-muted)', fontWeight: 600 }}>
+              <span>Blood: <strong style={{ color: 'var(--foreground)' }}>{bloodTypeNeeded}</strong></span>
+              <span className="hero-stat-sep" style={{ color: 'var(--border)' }}>·</span>
+              <span>Organ: <strong style={{ color: 'var(--foreground)' }}>{organNeeded}</strong></span>
+              <span className="hero-stat-sep" style={{ color: 'var(--border)' }}>·</span>
+              <span>Urgency: <strong style={{ color: 'var(--destructive)', textTransform: 'capitalize' }}>{urgencyLevel}</strong></span>
             </div>
           </div>
         </div>
@@ -113,20 +111,22 @@ export default function RecipientDashboard({ onboardingHealth }) {
         </div>
       </div>
 
-      {/* -- Tab Bar -- */}
-      <div className="tab-bar">
-        <div className="container tab-bar-inner" style={{ display: 'flex', gap: '8px', overflowX: 'auto' }}>
+      {/* -- Tab Bar (pill nav) -- */}
+      <div className="tab-bar tab-bar-pill">
+        <div className="container tab-bar-inner" style={{ display: 'flex', gap: '6px', overflowX: 'auto', padding: '10px 0' }}>
           {TABS.map(t => (
             <button
               key={t.id}
-              className={`tab-btn${tab === t.id ? ' active' : ''}`}
+              className={`tab-btn${tab === t.id ? ' active' : ''}${t.locked ? ' locked' : ''}`}
               onClick={() => setTab(t.id)}
-              style={{ fontWeight: tab === t.id ? 800 : 500, display: 'flex', alignItems: 'center', gap: 8, padding: '12px 18px' }}
+              disabled={t.locked}
+              aria-label={t.label}
+              title={t.locked ? `${t.label} (locked)` : t.label}
             >
-              {t.icon}
-              <span>{t.label}</span>
-              {t.badge && <span className="badge badge-verified" style={{ fontSize: 9, padding: '2px 6px' }}>{t.badge}</span>}
-              {t.activeIndicator && <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--emerald)', display: 'inline-block' }} />}
+              <span className="tab-btn-icon">{t.icon}</span>
+              <span className="tab-btn-label">{t.label}</span>
+              {t.activeIndicator && <span className="tab-btn-live"><LiveDot /></span>}
+              {t.locked && <span className="tab-btn-lock"><LockGlyph size={11} /></span>}
             </button>
           ))}
         </div>
@@ -138,6 +138,9 @@ export default function RecipientDashboard({ onboardingHealth }) {
           {/* MY MATCH TAB (Automated Matchmaking & Interactive Handshake, Issue #006 & #008) */}
           {tab === 'mymatch' && (
             <div style={{ maxWidth: 840, margin: '0 auto' }}>
+              <div style={{ marginBottom: 20 }}>
+                <LifecycleStrip status={match.status} />
+              </div>
               <ClinicalMatchCard role="recipient" onNavigateTab={setTab} />
             </div>
           )}
@@ -210,32 +213,26 @@ export default function RecipientDashboard({ onboardingHealth }) {
           {tab === 'schedule' && (
             <div style={{ maxWidth: 780, margin: '0 auto' }}>
               {isScheduleUnlocked ? (
-                <CalendarScheduleView
-                  matchType={requestType}
-                  slots={[]}
-                  onSelectSlot={(slot) => toast.info(`Selected: ${new Date(slot.start).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })} at ${slot.location}`, { title: 'Slot Details' })}
-                  onBookSlot={(slot) => {
-                    toast.success('Clinical consultation procedure slot booked successfully.', { title: 'Appointment Confirmed' });
-                  }}
-                />
+                <>
+                  <div style={{ marginBottom: 20 }}>
+                    <LifecycleStrip status={match.status} />
+                  </div>
+                  <CalendarScheduleView
+                    matchType={requestType}
+                    slots={[]}
+                    onSelectSlot={(slot) => toast.info(`Selected: ${new Date(slot.start).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })} at ${slot.location}`, { title: 'Slot Details' })}
+                    onBookSlot={(slot) => {
+                      toast.success('Clinical consultation procedure slot booked successfully.', { title: 'Appointment Confirmed' });
+                    }}
+                  />
+                </>
               ) : (
-                <div className="card anim-in" style={{ padding: '48px 32px', textAlign: 'center', background: 'white', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)' }}>
-                  <div style={{ fontSize: '42px', marginBottom: '16px' }}>🔒</div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '8px', color: 'var(--foreground)' }}>
-                    Consultation Schedule Currently Restricted
-                  </h3>
-                  <p style={{ fontSize: '14px', color: 'var(--foreground-muted)', maxWidth: '520px', margin: '0 auto 24px', lineHeight: 1.6 }}>
-                    In compliance with hospital governance protocol, procedure scheduling unlocks immediately once Philippine General Hospital (PGH) grants clinical evaluation approval for your match.
-                  </p>
-                  <button
-                    type="button"
-                    className="btn btn-primary btn-lg"
-                    onClick={() => setTab('mymatch')}
-                    style={{ fontWeight: 800, padding: '12px 24px' }}
-                  >
-                    Return to My Match Console ➔
-                  </button>
-                </div>
+                <LockedTabPanel
+                  title="Picking a date unlocks once the hospital approves"
+                  message="As soon as the hospital approves your match, you'll be able to pick a date here."
+                  ctaLabel="Go to My Match"
+                  onCta={() => setTab('mymatch')}
+                />
               )}
             </div>
           )}
@@ -244,25 +241,19 @@ export default function RecipientDashboard({ onboardingHealth }) {
           {tab === 'agreement' && (
             <div style={{ maxWidth: 780, margin: '0 auto' }}>
               {isAgreementUnlocked ? (
-                <GovernmentAgreement role="recipient" />
+                <>
+                  <div style={{ marginBottom: 20 }}>
+                    <LifecycleStrip status={match.status} />
+                  </div>
+                  <GovernmentAgreement role="recipient" />
+                </>
               ) : (
-                <div className="card anim-in" style={{ padding: '48px 32px', textAlign: 'center', background: 'white', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)' }}>
-                  <div style={{ fontSize: '42px', marginBottom: '16px' }}>🔒</div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 800, marginBottom: '8px', color: 'var(--foreground)' }}>
-                    Donation Agreement Currently Restricted
-                  </h3>
-                  <p style={{ fontSize: '14px', color: 'var(--foreground-muted)', maxWidth: '520px', margin: '0 auto 24px', lineHeight: 1.6 }}>
-                    In compliance with DOH clinical governance regulations, the official electronic consent agreement unlocks only after an attending transplant medical specialist approves your biological match and a procedure schedule is mutually confirmed.
-                  </p>
-                  <button
-                    type="button"
-                    className="btn btn-primary btn-lg"
-                    onClick={() => setTab('mymatch')}
-                    style={{ fontWeight: 800, padding: '12px 24px' }}
-                  >
-                    Return to My Match Console ➔
-                  </button>
-                </div>
+                <LockedTabPanel
+                  title="Agreement unlocks once a date is set"
+                  message="After you and your match agree on a date, the agreement will be ready for both of you to sign."
+                  ctaLabel="Go to My Match"
+                  onCta={() => setTab('mymatch')}
+                />
               )}
             </div>
           )}
@@ -276,6 +267,10 @@ export default function RecipientDashboard({ onboardingHealth }) {
 
         </div>
       </div>
+
+      <footer className="footer-mini">
+        DICT eGov Platform · Republic of the Philippines · Demo Build
+      </footer>
     </div>
   );
 }

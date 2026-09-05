@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
 import { useToast } from './ToastContext';
 import { api } from '../services/api';
+import { eMessageToast } from '../utils/eMessageToast';
 import {
   INITIAL_DEMO_MATCH,
   MATCH_STORAGE_KEY,
@@ -33,52 +34,29 @@ export function MatchProvider({ children }) {
     setMatch((prev) => {
       const updated = { ...prev, status: newStatus };
       saveMatchToStorage(updated);
-      
-      // Emit simulated DICT eMessage push notifications on state transitions (Issue #010)
+
+      // Emit simulated DICT eMessage push notifications on state transitions (Issue #010).
+      // All copy is centralized in utils/eMessageToast.js — see that file for the templates.
+      const donorName = `${prev.donor.first_name} ${prev.donor.last_name}`;
+      const recipientName = `${prev.recipient.first_name} ${prev.recipient.last_name}`;
       if (newStatus === 'approved') {
-        setTimeout(() => {
-          toast.success(
-            `📱 DICT eMessage SMS Sent to Recipient: PGH has formally approved your Kidney transplant match with Donor (${prev.donor.first_name}). Interactive scheduling is now unlocked.`,
-            { title: 'DICT eMessage Push Alert', duration: 7000 }
-          );
-        }, 100);
+        eMessageToast(toast, 'approved', { recipient: recipientName, donor: donorName });
       } else if (newStatus === 'rejected') {
-        setTimeout(() => {
-          toast.warning(
-            `📱 DICT eMessage SMS Alert: Medical evaluation declined by PGH or partner. The national health registry is actively searching for your next compatible match.`,
-            { title: 'DICT eMessage Push Alert', duration: 6000 }
-          );
-        }, 100);
+        eMessageToast(toast, 'rejected', {});
       } else if (newStatus === 'waiting_donor_confirmation') {
-        setTimeout(() => {
-          toast.info(
-            `📱 DICT eMessage SMS Sent to Donor (${prev.donor.first_name}): Recipient has proposed a clinical procedure consultation schedule. Please review and confirm in your portal.`,
-            { title: 'DICT eMessage Push Alert', duration: 6000 }
-          );
-        }, 100);
+        eMessageToast(toast, 'schedule_proposed', { recipient: recipientName });
       } else if (newStatus === 'waiting_recipient_confirmation') {
-        setTimeout(() => {
-          toast.info(
-            `📱 DICT eMessage SMS Sent to Recipient (${prev.recipient.first_name}): Donor has suggested an alternative consultation procedure date. Please review and confirm in your portal.`,
-            { title: 'DICT eMessage Push Alert', duration: 6000 }
-          );
-        }, 100);
+        eMessageToast(toast, 'counter_proposed', { donor: donorName });
       } else if (newStatus === 'scheduled') {
-        setTimeout(() => {
-          toast.success(
-            `📱 DICT eMessage SMS Sent to all parties: Clinical consultation schedule CONFIRMED at ${prev.hospital.name}. Official government Donation Agreement unlocked.`,
-            { title: 'DICT eMessage Push Alert', duration: 7000 }
-          );
-        }, 100);
+        eMessageToast(toast, 'scheduled', {
+          date: prev.scheduledDate,
+          time: prev.scheduledTime,
+          location: prev.scheduledLocation || prev.hospital.name,
+        });
       } else if (newStatus === 'agreement_finalized' || newStatus === 'contract_signed') {
-        setTimeout(() => {
-          toast.success(
-            `📱 DICT eMessage SMS Alert: Both parties have executed digital e-signatures on the official Donation Agreement. Direct unmasked clinical chat unlocked.`,
-            { title: 'DICT eMessage Push Alert', duration: 7000 }
-          );
-        }, 100);
+        eMessageToast(toast, 'agreement_signed', {});
       }
-      
+
       return updated;
     });
   }, [toast]);
@@ -87,19 +65,8 @@ export function MatchProvider({ children }) {
     setMatch((prev) => {
       const isDonor = proposedBy === 'donor' || proposedBy === 'Donor';
       const nextStatus = isDonor ? 'waiting_recipient_confirmation' : 'waiting_donor_confirmation';
-      setTimeout(() => {
-        if (isDonor) {
-          toast.info(
-            `📱 DICT eMessage SMS Sent to Recipient (${prev.recipient.first_name}): Donor has proposed an alternative clinical date (${date} @ ${time}) at ${location}.`,
-            { title: 'Schedule Counter-Proposal Alert', duration: 7000 }
-          );
-        } else {
-          toast.info(
-            `📱 DICT eMessage SMS Sent to Donor (${prev.donor.first_name}): Recipient has proposed a procedure schedule (${date} @ ${time}) at ${location}.`,
-            { title: 'Schedule Proposal Alert', duration: 7000 }
-          );
-        }
-      }, 100);
+      const kind = isDonor ? 'counter_proposed' : 'schedule_proposed';
+      eMessageToast(toast, kind, { date, time, location });
       const updated = {
         ...prev,
         proposedSchedule: { date, time, location, proposedBy },
@@ -123,12 +90,7 @@ export function MatchProvider({ children }) {
       saveMatchToStorage(updated);
       return updated;
     });
-    setTimeout(() => {
-      toast.success(
-        `📱 DICT eMessage SMS Sent to all parties: Appointment officially confirmed on ${date} at ${time} (${location}). Official Government Donation Agreement unlocked.`,
-        { title: 'Appointment Confirmed', duration: 7000 }
-      );
-    }, 100);
+    eMessageToast(toast, 'scheduled', { date, time, location });
   }, [toast]);
 
   const anchorToBlockchain = useCallback(async (customAnchorData = null) => {
@@ -177,17 +139,12 @@ export function MatchProvider({ children }) {
       const donorSigned = role === 'donor' ? true : prev.donorSigned;
       const recipientSigned = role === 'recipient' ? true : prev.recipientSigned;
       let status = prev.status;
-      
+
       if (donorSigned && recipientSigned && !['ready_for_transplant', 'agreement_finalized', 'contract_signed'].includes(status)) {
         status = 'agreement_finalized';
-        setTimeout(() => {
-          toast.success(
-            `📱 DICT eMessage SMS Sent: Official government Donation Agreement completed with dual digital signatures! Unmasked peer chat is now enabled.`,
-            { title: 'Agreement Completed', duration: 7000 }
-          );
-          // Silently trigger background Besu anchoring without exposing web3 jargon to citizens
-          anchorToBlockchain();
-        }, 100);
+        eMessageToast(toast, 'agreement_signed', {});
+        // Silently trigger background Besu anchoring without exposing web3 jargon to citizens
+        anchorToBlockchain();
       }
       const updated = { ...prev, donorSigned, recipientSigned, status };
       saveMatchToStorage(updated);
