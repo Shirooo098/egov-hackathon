@@ -8,6 +8,7 @@ import { ClinicalTriageTab } from '../components/HospitalTabComponents';
 import { STATIC_MATCHES, URGENCY_BADGES, URGENCY_LABELS, getLiveMatchAsItem, filterMatches } from '../services/domain';
 import { usePersistedStaticMatches } from '../context/usePersistedStaticMatches';
 import { ClipIcon, ScaleIcon, AnalyticsIcon, HospitalIcon } from '../components/Icons';
+import LifecycleStrip from '../components/LifecycleStrip';
 
 export default function HospitalDashboard() {
   const { match, advanceStatus, anchorToBlockchain, resetMatch } = useMatch();
@@ -49,42 +50,67 @@ export default function HospitalDashboard() {
   const allMatches = [liveMatchAsItem, ...staticState];
   const { pendingMatches, activeMatches, rejectedMatches } = filterMatches(allMatches);
 
+  // Active procedures = matches already in scheduling or beyond
+  const activeProcedureCount = allMatches.filter(
+    (m) => m.isLiveContext &&
+      ['scheduled', 'agreement_finalized', 'contract_signed', 'ready_for_transplant'].includes(m.status)
+  ).length + activeMatches.filter((m) => !m.isLiveContext && ['scheduled', 'agreement_finalized', 'contract_signed', 'ready_for_transplant'].includes(m.status)).length;
+
+  // Today's scheduled consultations (rough: count items with date today)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const consultationsToday = allMatches.filter((m) => {
+    if (!m.scheduledDate) return false;
+    const d = new Date(m.scheduledDate);
+    return d >= today && d < tomorrow;
+  }).length;
+
   return (
     <div id="main-content" className="min-h-screen" style={{ background: 'var(--background)' }}>
       {/* Institutional Header Hero */}
-      <section className="hero" style={{ padding: '36px 0 28px' }}>
+      <section className="hero" style={{ padding: '36px 0 24px' }}>
         <div className="hero-blob" style={{ width: 450, height: 450, background: 'rgba(5, 150, 105, 0.07)', top: -140, right: '10%' }} />
         <div className="container" style={{ position: 'relative' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
-            <div>
-              <div className="hero-eyebrow anim-up" style={{ color: 'var(--emerald)' }}>
-                <HospitalIcon size={14} /> Institutional Clinical Evaluation Center
-              </div>
-              <h1 className="hero-h1 anim-up-d1" style={{ fontSize: '32px', marginBottom: '8px' }}>
-                Philippine General Hospital <span>(PGH)</span>
-              </h1>
-              <p className="hero-p anim-up-d2" style={{ maxWidth: 640, marginBottom: 0 }}>
-                Authoritative institutional triage console. Review automated ABO/Rh compatibility scores, grant medical procedure approvals, coordinate clinical consultations, and audit Hyperledger Besu zero-knowledge consent anchors.
-              </p>
+          <div className="hero-eyebrow anim-up" style={{ color: 'var(--emerald)' }}>
+            <HospitalIcon size={14} /> Hospital Console
+          </div>
+          <h1 className="hero-h1 anim-up-d1" style={{ fontSize: 'clamp(28px, 5vw, 36px)', marginBottom: 4 }}>
+            Philippine General Hospital
+          </h1>
+          <p className="hero-p anim-up-d2" style={{ maxWidth: 640, marginBottom: 0, fontSize: 14 }}>
+            <span style={{ color: 'var(--foreground-muted)' }}>Match triage &amp; review ·</span>{' '}
+            <strong style={{ color: 'var(--foreground)', fontWeight: 700 }}>PGH-MNL-1000</strong>
+            <span style={{ color: 'var(--border)', margin: '0 8px' }}>·</span>
+            <span style={{ color: 'var(--foreground-muted)' }}>Taft Avenue, Manila</span>
+          </p>
+        </div>
+      </section>
+
+      {/* Triage dashboard bar — 4 equal-width tiles, always one row on desktop, 2×2 on mobile */}
+      <div style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', background: 'var(--card)' }}>
+        <div className="container">
+          <div className="hero-tiles">
+            <div className="hero-tile">
+              <div className="hero-tile-val" style={{ color: 'var(--destructive)' }}>{pendingMatches.length}</div>
+              <div className="hero-tile-lbl">Pending Review</div>
             </div>
-            
-            <div className="hero-stats anim-up-d3" style={{ background: 'var(--card)', padding: '16px 24px', borderRadius: 'var(--r-lg)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
-              <div className="hero-stat">
-                <div className="hero-stat-val" style={{ color: 'var(--destructive)' }}>{pendingMatches.length}</div>
-                <div className="hero-stat-lbl">Pending Review</div>
-              </div>
-              <div className="hero-stat" style={{ borderLeft: '1px solid var(--border)', paddingLeft: 16 }}>
-                <div className="hero-stat-val" style={{ color: 'var(--emerald)' }}>{activeMatches.length}</div>
-                <div className="hero-stat-lbl">Approved Matches</div>
-              </div>
-              <div className="hero-stat" style={{ borderLeft: '1px solid var(--border)', paddingLeft: 16 }}>
-                <div className="hero-stat-val" style={{ color: 'var(--primary)' }}>{match.blockchainAnchor ? 'Yes' : 'No'}</div>
-                <div className="hero-stat-lbl">Besu Anchored</div>
-              </div>
+            <div className="hero-tile">
+              <div className="hero-tile-val" style={{ color: 'var(--emerald)' }}>{activeMatches.length}</div>
+              <div className="hero-tile-lbl">Approved Matches</div>
+            </div>
+            <div className="hero-tile">
+              <div className="hero-tile-val" style={{ color: 'var(--primary)' }}>{activeProcedureCount}</div>
+              <div className="hero-tile-lbl">Active Procedures</div>
+            </div>
+            <div className="hero-tile">
+              <div className="hero-tile-val" style={{ color: 'var(--foreground)' }}>{consultationsToday}</div>
+              <div className="hero-tile-lbl">Consultations Today</div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Hospital Network Marquee */}
       <div style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', padding: '10px 0', background: 'var(--background-alt)' }}>
@@ -97,17 +123,18 @@ export default function HospitalDashboard() {
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="tab-bar">
-        <div className="container tab-bar-inner">
+      {/* Tab Navigation (pill nav) */}
+      <div className="tab-bar tab-bar-pill">
+        <div className="container tab-bar-inner" style={{ display: 'flex', gap: '6px', alignItems: 'center', padding: '10px 0' }}>
           {TABS.map(t => (
             <button
               key={t.id}
               className={`tab-btn${tab === t.id ? ' active' : ''}`}
               onClick={() => setTab(t.id)}
-              style={{ fontWeight: tab === t.id ? 700 : 500 }}
+              aria-label={t.label}
             >
-              {t.icon} {t.label}
+              <span className="tab-btn-icon">{t.icon}</span>
+              <span className="tab-btn-label">{t.label}</span>
             </button>
           ))}
           <button
@@ -126,29 +153,31 @@ export default function HospitalDashboard() {
 
           {/* TAB 1: CLINICAL TRIAGE & REVIEW */}
           {tab === 'matches' && (
-            <ClinicalTriageTab
-              pendingMatches={pendingMatches}
-              activeMatches={activeMatches}
-              rejectedMatches={rejectedMatches}
-              match={match}
-              handleRejectMatch={handleRejectMatch}
-              handleApproveMatch={handleApproveMatch}
-              handleAnchor={handleAnchor}
-              advanceStatus={advanceStatus}
-              URGENCY_BADGES={URGENCY_BADGES}
-              URGENCY_LABELS={URGENCY_LABELS}
-            />
+            <>
+              {/* Live lifecycle indicator — only show when a citizen-portal match is active */}
+              {(match && match.id) && (
+                <div style={{ marginBottom: 24 }}>
+                  <LifecycleStrip status={match.status} compact />
+                </div>
+              )}
+              <ClinicalTriageTab
+                pendingMatches={pendingMatches}
+                activeMatches={activeMatches}
+                rejectedMatches={rejectedMatches}
+                match={match}
+                handleRejectMatch={handleRejectMatch}
+                handleApproveMatch={handleApproveMatch}
+                handleAnchor={handleAnchor}
+                advanceStatus={advanceStatus}
+                URGENCY_BADGES={URGENCY_BADGES}
+                URGENCY_LABELS={URGENCY_LABELS}
+              />
+            </>
           )}
 
           {/* TAB 2: LAWS AI */}
           {tab === 'laws' && (
             <div style={{ maxWidth: 800, margin: '0 auto' }}>
-              <div style={{ marginBottom: 20 }}>
-                <h2 style={{ fontSize: 20, fontWeight: 800 }}>Philippine Organ & Blood Donation Legal Governance</h2>
-                <p style={{ fontSize: 14, color: 'var(--foreground-muted)' }}>
-                  Interactive eGovAI regulatory assistant powered by DOH guidelines, Republic Act No. 7170 (Organ Donation Act of 1991), and National Blood Services Act (RA 7719).
-                </p>
-              </div>
               <EGovAIWidget />
             </div>
           )}
@@ -158,6 +187,10 @@ export default function HospitalDashboard() {
 
         </div>
       </div>
+
+      <footer className="footer-mini">
+        DICT eGov Platform · Republic of the Philippines · Demo Build
+      </footer>
     </div>
   );
 }

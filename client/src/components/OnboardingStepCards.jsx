@@ -1,11 +1,21 @@
 import React from 'react';
 import { HeartIcon, DropIcon } from './Icons';
+import Stepper from './Stepper';
+
+const STEPS = [
+  { key: 'role', label: 'Role' },
+  { key: 'auth', label: 'Auth' },
+  { key: 'sso', label: 'SSO' },
+  { key: 'face', label: 'Liveness' },
+  { key: 'profile', label: 'Profile' },
+];
 
 export function RoleSelectCard({ choosePortal }) {
   return (
     <div className="anim-in">
+      <Stepper steps={STEPS} active={1} />
       <h3 style={{ fontSize: 15, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--foreground-subtle)', marginBottom: 16, textAlign: 'center' }}>Step 1 — Choose Your Portal</h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div className="role-pick-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         {[
           { id: 'recipient', title: 'Recipient Portal', desc: 'Search compatible blood/organ matches, request transplants, and coordinate clinical procedure schedules.', icon: <HeartIcon size={24} />, badge: 'primary' },
           { id: 'donor', title: 'Donor Portal', desc: 'Register eligibility details, pledge organ/blood donations, and execute encrypted e-signature consent.', icon: <DropIcon size={24} />, badge: 'success' },
@@ -34,6 +44,7 @@ export function RoleSelectCard({ choosePortal }) {
 export function AuthChoiceCard({ pendingRole, chooseAuthMode, onBack }) {
   return (
     <div className="anim-in">
+      <Stepper steps={STEPS} active={2} />
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--background-alt)', border: '1px solid var(--border)', padding: '12px 16px', borderRadius: 'var(--r-md)', marginBottom: 24, fontSize: 12, color: 'var(--foreground-muted)' }}>
         <span>Portal selected:</span>
         <strong style={{ color: 'var(--primary)', textTransform: 'capitalize' }}>{pendingRole}</strong>
@@ -43,11 +54,13 @@ export function AuthChoiceCard({ pendingRole, chooseAuthMode, onBack }) {
       <h3 style={{ fontSize: 15, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--foreground-subtle)', marginBottom: 16, textAlign: 'center' }}>Step 2 — Sign In or Sign Up</h3>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <button className="btn btn-primary btn-lg btn-full" onClick={() => chooseAuthMode('signin')}>
-          Sign In with eGov (existing account)
+        <button className="btn btn-primary btn-lg btn-full btn-stacked" onClick={() => chooseAuthMode('signin')}>
+          <span className="btn-stacked-title">Sign In with eGov</span>
+          <span className="btn-caption btn-caption-on-primary">Use your existing eVerify identity</span>
         </button>
-        <button className="btn btn-outline btn-lg btn-full" onClick={() => chooseAuthMode('signup')}>
-          Sign Up with eGov (new registration)
+        <button className="btn btn-outline btn-lg btn-full btn-stacked" onClick={() => chooseAuthMode('signup')}>
+          <span className="btn-stacked-title">Sign Up with eGov</span>
+          <span className="btn-caption">New registration with Face Liveness + e-signature</span>
         </button>
       </div>
       <p style={{ fontSize: 11, color: 'var(--foreground-subtle)', textAlign: 'center', marginTop: 16 }}>

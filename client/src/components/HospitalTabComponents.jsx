@@ -1,5 +1,6 @@
 import React from 'react';
 import { CheckIcon, ChainIcon } from './Icons';
+import { formatStatus } from '../utils/matchStatus';
 
 export function ClinicalTriageTab({
   pendingMatches,
@@ -52,8 +53,22 @@ export function ClinicalTriageTab({
                 }}
               >
                 <div style={{ flex: '1 1 240px' }}>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8, flexWrap: 'wrap' }}>
                     {c.isLiveContext && <span className="badge badge-success" style={{ fontSize: 10 }}>★ ACTIVE DEMO MATCH</span>}
+                    {c.isLiveContext && (
+                      <span
+                        className="badge"
+                        style={{
+                          fontSize: 10,
+                          background: match.blockchainAnchor ? 'rgba(0, 56, 168, 0.08)' : 'var(--background-alt)',
+                          color: match.blockchainAnchor ? 'var(--primary)' : 'var(--foreground-muted)',
+                          border: `1px solid ${match.blockchainAnchor ? 'rgba(0, 56, 168, 0.3)' : 'var(--border)'}`,
+                        }}
+                        title={match.blockchainAnchor ? `Besu Tx: ${match.blockchainAnchor.txHash}` : 'Not yet anchored to Besu'}
+                      >
+                        <ChainIcon size={9} /> {match.blockchainAnchor ? 'Besu Anchored' : 'Besu Not Anchored'}
+                      </span>
+                    )}
                     <span className={`badge badge-${c.type === 'blood' ? 'primary' : 'success'}`}>{c.organ}</span>
                     <span className={`badge ${badges[c.urgency] || 'badge-moderate'}`}>{labels[c.urgency] || 'Moderate'}</span>
                   </div>
@@ -80,20 +95,20 @@ export function ClinicalTriageTab({
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+                <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center' }}>
                   <button
                     className="btn btn-ghost btn-sm"
-                    style={{ color: 'var(--destructive)' }}
+                    style={{ color: 'var(--destructive)', fontWeight: 600 }}
                     onClick={() => handleRejectMatch(c.id)}
                   >
-                    Reject
+                    Decline
                   </button>
                   <button
                     className="btn btn-success"
                     onClick={() => handleApproveMatch(c.id)}
-                    style={{ padding: '8px 20px', fontWeight: 700 }}
+                    style={{ padding: '10px 22px', fontWeight: 800 }}
                   >
-                    <CheckIcon /> Grant Approval
+                    <CheckIcon /> Approve
                   </button>
                 </div>
               </div>
@@ -124,11 +139,12 @@ export function ClinicalTriageTab({
                 }}
               >
                 <div style={{ flex: '1 1 240px' }}>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6 }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6, flexWrap: 'wrap' }}>
                     <span className="badge badge-verified">✓ Approved by PGH</span>
                     <span className="badge" style={{ background: 'var(--background-alt)', border: '1px solid var(--border)', fontSize: 10 }}>
-                      Status: <strong>{c.status ? c.status.replace(/_/g, ' ').toUpperCase() : 'APPROVED'}</strong>
+                      Status: <strong>{formatStatus(c.status || 'approved').toUpperCase()}</strong>
                     </span>
+                    {c.isLiveContext && <span className="live-ribbon">⭐ Active Demo Match</span>}
                   </div>
                   <div style={{ fontWeight: 700, fontSize: 16 }}>
                     {c.donor} ➔ {c.recipient} <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--foreground-muted)' }}>({c.organ})</span>
@@ -144,7 +160,7 @@ export function ClinicalTriageTab({
                         <span className="badge badge-success" style={{ fontSize: 9 }}>Chain ID: 13371 (Besu)</span>
                       </div>
                       {match.blockchainAnchor ? (
-                        <div style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--foreground)', background: 'white', padding: 8, borderRadius: 'var(--r-sm)', border: '1px solid var(--border)', wordBreak: 'break-all' }}>
+                        <div className="tx-hash" style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--foreground)', background: 'white', padding: 8, borderRadius: 'var(--r-sm)', border: '1px solid var(--border)', wordBreak: 'break-all' }}>
                           <div><strong>Besu Tx Hash:</strong> <code>{match.blockchainAnchor.txHash}</code></div>
                           <div><strong>Block Number:</strong> #{match.blockchainAnchor.blockNumber}</div>
                           <div style={{ marginTop: 4 }}>
@@ -173,9 +189,9 @@ export function ClinicalTriageTab({
                         <button
                           className="btn btn-primary"
                           onClick={handleAnchor}
-                          style={{ padding: '8px 18px', fontWeight: 700 }}
+                          style={{ padding: '10px 22px', fontWeight: 800 }}
                         >
-                          <ChainIcon /> Anchor Agreement On-Chain
+                          <ChainIcon /> Anchor on blockchain
                         </button>
                       )
                     ) : (

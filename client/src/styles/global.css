@@ -415,6 +415,8 @@ img {
   border: 1px solid rgba(0, 56, 168, 0.15);
   padding: 6px 16px;
   border-radius: var(--r-full);
+  white-space: nowrap;
+  max-width: 100%;
 }
 
 .hero-h1 {
@@ -480,6 +482,63 @@ img {
   font-weight: 600;
 }
 
+/* Triage dashboard bar (Hospital hero) — 4 equal-width tiles in a single row */
+.hero-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+}
+.hero-tile {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-right: 1px solid var(--border);
+  min-width: 0;
+}
+.hero-tile:first-child {
+  border-left: 1px solid var(--border);
+}
+.hero-tile-val {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.hero-tile-lbl {
+  font-size: 12px;
+  color: var(--foreground-muted);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 720px) {
+  .hero-tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .hero-tile {
+    padding: 14px 16px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-tile:nth-child(2n) {
+    border-right: none;
+  }
+  .hero-tile:nth-last-child(-n+2) {
+    border-bottom: none;
+  }
+  .hero-tile:first-child {
+    border-left: 1px solid var(--border);
+  }
+  .hero-tile-val {
+    font-size: 24px;
+  }
+  .hero-tile-lbl {
+    font-size: 11px;
+  }
+}
+
 /* ============================================================
    TAB BAR
    ============================================================ */
@@ -496,36 +555,126 @@ img {
 .tab-bar-inner {
   display: flex;
   overflow-x: auto;
+  justify-content: center;
+  scrollbar-width: none;
+}
+.tab-bar-inner::-webkit-scrollbar { display: none; }
+
+@media (max-width: 720px) {
+  .tab-bar-inner {
+    justify-content: flex-start;
+  }
 }
 
+/* ============================================================
+   PILL TAB BUTTONS (app-style navigation)
+   - Active tab: filled primary pill with white text
+   - Inactive: subtle gray text, transparent bg, hover bg
+   - Locked: ghosted with a small lock badge
+   - Mobile: icon + label stay together, can horizontally scroll
+   ============================================================ */
 .tab-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 13px 18px;
-  font-size: 13px;
+  gap: 8px;
+  padding: 9px 16px;
+  font-size: 13.5px;
   font-weight: 600;
   color: var(--foreground-muted);
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--r-full);
   cursor: pointer;
   white-space: nowrap;
-  transition: color var(--t-fast), border-color var(--t-fast);
+  transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+  font-family: var(--font-sans);
+  letter-spacing: -0.005em;
+  position: relative;
+  flex-shrink: 0;
 }
 
-.tab-btn:hover {
+.tab-btn:hover:not(.active):not(.locked) {
   color: var(--foreground);
+  background: var(--background-alt);
 }
 
 .tab-btn.active {
-  color: var(--primary);
-  border-bottom-color: var(--primary);
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0, 56, 168, 0.25);
+}
+
+.tab-btn.locked {
+  color: var(--foreground-subtle);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.tab-btn .tab-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.tab-btn .tab-btn-label {
+  display: inline;
+}
+
+.tab-btn .tab-btn-live {
+  display: inline-flex;
+  margin-left: 2px;
+}
+
+.tab-btn .tab-btn-lock {
+  display: inline-flex;
+  margin-left: 2px;
+  color: inherit;
+  opacity: 0.8;
 }
 
 .tab-btn svg {
   width: 15px;
   height: 15px;
+}
+
+/* Tab bar gets slightly more breathing room when in pill mode */
+.tab-bar-pill .tab-bar-inner {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+/* Mobile: pill nav stays compact, scrolls horizontally if needed */
+@media (max-width: 640px) {
+  .tab-btn {
+    padding: 7px 10px;
+    font-size: 12.5px;
+    gap: 5px;
+  }
+  .tab-btn .tab-btn-icon {
+    width: 14px;
+    height: 14px;
+  }
+  /* On narrow phones, drop the label on inactive tabs but keep it on active */
+  .tab-btn:not(.active) .tab-btn-label {
+    display: none;
+  }
+  .tab-btn.active .tab-btn-label {
+    display: inline;
+  }
+  .tab-bar-pill {
+    border-bottom: none;
+    background: rgba(255, 255, 255, 0.96);
+  }
+  .tab-bar-pill .tab-bar-inner {
+    padding: 8px 0;
+    /* Centered scroll with peeking next tab on the right edge */
+    -webkit-mask-image: linear-gradient(to right, black 0, black calc(100% - 32px), transparent 100%);
+    mask-image: linear-gradient(to right, black 0, black calc(100% - 32px), transparent 100%);
+  }
 }
 
 /* ============================================================
@@ -538,6 +687,7 @@ img {
   padding: var(--s7);
   box-shadow: var(--shadow-md);
   transition: box-shadow var(--t-std), transform var(--t-std), border-color var(--t-std);
+  position: relative;
 }
 
 .card:hover {
@@ -758,6 +908,68 @@ img {
   background: rgba(5, 150, 105, 0.08);
   color: var(--emerald);
   border: 1px solid rgba(5, 150, 105, 0.2);
+}
+
+/* ============================================================
+   HERO STATUS PILL
+   Large, solid, color-coded status indicator for the citizen
+   dashboard hero. Communicates the match lifecycle stage at a
+   glance — solid color encodes "go", "wait", or "stop".
+   ============================================================ */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  border-radius: var(--r-full);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+  border: none;
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .status-pill {
+    font-size: 13px;
+    padding: 10px 16px;
+    gap: 8px;
+    letter-spacing: 0.01em;
+    text-transform: none;
+  }
+  .status-pill::before {
+    width: 8px;
+    height: 8px;
+  }
+}
+.status-pill::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.95;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.45);
+}
+.status-pill-go {
+  background: var(--emerald);
+  color: #FFFFFF;
+}
+.status-pill-wait {
+  background: #F59E0B;
+  color: #FFFFFF;
+}
+.status-pill-stop {
+  background: var(--destructive);
+  color: #FFFFFF;
+}
+.status-pill-info {
+  background: var(--primary);
+  color: #FFFFFF;
 }
 
 .badge-urgent {
@@ -1032,6 +1244,7 @@ textarea.input {
   color: var(--foreground-subtle);
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: var(--s5);
 }
@@ -2737,5 +2950,788 @@ a {
   a {
     text-decoration: underline;
     color: #000 !important;
+  }
+}
+
+/* ============================================================
+   MINOR UI/UX REDESIGN ADDITIONS
+   New utility classes & component styles introduced in the
+   polish pass. All additive — no existing rules are modified.
+   ============================================================ */
+
+/* --- Focus rings (a11y) --- */
+.btn:focus-visible,
+.input:focus-visible,
+.tab-btn:focus-visible,
+a:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* --- Onboarding stepper --- */
+.stepper-dot.active,
+.stepper-dot.done {
+  box-shadow: 0 0 0 4px var(--primary-10);
+}
+.stepper-dot.done {
+  box-shadow: 0 0 0 4px var(--emerald-10);
+}
+
+/* --- Brand lockup --- */
+.brand-lockup {
+  /* component is flexbox inline; no extra rules needed today */
+}
+
+/* --- Verified pill (navbar) --- */
+.verified-pill {
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+.verified-pill:hover {
+  background: var(--card-hover);
+  border-color: var(--border-strong);
+}
+
+/* --- Locked tab panel --- */
+.locked-panel {
+  position: relative;
+  overflow: hidden;
+}
+.locked-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(to right, var(--sun), var(--sun-lt));
+}
+.locked-panel-icon {
+  transition: transform var(--t-std);
+}
+.locked-panel:hover .locked-panel-icon {
+  transform: scale(1.05);
+}
+
+/* --- Lifecycle strip --- */
+.lifecycle-strip {
+  /* baseline rules live inline; this is the responsive collapse */
+}
+@media (max-width: 720px) {
+  .lifecycle-strip {
+    padding: 12px 12px;
+  }
+  .lifecycle-strip .lifecycle-step-label {
+    font-size: 9px !important;
+  }
+  .lifecycle-strip .lifecycle-line {
+    flex: 0 0 6px !important;
+  }
+}
+
+/* --- Live dot pulse --- */
+@keyframes livePulse {
+  0%   { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.55); }
+  70%  { box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
+}
+.live-dot {
+  animation: livePulse 1.8s ease-out infinite;
+}
+
+/* --- eMessage toast variant --- */
+.toast.toast-emessage {
+  border-left: 3px solid var(--emerald);
+}
+.toast.toast-emessage .toast-icon {
+  color: var(--emerald);
+}
+
+/* --- Status pill foreground tokens --- */
+:root {
+  --status-warning-fg: #92400E;
+  --status-info-fg: var(--primary-active);
+  --status-success-fg: var(--emerald-hover);
+  --status-danger-fg: #7F1D1D;
+}
+
+/* --- Footer mini --- */
+.footer-mini {
+  border-top: 1px solid var(--border);
+  background: var(--background-alt);
+  padding: 14px 0;
+  font-size: 11px;
+  color: var(--foreground-subtle);
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+/* --- Hospital "Active Match" ribbon --- */
+.live-ribbon {
+  position: absolute;
+  top: 0;
+  right: 18px;
+  background: var(--emerald);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25);
+}
+
+/* --- Blockchain proof strip --- */
+.bc-proof {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--emerald-10);
+  border: 1px solid var(--emerald);
+  border-radius: var(--r-md);
+  font-size: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.bc-proof code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--emerald-hover);
+  background: white;
+  padding: 2px 6px;
+  border-radius: var(--r-xs);
+  border: 1px solid var(--emerald-10);
+}
+
+/* --- Quick Demo Sign-In button --- */
+.btn-demo {
+  border: 1px dashed var(--emerald);
+  color: var(--emerald);
+  background: var(--emerald-10);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all var(--t-fast);
+}
+.btn-demo:hover {
+  background: var(--emerald);
+  color: white;
+  border-style: solid;
+}
+
+/* --- Tab bar ARIA support --- */
+[role="tablist"] {
+  /* presentational only; semantics handled in markup */
+}
+
+/* --- Role select 2-col layout --- */
+.role-pick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 720px) {
+  .role-pick-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Auth choice button caption --- */
+.btn-caption {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--foreground-muted);
+  margin-top: 2px;
+  white-space: normal;
+  line-height: 1.3;
+  text-align: center;
+}
+
+/* Stacked layout: button title sits above a caption (for AuthChoiceCard,
+   Hero CTA, etc). Adds vertical gap and makes the caption wrap cleanly
+   instead of overflowing the button on narrow viewports. */
+.btn-stacked {
+  flex-direction: column;
+  gap: 2px;
+  padding-block: 14px;
+  height: auto;
+  min-height: 56px;
+  text-align: center;
+}
+.btn-stacked .btn-stacked-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.btn-caption-on-primary {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* ============================================================
+   MOBILE ACCESSIBILITY PASS
+   - Inputs ≥ 16px font (prevents iOS auto-zoom on focus)
+   - Touch targets ≥ 44px (Apple HIG / WCAG 2.5.5)
+   - Navbar collapses brand subtitle + secondary CTAs
+   - Tab bar wraps to 2 rows (no horizontal scroll)
+   - Card padding shrinks
+   - Hero text scales down
+   - Stepper labels readable at 11px
+   - Floating AI becomes a bottom sheet
+   - Long identifiers wrap cleanly
+   ============================================================ */
+
+/* Form inputs — iOS won't auto-zoom if font-size >= 16px */
+@media (max-width: 640px) {
+  .input,
+  textarea.input,
+  input[type="text"],
+  input[type="date"],
+  input[type="email"],
+  input[type="tel"],
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Touch target minimum (overrides small .btn-sm variants) */
+@media (max-width: 640px) {
+  .btn-sm {
+    min-height: 38px;
+    padding: 8px 14px;
+  }
+  .tab-btn {
+    min-height: 48px;
+    padding: 14px 16px;
+    font-size: 13px;
+  }
+}
+
+/* Navbar: hide subtitle, condense actions on small screens */
+@media (max-width: 720px) {
+  .navbar-inner {
+    gap: 8px;
+    height: auto;
+    min-height: 56px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .brand-sub {
+    display: none;
+  }
+  /* Hide long role/hospital context labels; keep icons & primary CTA */
+  .nav-context-label,
+  .nav-facility-id {
+    display: none !important;
+  }
+}
+
+/* Tab bar: stay on a single row on small screens, scroll horizontally if needed */
+@media (max-width: 720px) {
+  .tab-bar-inner {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    justify-content: flex-start;
+  }
+  .tab-bar-inner::-webkit-scrollbar {
+    display: none;
+  }
+  .tab-bar-inner .tab-btn {
+    flex: 0 0 auto;
+    min-width: 0;
+    white-space: nowrap;
+  }
+  .tab-bar {
+    position: sticky;
+    top: 56px;
+    z-index: 40;
+  }
+}
+
+/* Stepper labels stay readable on phones */
+@media (max-width: 640px) {
+  .stepper-label {
+    font-size: 10px !important;
+  }
+  .stepper {
+    padding: 0 4px;
+  }
+  /* Stepper dots shrink slightly on small phones so 5 steps + 4 lines fit */
+  .stepper [class*="stepper-dot"] {
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 10px !important;
+  }
+  .stepper .stepper-line {
+    margin-inline: 2px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .stepper [style*="fontSize: 10"],
+  .stepper > div > div:last-child {
+    font-size: 8px !important;
+    letter-spacing: 0.02em !important;
+  }
+}
+
+/* Hero text scales gracefully */
+@media (max-width: 640px) {
+  .hero-h1 {
+    font-size: clamp(2rem, 9vw, 2.75rem);
+  }
+  .hero-p {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+  }
+}
+
+/* Card padding shrinks on small screens */
+@media (max-width: 640px) {
+  .card,
+  [class*="card anim-"] {
+    padding: 20px !important;
+  }
+  .card.anim-in[style*="padding: 40"] {
+    padding: 24px !important;
+  }
+  .page-content {
+    padding: 24px 0 48px;
+  }
+}
+
+/* ClinicalMatchCard editorial header — small-screen tightening */
+@media (max-width: 640px) {
+  .match-card {
+    padding: 24px 20px !important;
+  }
+  .match-header {
+    padding-bottom: 20px !important;
+    margin-bottom: 20px !important;
+  }
+  .match-header-score {
+    font-size: 12px !important;
+  }
+  .match-header-score > span:first-child {
+    font-size: 16px !important;
+  }
+}
+
+/* Form rows stack vertically instead of side-by-side on phones */
+@media (max-width: 640px) {
+  .form-row,
+  div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Lifecycle strip: smaller padding, hide labels except on active */
+@media (max-width: 640px) {
+  .lifecycle-strip {
+    padding: 10px 8px;
+    gap: 0;
+  }
+  .lifecycle-strip .lifecycle-step-label {
+    font-size: 9px !important;
+  }
+  .lifecycle-strip .lifecycle-line {
+    flex: 0 0 4px !important;
+  }
+}
+
+/* Long content wrap (tx hashes, IDs, names) */
+@media (max-width: 640px) {
+  code,
+  pre,
+  .tx-hash {
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    font-size: 11px;
+  }
+}
+
+/* Floating AI Chat — bottom-sheet on mobile, full width */
+@media (max-width: 640px) {
+  .floating-ai-launcher {
+    bottom: 16px !important;
+    right: 16px !important;
+    width: 56px !important;
+    height: 56px !important;
+  }
+  .floating-ai-panel {
+    position: fixed !important;
+    left: 8px !important;
+    right: 8px !important;
+    bottom: 8px !important;
+    width: auto !important;
+    max-width: none !important;
+    height: 70vh !important;
+    border-radius: 16px !important;
+  }
+}
+
+/* Chat box — full width, sticky input */
+@media (max-width: 640px) {
+  .chat-input-wrap,
+  div[style*="padding: '14px 18px'"][style*="borderTop"] {
+    padding: 12px !important;
+  }
+}
+
+/* Bottom action buttons: full width on phones */
+@media (max-width: 640px) {
+  .btn-full-mobile {
+    width: 100% !important;
+  }
+}
+
+/* Hero stat strip — hide separator dots when each fact wraps to its own line */
+@media (max-width: 480px) {
+  .hero-stat-sep {
+    display: none;
+  }
+  .hero-stat-strip {
+    flex-direction: column;
+    gap: 4px !important;
+  }
+}
+
+/* Sign-out / role exit accessible label */
+@media (max-width: 720px) {
+  .nav-exit-text {
+    display: none;
+  }
+  .nav-exit-icon {
+    display: inline !important;
+  }
+}
+
+/* Safe-area insets for notched phones */
+@supports (padding: max(0px)) {
+  .navbar {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Footer mini on mobile */
+@media (max-width: 640px) {
+  .footer-mini {
+    font-size: 11px !important;
+    padding: 12px 16px;
+  }
+}
+
+/* ---------- Calendar (CalendarScheduleView) ---------- */
+.cal-nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-sm, 8px);
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--foreground);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--t-fast, 120ms ease), border-color var(--t-fast, 120ms ease);
+}
+.cal-nav-btn:hover {
+  background: var(--background-alt);
+  border-color: var(--primary);
+}
+.cal-nav-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring, 0 0 0 3px var(--primary-10));
+}
+.cal-month-label {
+  min-width: 132px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+  padding: 0 4px;
+}
+
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.cal-weekday {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--foreground-subtle);
+  padding: 6px 0;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.cal-cell {
+  position: relative;
+  appearance: none;
+  font: inherit;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm, 8px);
+  min-height: 52px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  cursor: pointer;
+  color: var(--foreground);
+  transition: background var(--t-fast, 120ms ease),
+              border-color var(--t-fast, 120ms ease),
+              color var(--t-fast, 120ms ease),
+              transform var(--t-fast, 120ms ease);
+}
+.cal-cell:hover:not(:disabled) {
+  border-color: var(--primary);
+  background: var(--background-alt);
+}
+.cal-cell:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring, 0 0 0 3px var(--primary-10));
+}
+.cal-cell-day {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+}
+.cal-cell-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--emerald);
+  align-self: flex-end;
+}
+.cal-cell-out {
+  background: var(--background-alt);
+  color: var(--foreground-subtle);
+  opacity: 0.55;
+}
+.cal-cell-past {
+  background: var(--background-alt);
+  color: var(--foreground-subtle);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.cal-cell-past .cal-cell-day {
+  text-decoration: line-through;
+  text-decoration-color: var(--border);
+}
+.cal-cell-today {
+  border-color: var(--primary);
+}
+.cal-cell-today .cal-cell-day {
+  color: var(--primary);
+  font-weight: 800;
+}
+.cal-cell-has-slots {
+  background: rgba(5, 150, 105, 0.05);
+  border-color: rgba(5, 150, 105, 0.35);
+}
+.cal-cell-has-slots .cal-cell-day {
+  color: var(--emerald);
+  font-weight: 800;
+}
+.cal-cell-selected,
+.cal-cell-selected:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+.cal-cell-selected .cal-cell-day,
+.cal-cell-selected.cal-cell-today .cal-cell-day {
+  color: white;
+}
+.cal-cell-selected .cal-cell-dot {
+  background: white;
+}
+
+/* Legend */
+.cal-legend {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  font-size: 12px;
+  color: var(--foreground-muted);
+}
+.cal-legend-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: -1px;
+  border: 1px solid var(--border);
+}
+.cal-legend-selected {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+.cal-legend-today {
+  background: white;
+  border-color: var(--primary);
+}
+.cal-legend-has {
+  background: rgba(5, 150, 105, 0.05);
+  border-color: rgba(5, 150, 105, 0.35);
+}
+.cal-legend-past {
+  background: var(--background-alt);
+  opacity: 0.5;
+}
+
+/* Slot card */
+.cal-slot {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md, 10px);
+  padding: 14px 16px;
+  background: var(--background-alt);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.cal-slot-booked {
+  background: rgba(5, 150, 105, 0.05);
+  border-color: rgba(5, 150, 105, 0.35);
+}
+
+.cal-empty {
+  padding: 20px;
+  text-align: center;
+  background: var(--background-alt);
+  border-radius: var(--r-md, 10px);
+  color: var(--foreground-muted);
+  font-size: 13px;
+}
+
+/* Mobile: shrink the calendar so it doesn't feel cramped */
+@media (max-width: 640px) {
+  .cal-cell {
+    min-height: 44px;
+    padding: 4px 6px;
+  }
+  .cal-cell-day {
+    font-size: 12px;
+  }
+  .cal-month-label {
+    min-width: 108px;
+    font-size: 14px;
+  }
+  .cal-weekday {
+    font-size: 10px;
+    padding: 4px 0;
+  }
+  .cal-grid {
+    gap: 4px;
+  }
+  .cal-weekdays {
+    gap: 4px;
+  }
+}
+
+/* ---------- Laws assistant (EGovAIWidget) ---------- */
+.laws-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.laws-quick-card {
+  appearance: none;
+  font: inherit;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md, 10px);
+  text-align: left;
+  cursor: pointer;
+  color: var(--foreground);
+  transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
+}
+.laws-quick-card:hover {
+  border-color: var(--primary);
+  background: var(--background-alt);
+}
+.laws-quick-card:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--primary-10);
+}
+.laws-quick-card:active {
+  transform: scale(0.99);
+}
+.laws-quick-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(0, 56, 168, 0.08);
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.laws-quick-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.laws-quick-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--foreground);
+  line-height: 1.25;
+}
+.laws-quick-prompt {
+  font-size: 11.5px;
+  color: var(--foreground-muted);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .laws-quick-grid {
+    grid-template-columns: 1fr;
+  }
+  .laws-quick-card {
+    padding: 10px 12px;
+  }
+  .laws-quick-title {
+    font-size: 13px;
   }
 }

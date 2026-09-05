@@ -1,4 +1,21 @@
 import React from 'react';
+import Stepper from './Stepper';
+
+const STEPS = [
+  { key: 'role', label: 'Role' },
+  { key: 'auth', label: 'Auth' },
+  { key: 'sso', label: 'SSO' },
+  { key: 'face', label: 'Liveness' },
+  { key: 'profile', label: 'Profile' },
+];
+
+// Stage chip helpers
+const STAGE_CHIPS = [
+  { id: 1, label: 'Capture' },
+  { id: 2, label: 'Detect' },
+  { id: 3, label: 'Verify' },
+  { id: 4, label: 'Done' },
+];
 
 export default function FaceLivenessCheck({
   livenessStage,
@@ -8,10 +25,34 @@ export default function FaceLivenessCheck({
 }) {
   return (
     <div className="anim-in" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
+      <div style={{ alignSelf: 'stretch' }}>
+        <Stepper steps={STEPS} active={4} />
+      </div>
       <h3 style={{ fontSize: 18, fontWeight: 800 }}>Face Liveness Verification</h3>
       <p style={{ fontSize: 13, color: 'var(--foreground-muted)', maxWidth: 440 }}>
         A secure eGov capture window has opened. Follow the on-screen prompts to blink and confirm you're a live person.
       </p>
+
+      {/* Stage chips */}
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {STAGE_CHIPS.map((chip) => {
+          const isActive =
+            (chip.id === 1 && (livenessStage === 1 || livenessStage === 2)) ||
+            (chip.id === 2 && livenessStage === 2) ||
+            (chip.id === 3 && livenessStage === 3) ||
+            (chip.id === 4 && livenessStage === 4);
+          const isDone = livenessStage === 3 && chip.id < 4;
+          return (
+            <span
+              key={chip.id}
+              className={`badge ${isActive ? 'badge-primary' : isDone ? 'badge-success' : 'badge-muted'}`}
+              style={{ fontSize: 10, padding: '4px 10px' }}
+            >
+              {chip.id}. {chip.label}
+            </span>
+          );
+        })}
+      </div>
 
       <div style={{
         position: 'relative', width: 200, height: 200, borderRadius: '50%',
