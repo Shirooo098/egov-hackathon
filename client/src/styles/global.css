@@ -502,6 +502,11 @@ img {
   background: var(--background-alt);
 }
 
+.hospital-care-rail .care-journey-primary strong {
+  color: var(--destructive);
+  font-size: 1.75rem;
+}
+
 @media (max-width: 640px) {
   .care-journey-rail {
     grid-template-columns: 1fr;
