@@ -10,7 +10,7 @@ import LifecycleStrip from '../components/LifecycleStrip';
 import { useToast } from '../context/ToastContext';
 import { useMatch } from '../context/MatchContext';
 import { ALL_ORGANS as ORGANS, BLOOD_TYPES } from '../services/domain';
-import { formatStatus, statusPillClass } from '../utils/matchStatus';
+import { formatStatus } from '../utils/matchStatus';
 import { HeartIcon, MatchIcon, ChatIcon, ChainIcon, CalIcon } from '../components/Icons';
 import { api } from '../services/api';
 
@@ -71,41 +71,28 @@ export default function RecipientDashboard({ onboardingHealth }) {
   ];
 
   return (
-    <div id="main-content" className="min-h-screen" style={{ background: 'var(--background)' }}>
-      {/* -- Hero -- */}
-      <section className="hero">
-        <div className="hero-blob" style={{ width: 400, height: 400, background: 'rgba(0,56,168,0.06)', top: -100, right: '5%' }} />
-        <div className="container" style={{ position: 'relative' }}>
+    <main id="main-content" tabIndex={-1} className="min-h-screen" style={{ background: 'var(--background)' }}>
+      <section className="hero care-journey-hero">
+        <div className="container">
           <div className="hero-eyebrow anim-up" style={{ color: 'var(--primary)' }}>
             <HeartIcon size={14} /> Recipient Portal · PhilSys Tier I
           </div>
-          <h1 className="hero-h1 anim-up-d1">We're <span style={{ color: 'var(--primary)' }}>looking for you</span></h1>
-          <p className="hero-p anim-up-d2">
-            We're searching for a match that fits. You'll get a message here as soon as we find one.
-          </p>
-
-          {/* Big status pill */}
-          <div className="anim-up-d3" style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
-            <span className={statusPillClass(match.status)}>
-              {formatStatus(match.status)}
-            </span>
-            <div className="hero-stat-strip" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', fontSize: 13, color: 'var(--foreground-muted)', fontWeight: 600 }}>
-              <span>Blood: <strong style={{ color: 'var(--foreground)' }}>{bloodTypeNeeded}</strong></span>
-              <span className="hero-stat-sep" style={{ color: 'var(--border)' }}>·</span>
-              <span>Organ: <strong style={{ color: 'var(--foreground)' }}>{organNeeded}</strong></span>
-              <span className="hero-stat-sep" style={{ color: 'var(--border)' }}>·</span>
-              <span>Urgency: <strong style={{ color: 'var(--destructive)', textTransform: 'capitalize' }}>{urgencyLevel}</strong></span>
-            </div>
-          </div>
+          <h1 className="care-journey-title anim-up-d1">Recipient Care Journey</h1>
+          <ul className="care-journey-rail anim-up-d3" aria-label="Recipient current care facts">
+            <li role="status"><span>Current Match</span><strong>{formatStatus(match.status)}</strong></li>
+            <li><span>Blood requirement</span><strong>{bloodTypeNeeded}</strong></li>
+            <li><span>Organ need</span><strong>{organNeeded}</strong></li>
+            <li><span>Urgency</span><strong className="care-journey-urgency">{urgencyLevel}</strong></li>
+          </ul>
         </div>
       </section>
 
       {/* Agencies marquee */}
-      <div style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', padding: '14px 0', background: 'var(--background-alt)' }}>
+      <div className="dashboard-network-band">
         <div className="marquee-outer">
-          <div className="marquee-track" style={{ fontSize: 12, fontWeight: 700, color: 'var(--foreground-muted)' }}>
+          <div className="marquee-track dashboard-marquee-track">
             {['DOH NATIONAL TRANSPLANT PROGRAM', 'PHILIPPINE GENERAL HOSPITAL (PGH)', 'DICT eVERIFY TRUST REGISTRY', 'PHILSYS BIOMETRIC CREDENTIAL', 'NATIONAL KIDNEY INSTITUTE (NKI)', 'RA NO. 7170 COMPLIANCE', 'REACTIVE eMESSAGE ALERT SYSTEM'].map((a, i) => (
-              <span key={i} className="marquee-item" style={{ marginRight: 32 }}>🏥 {a}</span>
+              <span key={i} className="marquee-item">🏥 {a}</span>
             ))}
           </div>
         </div>
@@ -113,7 +100,7 @@ export default function RecipientDashboard({ onboardingHealth }) {
 
       {/* -- Tab Bar (pill nav) -- */}
       <div className="tab-bar tab-bar-pill">
-        <div className="container tab-bar-inner" style={{ display: 'flex', gap: '6px', overflowX: 'auto', padding: '10px 0' }}>
+        <div className="container tab-bar-inner">
           {TABS.map(t => (
             <button
               key={t.id}
@@ -271,6 +258,6 @@ export default function RecipientDashboard({ onboardingHealth }) {
       <footer className="footer-mini">
         DICT eGov Platform · Republic of the Philippines · Demo Build
       </footer>
-    </div>
+    </main>
   );
 }

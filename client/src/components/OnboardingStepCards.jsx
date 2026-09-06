@@ -13,8 +13,10 @@ const STEPS = [
 export function RoleSelectCard({ choosePortal }) {
   return (
     <div className="anim-in">
+      <p className="hero-eyebrow">eBuhay demo / prototype</p>
+      <h1 className="onboarding-hero-title">Connecting people, Donors, and care teams through one guided journey.</h1>
+      <p className="onboarding-hero-copy">Choose how you will begin the demonstrated citizen workflow.</p>
       <Stepper steps={STEPS} active={1} />
-      <h3 style={{ fontSize: 15, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--foreground-subtle)', marginBottom: 16, textAlign: 'center' }}>Step 1 — Choose Your Portal</h3>
       <div className="role-pick-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         {[
           { id: 'recipient', title: 'Recipient Portal', desc: 'Search compatible blood/organ matches, request transplants, and coordinate clinical procedure schedules.', icon: <HeartIcon size={24} />, badge: 'primary' },
@@ -22,6 +24,7 @@ export function RoleSelectCard({ choosePortal }) {
         ].map((item) => (
           <button
             key={item.id}
+            aria-label={item.id === 'recipient' ? 'Recipient' : 'Donor'}
             onClick={() => choosePortal(item.id)}
             className="card card-interactive"
             style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: 18, textAlign: 'left', border: '1px solid var(--border)' }}

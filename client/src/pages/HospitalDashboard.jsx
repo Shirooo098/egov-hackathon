@@ -68,56 +68,28 @@ export default function HospitalDashboard() {
   }).length;
 
   return (
-    <div id="main-content" className="min-h-screen" style={{ background: 'var(--background)' }}>
-      {/* Institutional Header Hero */}
-      <section className="hero" style={{ padding: '36px 0 24px' }}>
-        <div className="hero-blob" style={{ width: 450, height: 450, background: 'rgba(5, 150, 105, 0.07)', top: -140, right: '10%' }} />
-        <div className="container" style={{ position: 'relative' }}>
+    <main id="main-content" tabIndex={-1} className="min-h-screen" style={{ background: 'var(--background)' }}>
+      <section className="hero care-journey-hero hospital-care-journey">
+        <div className="container">
           <div className="hero-eyebrow anim-up" style={{ color: 'var(--emerald)' }}>
             <HospitalIcon size={14} /> Hospital Console
           </div>
-          <h1 className="hero-h1 anim-up-d1" style={{ fontSize: 'clamp(28px, 5vw, 36px)', marginBottom: 4 }}>
-            Philippine General Hospital
-          </h1>
-          <p className="hero-p anim-up-d2" style={{ maxWidth: 640, marginBottom: 0, fontSize: 14 }}>
-            <span style={{ color: 'var(--foreground-muted)' }}>Match triage &amp; review ·</span>{' '}
-            <strong style={{ color: 'var(--foreground)', fontWeight: 700 }}>PGH-MNL-1000</strong>
-            <span style={{ color: 'var(--border)', margin: '0 8px' }}>·</span>
-            <span style={{ color: 'var(--foreground-muted)' }}>Taft Avenue, Manila</span>
-          </p>
-        </div>
+          <h1 className="care-journey-title anim-up-d1">Hospital Care Journey</h1>
+          <ul className="care-journey-rail hospital-care-rail anim-up-d3" aria-label="Hospital current care facts">
+            <li className="care-journey-primary" role="status"><span>Pending review</span><strong>{pendingMatches.length}</strong></li>
+            <li><span>Approved Matches</span><strong>{activeMatches.length}</strong></li>
+            <li><span>Active procedures</span><strong>{activeProcedureCount}</strong></li>
+            <li><span>Consultations</span><strong>{consultationsToday}</strong></li>
+          </ul>
+          </div>
       </section>
 
-      {/* Triage dashboard bar — 4 equal-width tiles, always one row on desktop, 2×2 on mobile */}
-      <div style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', background: 'var(--card)' }}>
-        <div className="container">
-          <div className="hero-tiles">
-            <div className="hero-tile">
-              <div className="hero-tile-val" style={{ color: 'var(--destructive)' }}>{pendingMatches.length}</div>
-              <div className="hero-tile-lbl">Pending Review</div>
-            </div>
-            <div className="hero-tile">
-              <div className="hero-tile-val" style={{ color: 'var(--emerald)' }}>{activeMatches.length}</div>
-              <div className="hero-tile-lbl">Approved Matches</div>
-            </div>
-            <div className="hero-tile">
-              <div className="hero-tile-val" style={{ color: 'var(--primary)' }}>{activeProcedureCount}</div>
-              <div className="hero-tile-lbl">Active Procedures</div>
-            </div>
-            <div className="hero-tile">
-              <div className="hero-tile-val" style={{ color: 'var(--foreground)' }}>{consultationsToday}</div>
-              <div className="hero-tile-lbl">Consultations Today</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Hospital Network Marquee */}
-      <div style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', padding: '10px 0', background: 'var(--background-alt)' }}>
+      <div className="dashboard-network-band">
         <div className="marquee-outer">
-          <div className="marquee-track" style={{ fontSize: 12, fontWeight: 700, color: 'var(--foreground-muted)' }}>
+          <div className="marquee-track dashboard-marquee-track">
             {['NATIONAL KIDNEY INSTITUTE (NKI)', 'PHILIPPINE GENERAL HOSPITAL (PGH)', 'DOH ORGAN DONATION PROGRAM', 'DICT eVERIFY TRUST REGISTRY', 'HYPERLEDGER BESU TESTNET (CHAIN 13371)', 'PHILIPPINE HEART CENTER (PHC)', 'LUNG CENTER OF THE PHILIPPINES'].map((a, i) => (
-              <span key={i} className="marquee-item" style={{ marginRight: 32 }}>🏥 {a}</span>
+              <span key={i} className="marquee-item">🏥 {a}</span>
             ))}
           </div>
         </div>
@@ -125,7 +97,7 @@ export default function HospitalDashboard() {
 
       {/* Tab Navigation (pill nav) */}
       <div className="tab-bar tab-bar-pill">
-        <div className="container tab-bar-inner" style={{ display: 'flex', gap: '6px', alignItems: 'center', padding: '10px 0' }}>
+        <div className="container tab-bar-inner hospital-tab-bar-inner">
           {TABS.map(t => (
             <button
               key={t.id}
@@ -139,8 +111,7 @@ export default function HospitalDashboard() {
           ))}
           <button
             onClick={resetMatch}
-            className="btn btn-ghost btn-sm"
-            style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--foreground-subtle)' }}
+            className="btn btn-ghost btn-sm hospital-reset-btn"
             title="Reset live demonstration state"
           >
             ↺ Reset Demo State
@@ -191,6 +162,6 @@ export default function HospitalDashboard() {
       <footer className="footer-mini">
         DICT eGov Platform · Republic of the Philippines · Demo Build
       </footer>
-    </div>
+    </main>
   );
 }

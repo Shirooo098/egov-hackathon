@@ -2,7 +2,7 @@ import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import VerifiedPill from './VerifiedPill';
 
-export default function Navbar({ currentRole, verified, tier, userProfile, onSignOut }) {
+export default function Navbar({ currentRole, verified, tier, userProfile, onSignOut, showStaffEntry = false }) {
   const location = useLocation();
   const isHospitalRoute = location.pathname === '/hospital-dashboard';
 
@@ -47,14 +47,17 @@ export default function Navbar({ currentRole, verified, tier, userProfile, onSig
             <Link to="/" className="btn btn-outline btn-sm" style={{ height: 34, padding: '0 14px', textDecoration: 'none', fontWeight: 600 }}>
               ← Back to Citizen Portal
             </Link>
+            <button type="button" className="btn btn-ghost btn-sm" aria-label="Sign out of hospital demo" onClick={onSignOut}>
+              Sign out
+            </button>
           </div>
         ) : (
           /* Citizen Portal Context */
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
             {/* Single Hospital CTA when no role is active (avoid CTA collision) */}
-            {!currentRole && (
-              <Link to="/hospital-dashboard" className="btn btn-ghost btn-sm" style={{ height: 32, padding: '0 12px', fontSize: 12, color: 'var(--emerald)', border: '1px solid var(--emerald)', textDecoration: 'none' }}>
-                🏥 Hospital Console
+            {!currentRole && showStaffEntry && (
+              <Link to="/staff-sign-in" className="btn btn-ghost btn-sm" style={{ height: 32, padding: '0 12px', fontSize: 12, color: 'var(--emerald)', border: '1px solid var(--emerald)', textDecoration: 'none' }}>
+                Staff sign in
               </Link>
             )}
 

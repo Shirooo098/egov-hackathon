@@ -441,6 +441,109 @@ img {
   margin: 0 auto var(--s9);
 }
 
+.care-journey-hero {
+  padding: 32px 0 28px;
+}
+
+.care-journey-hero::before {
+  display: none;
+}
+
+.care-journey-title {
+  margin: 10px 0 12px;
+  font-size: clamp(26px, 5vw, 36px);
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+}
+
+.care-journey-rail {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  list-style: none;
+  margin: 24px 0 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--card);
+}
+
+.care-journey-rail li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px 18px;
+  border-right: 1px solid var(--border);
+}
+
+.care-journey-rail li:last-child {
+  border-right: 0;
+}
+
+.care-journey-rail span {
+  color: var(--foreground-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.care-journey-rail strong {
+  overflow-wrap: anywhere;
+  color: var(--foreground);
+  font-size: 18px;
+  text-transform: capitalize;
+}
+
+.care-journey-urgency {
+  color: var(--destructive) !important;
+}
+
+.hospital-care-rail .care-journey-primary {
+  background: var(--background-alt);
+}
+
+@media (max-width: 640px) {
+  .care-journey-rail {
+    grid-template-columns: 1fr;
+  }
+
+  .care-journey-rail li {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .care-journey-rail li:last-child {
+    border-bottom: 0;
+  }
+}
+
+.dashboard-network-band {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.dashboard-network-band {
+  padding: 14px 0;
+  background: var(--background-alt);
+}
+
+.marquee-track.dashboard-marquee-track {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--foreground-muted);
+}
+
+.hospital-tab-bar-inner {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.tab-bar .hospital-reset-btn {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--foreground-subtle);
+}
+
 /* Stat pills in hero */
 .hero-stats {
   display: flex;
@@ -482,63 +585,6 @@ img {
   font-weight: 600;
 }
 
-/* Triage dashboard bar (Hospital hero) — 4 equal-width tiles in a single row */
-.hero-tiles {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0;
-}
-.hero-tile {
-  padding: 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  border-right: 1px solid var(--border);
-  min-width: 0;
-}
-.hero-tile:first-child {
-  border-left: 1px solid var(--border);
-}
-.hero-tile-val {
-  font-family: var(--font-heading);
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-}
-.hero-tile-lbl {
-  font-size: 12px;
-  color: var(--foreground-muted);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
-@media (max-width: 720px) {
-  .hero-tiles {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .hero-tile {
-    padding: 14px 16px;
-    border-right: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-  .hero-tile:nth-child(2n) {
-    border-right: none;
-  }
-  .hero-tile:nth-last-child(-n+2) {
-    border-bottom: none;
-  }
-  .hero-tile:first-child {
-    border-left: 1px solid var(--border);
-  }
-  .hero-tile-val {
-    font-size: 24px;
-  }
-  .hero-tile-lbl {
-    font-size: 11px;
-  }
-}
-
 /* ============================================================
    TAB BAR
    ============================================================ */
@@ -554,8 +600,11 @@ img {
 
 .tab-bar-inner {
   display: flex;
+  align-items: center;
+  gap: var(--s3);
   overflow-x: auto;
   justify-content: center;
+  padding: 10px 0;
   scrollbar-width: none;
 }
 .tab-bar-inner::-webkit-scrollbar { display: none; }
@@ -587,7 +636,7 @@ img {
   cursor: pointer;
   white-space: nowrap;
   transition: background var(--t-fast), color var(--t-fast), border-color var(--t-fast);
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   letter-spacing: -0.005em;
   position: relative;
   flex-shrink: 0;
@@ -657,13 +706,6 @@ img {
   .tab-btn .tab-btn-icon {
     width: 14px;
     height: 14px;
-  }
-  /* On narrow phones, drop the label on inactive tabs but keep it on active */
-  .tab-btn:not(.active) .tab-btn-label {
-    display: none;
-  }
-  .tab-btn.active .tab-btn-label {
-    display: inline;
   }
   .tab-bar-pill {
     border-bottom: none;
@@ -3394,17 +3436,6 @@ a:focus-visible {
   }
 }
 
-/* Hero stat strip — hide separator dots when each fact wraps to its own line */
-@media (max-width: 480px) {
-  .hero-stat-sep {
-    display: none;
-  }
-  .hero-stat-strip {
-    flex-direction: column;
-    gap: 4px !important;
-  }
-}
-
 /* Sign-out / role exit accessible label */
 @media (max-width: 720px) {
   .nav-exit-text {
@@ -3733,5 +3764,43 @@ a:focus-visible {
   }
   .laws-quick-title {
     font-size: 13px;
+  }
+}
+
+/* Mission-led entry and staff demo boundary */
+.onboarding-hero-title {
+  margin: 12px 0 10px;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+}
+.onboarding-hero-copy {
+  margin: 0 0 24px;
+  color: var(--foreground-muted);
+}
+.staff-sign-in-page {
+  min-height: calc(100vh - 62px);
+  background: var(--background-alt);
+}
+.staff-sign-in-card {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px;
+}
+.staff-sign-in-card h1 {
+  margin: 10px 0 4px;
+  font-size: clamp(2rem, 5vw, 3rem);
+  letter-spacing: -0.04em;
+}
+.staff-sign-in-context {
+  color: var(--emerald-hover);
+  font-weight: 700;
+}
+.staff-sign-in-card .btn {
+  margin-top: 20px;
+}
+@media (max-width: 640px) {
+  .staff-sign-in-card {
+    padding: 24px;
   }
 }
