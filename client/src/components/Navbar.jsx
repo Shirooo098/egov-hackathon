@@ -56,7 +56,7 @@ export default function Navbar({ currentRole, verified, tier, userProfile, onSig
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
             {/* Single Hospital CTA when no role is active (avoid CTA collision) */}
             {!currentRole && showStaffEntry && (
-              <Link to="/staff-sign-in" className="btn btn-ghost btn-sm" style={{ height: 32, padding: '0 12px', fontSize: 12, color: 'var(--emerald)', border: '1px solid var(--emerald)', textDecoration: 'none' }}>
+              <Link to="/staff-sign-in" className="btn btn-ghost btn-sm" style={{ height: 32, padding: '0 12px', fontSize: 12, color: 'var(--foreground-muted)', border: '1px solid var(--border)', textDecoration: 'none' }}>
                 Staff sign in
               </Link>
             )}
@@ -82,16 +82,6 @@ export default function Navbar({ currentRole, verified, tier, userProfile, onSig
                     <span>Unverified</span>
                   </div>
                 )}
-
-                {/* Switch-role hint to the hospital console, with subtle styling (no dashed border) */}
-                <Link
-                  to="/hospital-dashboard"
-                  className="btn btn-ghost btn-sm"
-                  style={{ height: 32, padding: '0 12px', fontSize: 12, color: 'var(--emerald)', textDecoration: 'none' }}
-                  title="Open the institutional triage console"
-                >
-                  🏥 Hospital Console
-                </Link>
 
                 {/* Exit Role control */}
                 <button className="btn btn-ghost btn-sm" onClick={onSignOut} style={{ height: 32, padding: '0 12px' }}>

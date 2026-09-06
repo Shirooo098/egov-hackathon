@@ -318,11 +318,11 @@ export default function App() {
                 <div className="container" style={{ maxWidth: 800, width: '100%' }}>
                   <div className="card anim-up" style={{ padding: '40px', maxWidth: 640, margin: '0 auto', background: 'white' }}>
 
-                    {step !== STEPS.LIVENESS && (
+                    {step !== STEPS.LIVENESS && step !== STEPS.ROLE_SELECT && (
                       <div style={{ textAlign: 'center', marginBottom: 32 }}>
                         <div style={{ width: 48, height: 48, borderRadius: 12, background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 900, margin: '0 auto 16px' }}>e</div>
-                        <h2 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>Secure eBuhay Onboarding</h2>
-                        <p style={{ fontSize: 14, color: 'var(--foreground-muted)' }}>National platform secured with eGov Single Sign-On and Face Liveness verification.</p>
+                        <h2 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>eBuhay Citizen Onboarding</h2>
+                        <p style={{ fontSize: 14, color: 'var(--foreground-muted)' }}>Prototype flow demonstrating eGov SSO and Face Liveness.</p>
                       </div>
                     )}
 
