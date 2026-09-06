@@ -40,6 +40,7 @@ describe('top-level rendered routes', () => {
 
     expect(body.textContent).toContain('Connecting people, Donors, and care teams through one guided journey.');
     expect(body.textContent).toContain('eBuhay demo / prototype');
+    expect(body.textContent).not.toContain('National platform secured with eGov Single Sign-On and Face Liveness verification.');
     expect(body.querySelector('button[aria-label="Recipient"]')).not.toBeNull();
     expect(body.querySelector('button[aria-label="Donor"]')).not.toBeNull();
     expect(body.textContent).toContain('Staff sign in');
@@ -74,6 +75,8 @@ describe('top-level rendered routes', () => {
 
     const rail = body.querySelector('ul[aria-label="Recipient current care facts"]');
     expect(body.textContent).toContain('Recipient Care Journey');
+    expect(body.textContent).not.toContain('Staff sign in');
+    expect(body.textContent).not.toContain('Hospital Console');
     expect(rail).not.toBeNull();
     expect(rail.textContent).toContain('Current Match');
     expect(rail.textContent).toContain('Pending Hospital Approval');
@@ -114,6 +117,7 @@ describe('top-level rendered routes', () => {
     expect(rail.textContent).toContain('Approved Matches');
     expect(rail.textContent).toContain('Active procedures');
     expect(rail.textContent).toContain('Consultations');
+    expect(Array.from(rail.querySelectorAll('strong')).map((value) => value.textContent)).toEqual(['2', '1', '0', '0']);
   });
 
   it('gates the hospital route behind the namespaced session and supports sign out', () => {

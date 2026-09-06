@@ -3793,7 +3793,7 @@ a:focus-visible {
   letter-spacing: -0.04em;
 }
 .staff-sign-in-context {
-  color: var(--emerald-hover);
+  color: var(--foreground-muted);
   font-weight: 700;
 }
 .staff-sign-in-card .btn {
