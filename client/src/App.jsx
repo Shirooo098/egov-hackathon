@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import FloatingAIChat from './components/FloatingAIChat';
-import { Routes, Route } from 'react-router-dom';
+import { Navigate, Routes, Route, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import RecipientDashboard from './pages/RecipientDashboard';
 import DonorDashboard from './pages/DonorDashboard';
@@ -14,6 +14,8 @@ import EgovSsoForm from './components/EgovSsoForm';
 import FaceLivenessCheck from './components/FaceLivenessCheck';
 import RecipientHealthForm from './components/RecipientHealthForm';
 import DonorPledgeForm from './components/DonorPledgeForm';
+import StaffSignIn from './components/StaffSignIn';
+import { clearHospitalDemoSession, hasHospitalDemoSession } from './components/staffDemoSession';
 import './styles/global.css';
 
 // Onboarding Steps Enum
@@ -25,6 +27,28 @@ const STEPS = {
   RECIPIENT_HEALTH: 'RECIPIENT_HEALTH', // 5a. Sign-up only: recipient profile form
   DONOR_PLEDGE: 'DONOR_PLEDGE',         // 5b. Sign-up only: donor pledge form
 };
+
+function HospitalRoute() {
+  const navigate = useNavigate();
+  if (!hasHospitalDemoSession()) return <Navigate to="/staff-sign-in" replace />;
+
+  return (
+    <>
+      <a href="#main-content" className="skip-link">Skip to main content</a>
+      <Navbar
+        currentRole={null}
+        verified={true}
+        tier="Hospital demo staff"
+        userProfile={null}
+        onSignOut={() => {
+          clearHospitalDemoSession();
+          navigate('/staff-sign-in', { replace: true });
+        }}
+      />
+      <HospitalDashboard />
+    </>
+  );
+}
 
 export default function App() {
   const toast = useToast();
@@ -270,13 +294,8 @@ export default function App() {
   return (
     <>
       <Routes>
-        <Route path="/hospital-dashboard" element={
-          <>
-            <a href="#main-content" className="skip-link">Skip to main content</a>
-            <Navbar currentRole={null} verified={true} tier="Hospital Authority" userProfile={null} onSignOut={() => { }} />
-            <HospitalDashboard />
-          </>
-        } />
+        <Route path="/staff-sign-in" element={<StaffSignIn />} />
+        <Route path="/hospital-dashboard" element={<HospitalRoute />} />
         <Route path="/" element={
           <>
             <a href="#main-content" className="skip-link">Skip to main content</a>
@@ -286,6 +305,7 @@ export default function App() {
               tier={tier}
               userProfile={userProfile}
               onSignOut={handleSignOut}
+              showStaffEntry={!role && step === STEPS.ROLE_SELECT}
             />
             {role ? (
               role === 'recipient' ? (
@@ -294,7 +314,7 @@ export default function App() {
                 <DonorDashboard consentSigned={consentSigned} setConsentSigned={setConsentSigned} onboardingPledge={donorPledge} />
               )
             ) : (
-              <div id="main-content" className="page-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--background-alt)', minHeight: 'calc(100vh - 62px)', padding: '24px 0' }}>
+              <main id="main-content" tabIndex={-1} className="page-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--background-alt)', minHeight: 'calc(100vh - 62px)', padding: '24px 0' }}>
                 <div className="container" style={{ maxWidth: 800, width: '100%' }}>
                   <div className="card anim-up" style={{ padding: '40px', maxWidth: 640, margin: '0 auto', background: 'white' }}>
 
@@ -367,7 +387,7 @@ export default function App() {
 
                   </div>
                 </div>
-              </div>
+              </main>
             )}
           </>
         } />

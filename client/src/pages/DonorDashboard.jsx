@@ -10,7 +10,7 @@ import { useToast } from '../context/ToastContext';
 import { useMatch } from '../context/MatchContext';
 import { DonorProfileTab } from '../components/DonorTabComponents';
 import { ALL_ORGANS, BLOOD_TYPES } from '../services/domain';
-import { formatStatus, statusPillClass } from '../utils/matchStatus';
+import { formatStatus } from '../utils/matchStatus';
 import { UserIcon, MatchIcon, ChatIcon, ChainIcon, DropIcon } from '../components/Icons';
 import { api } from '../services/api';
 
@@ -81,40 +81,28 @@ export default function DonorDashboard({ onboardingPledge }) {
   ];
 
   return (
-    <div id="main-content" style={{ minHeight: '100vh', background: 'var(--background)' }}>
-      {/* -- Hero -- */}
-      <section className="hero">
-        <div className="hero-blob" style={{ width: 360, height: 360, background: 'rgba(5,150,105,0.06)', top: -80, right: '8%' }} />
-        <div className="container" style={{ position: 'relative' }}>
+    <main id="main-content" tabIndex={-1} style={{ minHeight: '100vh', background: 'var(--background)' }}>
+      <section className="hero care-journey-hero">
+        <div className="container">
           <div className="hero-eyebrow anim-up" style={{ color: 'var(--emerald)' }}>
             <DropIcon size={14} /> Donor Portal · PhilSys Tier I
           </div>
-          <h1 className="hero-h1 anim-up-d1">Thank you for <span style={{ color: 'var(--emerald)' }}>wanting to help</span></h1>
-          <p className="hero-p anim-up-d2">
-            We'll let you know as soon as someone needs what you can give. Until then, you can update your details any time.
-          </p>
-          {/* Big status pill */}
-          <div className="anim-up-d3" style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
-            <span className={statusPillClass(match.status)}>
-              {formatStatus(match.status)}
-            </span>
-            <div className="hero-stat-strip" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', fontSize: 13, color: 'var(--foreground-muted)', fontWeight: 600 }}>
-              <span>Blood: <strong style={{ color: 'var(--foreground)' }}>{bloodType}</strong></span>
-              <span className="hero-stat-sep" style={{ color: 'var(--border)' }}>·</span>
-              <span>Organs pledged: <strong style={{ color: 'var(--foreground)' }}>{organs.length}</strong></span>
-              <span className="hero-stat-sep" style={{ color: 'var(--border)' }}>·</span>
-              <span>Registry: <strong style={{ color: avail ? 'var(--emerald)' : 'var(--foreground-subtle)' }}>{avail ? 'Active' : 'Off'}</strong></span>
-            </div>
-          </div>
+          <h1 className="care-journey-title anim-up-d1">Donor Care Journey</h1>
+          <ul className="care-journey-rail anim-up-d3" aria-label="Donor current care facts">
+            <li role="status"><span>Current Match</span><strong>{formatStatus(match.status)}</strong></li>
+            <li><span>Blood type</span><strong>{bloodType}</strong></li>
+            <li><span>Pledged organs</span><strong>{organs.length}</strong></li>
+            <li><span>Availability</span><strong>{avail ? 'Active' : 'Off'}</strong></li>
+          </ul>
         </div>
       </section>
 
       {/* Network Marquee */}
-      <div style={{ borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)', padding: '14px 0', background: 'var(--background-alt)' }}>
+      <div className="dashboard-network-band">
         <div className="marquee-outer">
-          <div className="marquee-track" style={{ fontSize: 12, fontWeight: 700, color: 'var(--foreground-muted)' }}>
+          <div className="marquee-track dashboard-marquee-track">
             {['PHILIPPINE RED CROSS', 'DOH ORGAN DONATION PROGRAM', 'PHILIPPINE GENERAL HOSPITAL (PGH)', 'DICT eVERIFY TRUST REGISTRY', 'NATIONAL KIDNEY INSTITUTE (NKI)', 'RA NO. 7170 COMPLIANT', 'REACTIVE eMESSAGE PUSH SYSTEM'].map((a, i) => (
-              <span key={i} className="marquee-item" style={{ marginRight: 32 }}>🏥 {a}</span>
+              <span key={i} className="marquee-item">🏥 {a}</span>
             ))}
           </div>
         </div>
@@ -122,7 +110,7 @@ export default function DonorDashboard({ onboardingPledge }) {
 
       {/* -- Tab Bar (pill nav) -- */}
       <div className="tab-bar tab-bar-pill">
-        <div className="container tab-bar-inner" style={{ display: 'flex', gap: '6px', overflowX: 'auto', padding: '10px 0' }}>
+        <div className="container tab-bar-inner">
           {TABS.map(t => (
             <button
               key={t.id}
@@ -204,6 +192,6 @@ export default function DonorDashboard({ onboardingPledge }) {
       <footer className="footer-mini">
         DICT eGov Platform · Republic of the Philippines · Demo Build
       </footer>
-    </div>
+    </main>
   );
 }
