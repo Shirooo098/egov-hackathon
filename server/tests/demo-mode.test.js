@@ -141,6 +141,9 @@ async function runTests() {
   // Test 4: Besu Service
   console.log('Test 4: Besu Service (Demo Mode)');
   try {
+    // Force DICT Besu chain ID for the demo test (preserves the original test's intent
+    // of verifying the Besu-specific path). In production, BESU_MODE controls this.
+    process.env.BESU_CHAIN_ID = '13371';
     const BesuService = require('../src/services/BesuService');
 
     console.log('  - Testing anchorConsent()...');

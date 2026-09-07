@@ -17,7 +17,8 @@ When this flag is active, your Express server bypasses live DICT endpoints and r
 * **PhilSys eVerify:** Demographic matching and QR code verification (`server/src/services/eVerifyService.js`).
 * **DICT eMessage:** Simulated mobile SMS push notifications (`server/src/services/eMessageService.js`).
 * **eGovAI Suite:** Medical legal QA chatbot responses and predictive scheduling (`server/src/services/eGovAIService.js`).
-* **Hyperledger Besu:** Zero-fee cryptographic consent anchoring on Testnet Chain `13371` (`server/src/services/BesuService.js`).
+
+**Blockchain (BesuService.js) is NOT mocked by default.** Consent anchoring submits a real 0-value transaction to an EVM testnet (Ethereum Sepolia by default; switch to DICT Besu with `BESU_MODE=besu`) and the resulting `txHash` is verifiable on a public block explorer. To force a fully-offline mock for the blockchain, set `DEMO_MODE=true` AND leave `BESU_PRIVATE_KEY` empty — the service falls back to a simulated transaction.
 
 ---
 

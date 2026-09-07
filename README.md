@@ -4,7 +4,7 @@
 
 ## 🚨 Demo Mode Notice
 
-**This project is configured for demo mode by default.** All external API integrations (eVerify, eMessage, eGovAI, Besu Blockchain) are fully mocked and require no real credentials to run.
+**This project is configured for demo mode by default for the eVerify, eMessage, and eGovAI integrations** — they are fully mocked and require no real credentials to run. The **Blockchain integration is real and on-chain by default** (Ethereum Sepolia testnet), so consent anchoring produces verifiable transaction hashes on Etherscan.
 
 ---
 
@@ -77,11 +77,10 @@ npm run test:demo
 ## Environment Configuration
 
 ### Demo Mode (Default)
-The project comes pre-configured for demo mode with no external API calls:
+The project comes pre-configured for demo mode for eVerify, eMessage, and eGovAI. The **blockchain is real by default** — see the Blockchain Setup section below.
 
-**Server (.env):**
+**Server (.env) — non-blockchain:**
 ```bash
-DEMO_MODE=true
 EVERIFY_CLIENT_ID=dict_everify_demo_client_id
 EMESSAGE_API_TOKEN=dict_emessage_demo_token
 EGOVAI_ACCESS_CODE=dict_egovai_demo_access_code
@@ -90,21 +89,47 @@ EGOVAI_ACCESS_CODE=dict_egovai_demo_access_code
 **Client (.env):**
 ```bash
 VITE_API_URL=http://localhost:5000/api
-VITE_DEMO_MODE=true
+VITE_EXPLORER_URL=https://sepolia.etherscan.io
 ```
 
-### Production Mode
-To enable real API integrations, set:
+### 🔗 Blockchain Setup (Real On-Chain Anchoring)
 
+The eBuhay platform anchors every dual-signed Donation Agreement to a real EVM testnet as a 0-value transaction whose calldata is the SHA-256 hash of the consent payload. The transaction is publicly verifiable on a block explorer.
+
+**Default chain: Ethereum Sepolia** (Chain ID 11155111). Sepolia is the most reliable public testnet and the easiest for judges to verify.
+
+**Generate a test wallet** (TESTNET ONLY — never reuse this key for mainnet):
 ```bash
-DEMO_MODE=false
-EVERIFY_CLIENT_ID=your_real_client_id
-EVERIFY_CLIENT_SECRET=your_real_client_secret
-EMESSAGE_API_TOKEN=your_real_token
-EGOVAI_ACCESS_CODE=your_real_access_code
-SUPABASE_URL=your_supabase_url
-SUPABASE_ANON_KEY=your_supabase_key
+cd server
+node -e "const {Wallet}=require('ethers'); const w=Wallet.createRandom(); console.log('Address:', w.address); console.log('Private Key:', w.privateKey);"
 ```
+
+**Fund the wallet** with test ETH from a Sepolia faucet:
+- https://sepoliafaucet.com
+- https://www.infura.io/faucet/sepolia
+- https://cloud.google.com/application/web3/faucet/ethereum/sepolia
+
+**Server (.env) — blockchain:**
+```bash
+BESU_MODE=sepolia
+BESU_RPC_URL=https://ethereum-sepolia-rpc.publicnode.com
+BESU_CHAIN_ID=11155111
+BESU_PRIVATE_KEY=0x_your_testnet_private_key_here
+ANCHOR_WALLET_ADDRESS=0x_your_wallet_address_here   # optional, defaults to the wallet's own address
+EXPLORER_URL=https://sepolia.etherscan.io
+```
+
+**Optional: switch to DICT Besu** (if your hackathon requires the official DICT chain):
+```bash
+BESU_MODE=besu
+BESU_RPC_URL=https://hackathon-blockchain.e.gov.ph
+BESU_CHAIN_ID=13371
+EXPLORER_URL=https://hackathon-explorer.e.gov.ph
+```
+
+> ⚠️ **Security:** `BESU_PRIVATE_KEY` must point to a key that has never touched mainnet. The key in the deployed environment should be treated as semi-public (it's a server-side env var, but anyone with it can drain any ETH on that account — so fund it only with testnet ETH and rotate if exposed).
+
+**Verify it works:** sign a consent in the deployed app, copy the `txHash` shown in the BlockchainBadge, paste into `https://sepolia.etherscan.io/tx/<hash>`. The transaction should appear with the consent hash in the "Input Data" field.
 
 ---
 
@@ -127,10 +152,10 @@ SUPABASE_ANON_KEY=your_supabase_key
 
 ## Demo Features
 
-- ✅ **eVerify**: PhilSys identity verification (mocked)
-- ✅ **eMessage**: SMS notifications (mocked)  
-- ✅ **eGovAI**: Legal Q&A & scheduling (mocked)
-- ✅ **Besu**: Blockchain anchoring (mocked)
+- ✅ **eVerify**: PhilSys identity verification (mocked, config-switchable to live)
+- ✅ **eMessage**: SMS notifications (mocked, config-switchable to live)
+- ✅ **eGovAI**: Legal Q&A & scheduling (mocked, config-switchable to live)
+- ✅ **Besu / EVM**: Real on-chain consent anchoring (Ethereum Sepolia by default, DICT Besu available)
 - ✅ **Matchmaking**: ABO/Rh compatibility matrix
 - ✅ **Scheduling**: AI tri-party slot optimization
 
