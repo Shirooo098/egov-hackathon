@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useToast } from '../context/ToastContext';
-import { maskedName } from '../utils/maskedName';
-import { eMessageToast } from '../utils/eMessageToast';
+import { useToast } from '../../context/ToastContext';
+import { maskedName } from '../../utils/maskedName';
+import { eMessageToast } from '../../utils/eMessageToast';
 
 const DEMO_MESSAGES = [
   { id: 1, sender: 'donor',     text: 'Good day! I reviewed the sample donation agreement for this demo.', time: '10:30 AM' },
