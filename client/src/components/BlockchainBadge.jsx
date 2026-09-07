@@ -2,37 +2,26 @@ import React, { useState } from 'react';
 import { api } from '../services/api';
 import SignatureUploader from './SignatureUploader';
 
-export default function BlockchainBadge({ matchId, donorId, recipientId, signerRole = 'recipient', consentSigned, onConsentSuccess }) {
+const EXPLORER_URL = import.meta.env.VITE_EXPLORER_URL || 'https://sepolia.etherscan.io';
+
+export default function BlockchainBadge({ matchId, donorId, recipientId, signerRole = 'recipient', consentSigned, onConsentSuccess, existingAnchor }) {
   const [donorSigned,     setDonorSigned]     = useState(consentSigned || signerRole === 'recipient');
   const [recipientSigned, setRecipientSigned] = useState(consentSigned || signerRole === 'donor');
   const [status, setStatus] = useState(consentSigned ? 'anchored' : 'idle');
-  const [anchor, setAnchor] = useState(consentSigned ? {
-    chainId: 13371,
-    txHash: '0x7c2a4b825dc642cb6eb9a060e54bf8d69288fbee4904',
-    blockNumber: 4821,
-    explorerUrl: 'https://hackathon-blockchain.e.gov.ph',
-    demo: true
-  } : null);
+  const [anchor, setAnchor] = useState(existingAnchor || null);
+  const [error, setError] = useState(null);
 
   const anchorChain = async () => {
     setStatus('anchoring');
+    setError(null);
     try {
       const r = await api.anchorConsent({ matchId: matchId || 'demo-match-001', donorId, recipientId, donorSignature: 'sig_d_' + Date.now(), recipientSignature: 'sig_r_' + Date.now() });
-      setAnchor(r.data); 
+      setAnchor(r.data);
       setStatus('anchored');
       if (onConsentSuccess) onConsentSuccess();
-    } catch {
-      // Fallback/Demo mode check
-      setStatus('anchored');
-      const mockAnchor = {
-        chainId: 13371,
-        txHash: '0x7c2a' + Math.random().toString(16).substring(2, 10) + 'f91a',
-        blockNumber: 4821,
-        explorerUrl: 'https://hackathon-blockchain.e.gov.ph',
-        demo: true
-      };
-      setAnchor(mockAnchor);
-      if (onConsentSuccess) onConsentSuccess();
+    } catch (err) {
+      setStatus('error');
+      setError(err?.message || 'Anchoring failed. Please try again.');
     }
   };
 
@@ -50,9 +39,9 @@ export default function BlockchainBadge({ matchId, donorId, recipientId, signerR
         <div className="chain-tag"><span style={{color:'var(--foreground-subtle)',whiteSpace:'nowrap'}}>Audit Hash</span><span className="tx">{anchor.txHash}</span></div>
         <div style={{ display:'flex', gap:16, fontSize:12 }}>
           <span style={{color:'var(--foreground-muted)'}}>Record <strong style={{color:'var(--foreground)'}}>#{anchor.blockNumber}</strong></span>
-          {anchor.demo && <span className="badge badge-moderate">Verified</span>}
+          <span className="badge badge-moderate">On-Chain</span>
         </div>
-        <a href={anchor.explorerUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm btn-full" style={{marginTop:4}}>
+        <a href={anchor.explorerUrl || `${EXPLORER_URL}/tx/${anchor.txHash}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm btn-full" style={{marginTop:4}}>
           <ExternalIcon /> View Encryption Certificate
         </a>
       </div>
@@ -97,7 +86,7 @@ export default function BlockchainBadge({ matchId, donorId, recipientId, signerR
       <button className="btn btn-primary btn-full btn-lg" disabled={!donorSigned || !recipientSigned || status === 'anchoring'} onClick={anchorChain}>
         {status === 'anchoring' ? <><span className="spinner" /> Encrypting &amp; Securing…</> : <><ChainIcon /> Authorize &amp; Lock Digital Signature</>}
       </button>
-      {status === 'error' && <p style={{textAlign:'center',color:'var(--destructive)',fontSize:12,marginTop:10}}>Anchoring failed. Please try again.</p>}
+      {status === 'error' && <p style={{textAlign:'center',color:'var(--destructive)',fontSize:12,marginTop:10}}>{error || 'Anchoring failed. Please try again.'}</p>}
     </div>
   );
 }

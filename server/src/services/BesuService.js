@@ -1,126 +1,109 @@
 /**
- * eBuhay - DICT Hyperledger Besu Blockchain Service
- * Anchors e-signature consent hashes on zero-fee QBFT Besu chain (Chain ID 13371)
+ * eBuhay - DICT eGov Blockchain Anchoring Service
  *
- * Demo Mode: When DEMO_MODE=true or no PRIVATE_KEY is set,
- * all blockchain operations are simulated locally with no network calls.
+ * Submits SHA-256 consent hashes as on-chain calldata to an EVM-compatible
+ * chain. Default: Ethereum Sepolia testnet (most reliable public testnet).
+ * Alternate: DICT Besu hackathon node (BESU_MODE=besu).
+ *
+ * Anchoring strategy: 0-value transaction with the 32-byte consent hash as
+ * calldata. No smart contract deployment required.
+ *
+ * TESTNET ONLY. The BESU_PRIVATE_KEY must be a throwaway testnet key with
+ * no real-world ETH balance. Never reuse this key for mainnet or any
+ * production system.
  */
 
 const { createHash } = require('crypto');
+const { JsonRpcProvider, Wallet, isHexString } = require('ethers');
 
-const BESU_RPC = process.env.BESU_RPC_URL || 'https://hackathon-blockchain.e.gov.ph';
-const CHAIN_ID = parseInt(process.env.BESU_CHAIN_ID || '13371', 10);
-const DEMO_MODE = process.env.DEMO_MODE === 'true' || !process.env.PRIVATE_KEY;
+const BESU_MODE = (process.env.BESU_MODE || 'sepolia').toLowerCase();
+const BESU_RPC_URL = process.env.BESU_RPC_URL || (
+  BESU_MODE === 'besu'
+    ? 'https://hackathon-blockchain.e.gov.ph'
+    : 'https://ethereum-sepolia-rpc.publicnode.com'
+);
+const CHAIN_ID = parseInt(process.env.BESU_CHAIN_ID || (BESU_MODE === 'besu' ? '13371' : '11155111'), 10);
+const BESU_PRIVATE_KEY = process.env.BESU_PRIVATE_KEY || '';
+const ANCHOR_WALLET_ADDRESS = process.env.ANCHOR_WALLET_ADDRESS || '';
+const EXPLORER_URL = process.env.EXPLORER_URL || (
+  BESU_MODE === 'besu'
+    ? 'https://hackathon-explorer.e.gov.ph'
+    : 'https://sepolia.etherscan.io'
+);
 
-// Simulated block number for demo mode
+// Demo mode is ONLY enabled when explicitly requested AND no key is configured.
+// This preserves the existing export shape and lets the team demo offline if
+// absolutely necessary, but it is no longer the default behavior.
+const DEMO_MODE = process.env.DEMO_MODE === 'true' && !BESU_PRIVATE_KEY;
+
+// Demo-mode state (only used when DEMO_MODE is forced on)
 let DEMO_BLOCK_NUMBER = 4821;
 let DEMO_TX_COUNTER = 0;
 
-/**
- * Simulate blockchain delay (300ms - 800ms for realistic transaction time)
- */
 function simulateDelay(minMs = 300, maxMs = 800) {
   const delay = Math.floor(Math.random() * (maxMs - minMs + 1)) + minMs;
   return new Promise(resolve => setTimeout(resolve, delay));
 }
 
-/**
- * Generate a realistic-looking transaction hash for demo
- */
 function generateTxHash() {
-  // Ethereum-style transaction hash (32 bytes = 64 hex chars, prefixed with 0x)
   const hash = createHash('sha256')
     .update(Date.now().toString() + Math.random().toString())
     .digest('hex');
   return '0x' + hash;
 }
 
-/**
- * Compute SHA-256 hash of a consent document object
- */
 function computeConsentHash(consentData) {
-  const canonical = JSON.stringify(consentData, Object.keys(consentData).sort());
+  const sortedKeys = Object.keys(consentData).sort();
+  const canonical = JSON.stringify(consentData, sortedKeys);
   return '0x' + createHash('sha256').update(canonical).digest('hex');
 }
 
-/**
- * Send a JSON-RPC call to the Besu node
- * Only used in production mode
- */
-async function rpc(method, params = []) {
-  if (DEMO_MODE) {
-    // Simulate RPC response for demo
-    await simulateDelay();
+// Lazy provider + wallet singletons
+let _provider = null;
+let _wallet = null;
 
-    switch (method) {
-      case 'eth_blockNumber':
-        return '0x' + DEMO_BLOCK_NUMBER.toString(16);
-      case 'eth_chainId':
-        return '0x' + CHAIN_ID.toString(16);
-      case 'eth_gasPrice':
-        return '0x0'; // Zero gas price on testnet
-      case 'eth_getTransactionReceipt':
-        // Simulate successful receipt
-        return {
-          transactionHash: params[0],
-          blockNumber: '0x' + DEMO_BLOCK_NUMBER.toString(16),
-          status: '0x1',
-          from: '0x1234567890123456789012345678901234567890',
-          to: '0x0987654321098765432109876543210987654321',
-          gasUsed: '0x5208', // 21000 gas
-          logs: []
-        };
-      default:
-        return null;
-    }
+function getProvider() {
+  if (_provider) return _provider;
+  _provider = new JsonRpcProvider(BESU_RPC_URL, CHAIN_ID);
+  return _provider;
+}
+
+function getWallet() {
+  if (_wallet) return _wallet;
+  if (!BESU_PRIVATE_KEY) {
+    throw new Error('BESU_PRIVATE_KEY is required for live anchoring. Generate a testnet key with `node -e "const {Wallet}=require(\'ethers\'); const w=Wallet.createRandom(); console.log(w.privateKey)"` and fund it via https://sepoliafaucet.com');
   }
+  if (!isHexString(BESU_PRIVATE_KEY, 32) && !BESU_PRIVATE_KEY.startsWith('0x')) {
+    throw new Error('BESU_PRIVATE_KEY must be a 0x-prefixed 32-byte hex string.');
+  }
+  _wallet = new Wallet(BESU_PRIVATE_KEY, getProvider());
+  return _wallet;
+}
 
-  // Production RPC call
-  const res = await fetch(BESU_RPC, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', method, params, id: 1 })
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(`Besu RPC error: ${data.error.message}`);
-  return data.result;
+function requireAnchorAddress() {
+  if (ANCHOR_WALLET_ADDRESS) return ANCHOR_WALLET_ADDRESS;
+  // Default to the wallet's own address (self-send is allowed and cheaper)
+  return getWallet().address;
 }
 
 /**
- * Get current block number
- */
-async function getBlockNumber() {
-  if (DEMO_MODE) {
-    DEMO_BLOCK_NUMBER += 1; // Increment for each call to simulate progression
-    return DEMO_BLOCK_NUMBER;
-  }
-
-  const hex = await rpc('eth_blockNumber');
-  return parseInt(hex, 16);
-}
-
-/**
- * Anchor a consent hash on the Besu chain
- * In demo mode, simulates a blockchain transaction without network calls
- * @param {object} consentData - { matchId, donorId, recipientId, donorSignature, recipientSignature, timestamp }
- * @returns {{ txHash, blockNumber, consentHash, chainId, explorerUrl }}
+ * Anchor a consent hash on the configured EVM chain.
+ * In DEMO_MODE (forced + no key), simulates the transaction for offline demos.
+ * Otherwise submits a real 0-value transaction with the consent hash as calldata.
+ *
+ * @param {object} consentData - { matchId, donorId, recipientId, donorSignature, recipientSignature, timestamp, platform }
+ * @returns {{ success, demo, consentHash, txHash, blockNumber, chainId, explorerUrl, gasUsed, status, timestamp }}
  */
 async function anchorConsent(consentData) {
   const consentHash = computeConsentHash(consentData);
 
   if (DEMO_MODE) {
-    await simulateDelay(400, 700); // Simulate transaction processing time
-
-    // Generate plausible transaction hash
+    // Forced demo path — only reachable when DEMO_MODE=true AND no key set
+    await simulateDelay(400, 700);
     const fakeTxHash = generateTxHash();
-
-    // Increment block number to simulate confirmation
     DEMO_BLOCK_NUMBER += 1;
     const blockNumber = DEMO_BLOCK_NUMBER;
     DEMO_TX_COUNTER++;
-
-    // Generate plausible explorer URL
-    const explorerUrl = `https://hackathon-explorer.e.gov.ph/tx/${fakeTxHash}`;
 
     return {
       success: true,
@@ -129,18 +112,51 @@ async function anchorConsent(consentData) {
       txHash: fakeTxHash,
       blockNumber,
       chainId: CHAIN_ID,
-      explorerUrl,
+      explorerUrl: `${EXPLORER_URL}/tx/${fakeTxHash}`,
       timestamp: new Date().toISOString(),
-      gasUsed: '0x5208', // Standard gas for simple transaction
+      gasUsed: '0x5208',
       status: 'mined',
       confirmations: 12,
       _demo: true
     };
   }
 
-  // Production: send signed raw transaction
-  // (Requires PRIVATE_KEY env var and ethers.js / web3.js in production)
-  throw new Error('Live Besu signing requires PRIVATE_KEY configuration. Use demo mode for hackathon.');
+  // Live path
+  const wallet = getWallet();
+  const provider = getProvider();
+  const to = requireAnchorAddress();
+
+  const tx = await wallet.sendTransaction({
+    to,
+    value: 0n,
+    data: consentHash,
+    // 32-byte calldata transaction: 21000 (base) + 16 * 32 (calldata bytes) = 21512
+    // Bump to 30000 for safety across chain implementations
+    gasLimit: 30000n,
+  });
+
+  // Wait for 1 confirmation so blockNumber is meaningful for the UI
+  const receipt = await tx.wait(1);
+
+  if (!receipt) {
+    throw new Error('Transaction receipt was null after wait()');
+  }
+
+  return {
+    success: true,
+    demo: false,
+    consentHash,
+    txHash: receipt.hash,
+    blockNumber: receipt.blockNumber,
+    chainId: CHAIN_ID,
+    explorerUrl: `${EXPLORER_URL}/tx/${receipt.hash}`,
+    gasUsed: receipt.gasUsed.toString(),
+    status: receipt.status === 1 ? 'mined' : 'failed',
+    from: receipt.from,
+    to: receipt.to,
+    confirmations: 1,
+    timestamp: new Date().toISOString()
+  };
 }
 
 /**
@@ -149,8 +165,6 @@ async function anchorConsent(consentData) {
 async function getTransactionReceipt(txHash) {
   if (DEMO_MODE) {
     await simulateDelay(200, 500);
-
-    // Check if it's a valid demo transaction hash
     if (txHash && txHash.startsWith('0x') && txHash.length === 66) {
       return {
         success: true,
@@ -168,9 +182,28 @@ async function getTransactionReceipt(txHash) {
     return { success: false, error: 'Transaction not found' };
   }
 
+  if (!txHash || !txHash.startsWith('0x')) {
+    return { success: false, error: 'Invalid txHash format' };
+  }
+
   try {
-    const receipt = await rpc('eth_getTransactionReceipt', [txHash]);
-    return { success: true, receipt };
+    const provider = getProvider();
+    const receipt = await provider.getTransactionReceipt(txHash);
+    if (!receipt) {
+      return { success: false, error: 'Transaction not found' };
+    }
+    return {
+      success: true,
+      receipt: {
+        transactionHash: receipt.hash,
+        blockNumber: '0x' + receipt.blockNumber.toString(16),
+        status: receipt.status === 1 ? '0x1' : '0x0',
+        from: receipt.from,
+        to: receipt.to,
+        gasUsed: '0x' + receipt.gasUsed.toString(16),
+        logs: []
+      }
+    };
   } catch (err) {
     return { success: false, error: err.message };
   }
@@ -182,30 +215,34 @@ async function getTransactionReceipt(txHash) {
 async function getChainInfo() {
   if (DEMO_MODE) {
     await simulateDelay(100, 300);
-
     return {
       chainId: CHAIN_ID,
       blockNumber: DEMO_BLOCK_NUMBER,
       gasPrice: 0,
-      rpcUrl: BESU_RPC,
-      explorerUrl: 'https://hackathon-explorer.e.gov.ph',
-      networkName: 'eBuhay Testnet',
+      rpcUrl: BESU_RPC_URL,
+      explorerUrl: EXPLORER_URL,
+      networkName: BESU_MODE === 'besu' ? 'eBuhay Testnet (mocked)' : 'Ethereum Sepolia (mocked)',
+      mode: BESU_MODE,
       demo: true
     };
   }
 
   try {
-    const [chainId, blockNumber, gasPrice] = await Promise.all([
-      rpc('eth_chainId'),
-      rpc('eth_blockNumber'),
-      rpc('eth_gasPrice')
+    const provider = getProvider();
+    const [network, blockNumber, feeData] = await Promise.all([
+      provider.getNetwork(),
+      provider.getBlockNumber(),
+      provider.getFeeData()
     ]);
     return {
-      chainId: parseInt(chainId, 16),
-      blockNumber: parseInt(blockNumber, 16),
-      gasPrice: parseInt(gasPrice, 16),
-      rpcUrl: BESU_RPC,
-      explorerUrl: 'https://hackathon-explorer.e.gov.ph'
+      chainId: Number(network.chainId),
+      blockNumber,
+      gasPrice: feeData.gasPrice ? Number(feeData.gasPrice) : 0,
+      rpcUrl: BESU_RPC_URL,
+      explorerUrl: EXPLORER_URL,
+      networkName: BESU_MODE === 'besu' ? 'DICT eBuhay Besu Testnet' : 'Ethereum Sepolia',
+      mode: BESU_MODE,
+      demo: false
     };
   } catch (err) {
     return { error: err.message };
@@ -213,7 +250,18 @@ async function getChainInfo() {
 }
 
 /**
- * Reset demo state (useful for testing)
+ * Get current block number
+ */
+async function getBlockNumber() {
+  if (DEMO_MODE) {
+    DEMO_BLOCK_NUMBER += 1;
+    return DEMO_BLOCK_NUMBER;
+  }
+  return await getProvider().getBlockNumber();
+}
+
+/**
+ * Reset demo state (only relevant in DEMO_MODE)
  */
 function resetDemoState() {
   DEMO_BLOCK_NUMBER = 4821;
@@ -226,6 +274,6 @@ module.exports = {
   getTransactionReceipt,
   getChainInfo,
   getBlockNumber,
-  DEMO_MODE,
-  resetDemoState
+  resetDemoState,
+  DEMO_MODE
 };

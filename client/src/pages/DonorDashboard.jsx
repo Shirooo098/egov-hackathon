@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import ChatBox from '../components/ChatBox';
 import GovernmentAgreement from '../components/GovernmentAgreement';
@@ -10,7 +11,7 @@ import { useToast } from '../context/ToastContext';
 import { useMatch } from '../context/MatchContext';
 import { DonorProfileTab } from '../components/DonorTabComponents';
 import { ALL_ORGANS, BLOOD_TYPES } from '../services/domain';
-import { formatStatus, statusPillClass } from '../utils/matchStatus';
+import { formatStatus, statusTone } from '../utils/matchStatus';
 import { UserIcon, MatchIcon, ChatIcon, ChainIcon, DropIcon } from '../components/Icons';
 import { api } from '../services/api';
 
@@ -74,10 +75,10 @@ export default function DonorDashboard({ onboardingPledge }) {
   const isChatUnlocked = consentSigned || ['agreement_finalized', 'contract_signed', 'ready_for_transplant'].includes(match.status);
 
   const TABS = [
-    { id: 'profile', label: 'My Profile', shortLabel: 'Profile', icon: <UserIcon /> },
-    { id: 'mymatch', label: 'My Match', shortLabel: 'Match', icon: <MatchIcon />, activeIndicator: true },
-    { id: 'agreement', label: 'Agreement', shortLabel: 'Agreement', icon: <ChainIcon />, locked: !isAgreementUnlocked },
-    { id: 'chat', label: 'Chat', shortLabel: 'Chat', icon: <ChatIcon />, locked: !isChatUnlocked },
+    { id: 'profile', label: 'My Profile', icon: <UserIcon />, badge: 'Tier I ✓' },
+    { id: 'mymatch', label: 'My Match (Live)', icon: <MatchIcon />, activeIndicator: true },
+    { id: 'agreement', label: isAgreementUnlocked ? 'Donation Agreement' : 'Agreement', icon: <ChainIcon />, locked: !isAgreementUnlocked },
+    { id: 'chat', label: isChatUnlocked ? 'Clinical Chat' : 'Chat', icon: <ChatIcon />, locked: !isChatUnlocked },
   ];
 
   return (
@@ -87,23 +88,30 @@ export default function DonorDashboard({ onboardingPledge }) {
         <div className="hero-blob" style={{ width: 360, height: 360, background: 'rgba(5,150,105,0.06)', top: -80, right: '8%' }} />
         <div className="container" style={{ position: 'relative' }}>
           <div className="hero-eyebrow anim-up" style={{ color: 'var(--emerald)' }}>
-            <DropIcon size={14} /> Donor Portal · PhilSys Tier I
+            <DropIcon size={14} /> Verified Citizen Portal · PhilSys eVerify Tier I
           </div>
-          <h1 className="hero-h1 anim-up-d1">Thank you for <span style={{ color: 'var(--emerald)' }}>wanting to help</span></h1>
+          <h1 className="hero-h1 anim-up-d1">Your <span style={{ color: 'var(--emerald)' }}>donation</span> saves lives</h1>
           <p className="hero-p anim-up-d2">
-            We'll let you know as soon as someone needs what you can give. Until then, you can update your details any time.
+            Manage your DOH organ and blood donation pledge. When compatibility is automatically detected, review real-time institutional triage at PGH and coordinate schedules directly with verified peers.
           </p>
-          {/* Big status pill */}
-          <div className="anim-up-d3" style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
-            <span className={statusPillClass(match.status)}>
-              {formatStatus(match.status)}
-            </span>
-            <div className="hero-stat-strip" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', fontSize: 13, color: 'var(--foreground-muted)', fontWeight: 600 }}>
-              <span>Blood: <strong style={{ color: 'var(--foreground)' }}>{bloodType}</strong></span>
-              <span className="hero-stat-sep" style={{ color: 'var(--border)' }}>·</span>
-              <span>Organs pledged: <strong style={{ color: 'var(--foreground)' }}>{organs.length}</strong></span>
-              <span className="hero-stat-sep" style={{ color: 'var(--border)' }}>·</span>
-              <span>Registry: <strong style={{ color: avail ? 'var(--emerald)' : 'var(--foreground-subtle)' }}>{avail ? 'Active' : 'Off'}</strong></span>
+          <div className="hero-stats anim-up-d3" style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', background: 'var(--card)', padding: '16px 24px', borderRadius: 'var(--r-lg)', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', marginTop: 24 }}>
+            <div className="hero-stat">
+              <div className="hero-stat-val" style={{ color: 'var(--destructive)', fontSize: 24, fontWeight: 900 }}>{bloodType}</div>
+              <div className="hero-stat-lbl" style={{ fontSize: 12, color: 'var(--foreground-muted)' }}>Registered Blood</div>
+            </div>
+            <div className="hero-stat" style={{ borderLeft: '1px solid var(--border)', paddingLeft: 20 }}>
+              <div className="hero-stat-val" style={{ color: 'var(--primary)', fontSize: 24, fontWeight: 900 }}>{organs.length}</div>
+              <div className="hero-stat-lbl" style={{ fontSize: 12, color: 'var(--foreground-muted)' }}>Organ Pledges</div>
+            </div>
+            <div className="hero-stat" style={{ borderLeft: '1px solid var(--border)', paddingLeft: 20 }}>
+              <div className="hero-stat-val" style={{ color: avail ? 'var(--emerald)' : 'var(--foreground-subtle)', fontSize: 24, fontWeight: 900 }}>{avail ? 'Active' : 'Off'}</div>
+              <div className="hero-stat-lbl" style={{ fontSize: 12, color: 'var(--foreground-muted)' }}>Registry Status</div>
+            </div>
+            <div className="hero-stat" style={{ borderLeft: '1px solid var(--border)', paddingLeft: 20 }}>
+              <div className="hero-stat-val" style={{ color: 'var(--emerald)', fontSize: 16, fontWeight: 800 }}>
+                <span className={`badge badge-${statusTone(match.status)}`} style={{ fontSize: 11 }}>{formatStatus(match.status)}</span>
+              </div>
+              <div className="hero-stat-lbl" style={{ fontSize: 12, color: 'var(--foreground-muted)' }}>Match Lifecycle Stage</div>
             </div>
           </div>
         </div>
@@ -120,22 +128,21 @@ export default function DonorDashboard({ onboardingPledge }) {
         </div>
       </div>
 
-      {/* -- Tab Bar (pill nav) -- */}
-      <div className="tab-bar tab-bar-pill">
-        <div className="container tab-bar-inner" style={{ display: 'flex', gap: '6px', overflowX: 'auto', padding: '10px 0' }}>
+      {/* -- Tab Bar -- */}
+      <div className="tab-bar">
+        <div className="container tab-bar-inner" style={{ display: 'flex', gap: '8px', overflowX: 'auto' }}>
           {TABS.map(t => (
             <button
               key={t.id}
-              className={`tab-btn${tab === t.id ? ' active' : ''}${t.locked ? ' locked' : ''}`}
+              className={`tab-btn${tab === t.id ? ' active' : ''}`}
               onClick={() => setTab(t.id)}
-              disabled={t.locked}
-              aria-label={t.label}
-              title={t.locked ? `${t.label} (locked)` : t.label}
+              style={{ fontWeight: tab === t.id ? 800 : 500, display: 'flex', alignItems: 'center', gap: 8, padding: '12px 18px' }}
             >
-              <span className="tab-btn-icon">{t.icon}</span>
-              <span className="tab-btn-label">{t.label}</span>
-              {t.activeIndicator && <span className="tab-btn-live"><LiveDot /></span>}
-              {t.locked && <span className="tab-btn-lock"><LockGlyph size={11} /></span>}
+              {t.icon}
+              <span>{t.label}</span>
+              {t.locked && <LockGlyph size={12} />}
+              {t.badge && <span className="badge badge-verified" style={{ fontSize: 9, padding: '2px 6px' }}>{t.badge}</span>}
+              {t.activeIndicator && <LiveDot />}
             </button>
           ))}
         </div>
@@ -182,9 +189,9 @@ export default function DonorDashboard({ onboardingPledge }) {
                 </>
               ) : (
                 <LockedTabPanel
-                  title="Agreement unlocks once a date is set"
-                  message="After you and your match agree on a date, the agreement will be ready for both of you to sign."
-                  ctaLabel="Go to My Match"
+                  title="Donation Agreement Currently Restricted"
+                  message="In compliance with DOH clinical governance regulations, the official electronic consent agreement unlocks only after an attending transplant medical specialist approves your biological match and a procedure schedule is mutually confirmed."
+                  ctaLabel="Return to My Match"
                   onCta={() => setTab('mymatch')}
                 />
               )}
