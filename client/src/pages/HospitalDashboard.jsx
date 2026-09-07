@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useMatch } from '../context/MatchContext';
-import { api } from '../services/api';
 import EGovAIWidget from '../components/EGovAIWidget';
 import OrganAnalytics from '../components/OrganAnalytics';
 import { useToast } from '../context/ToastContext';
@@ -22,7 +21,7 @@ export default function HospitalDashboard() {
       advanceStatus('approved');
     } else {
       setStaticState(prev => prev.map(c => c.id === matchId ? { ...c, status: 'approved' } : c));
-      toast.success(`Match ${matchId} formally approved by institutional medical governance team.`, { title: 'Clinical Approval Granted' });
+      toast.success(`Demo match ${matchId} approved for the hospital review workflow.`, { title: 'Demo Review Approved' });
     }
   };
 
@@ -31,7 +30,7 @@ export default function HospitalDashboard() {
       advanceStatus('rejected');
     } else {
       setStaticState(prev => prev.map(c => c.id === matchId ? { ...c, status: 'rejected' } : c));
-      toast.warning(`Match ${matchId} declined. Citizen returned to matching queue.`, { title: 'Match Declined' });
+      toast.warning(`This demo match was marked declined. No new match search has started.`, { title: 'Demo Match Declined' });
     }
   };
 
@@ -40,9 +39,9 @@ export default function HospitalDashboard() {
   };
 
   const TABS = [
-    { id: 'matches', label: 'Clinical Triage & Review', icon: <ClipIcon /> },
+    { id: 'matches', label: 'Hospital Demo Review', icon: <ClipIcon /> },
     { id: 'laws', label: 'PH Health Laws AI', icon: <ScaleIcon /> },
-    { id: 'analytics', label: 'National Vault Analytics', icon: <AnalyticsIcon /> },
+    { id: 'analytics', label: 'Demo Workflow Analytics', icon: <AnalyticsIcon /> },
   ];
 
   // Combine shared live match with static demo items for rich UI table
@@ -50,7 +49,7 @@ export default function HospitalDashboard() {
   const allMatches = [liveMatchAsItem, ...staticState];
   const { pendingMatches, activeMatches, rejectedMatches } = filterMatches(allMatches);
 
-  // Active procedures = matches already in scheduling or beyond
+  // Active workflow items = matches already in scheduling or beyond
   const activeProcedureCount = allMatches.filter(
     (m) => m.isLiveContext &&
       ['scheduled', 'agreement_finalized', 'contract_signed', 'ready_for_transplant'].includes(m.status)
@@ -78,7 +77,7 @@ export default function HospitalDashboard() {
           <ul className="care-journey-rail hospital-care-rail anim-up-d3" aria-label="Hospital current care facts">
             <li className="care-journey-primary" role="status"><span>Pending review</span><strong>{pendingMatches.length}</strong></li>
             <li><span>Approved Matches</span><strong>{activeMatches.length}</strong></li>
-            <li><span>Active procedures</span><strong>{activeProcedureCount}</strong></li>
+            <li><span>Active demo workflows</span><strong>{activeProcedureCount}</strong></li>
             <li><span>Consultations</span><strong>{consultationsToday}</strong></li>
           </ul>
           </div>
@@ -88,7 +87,7 @@ export default function HospitalDashboard() {
       <div className="dashboard-network-band">
         <div className="marquee-outer">
           <div className="marquee-track dashboard-marquee-track">
-            {['NATIONAL KIDNEY INSTITUTE (NKI)', 'PHILIPPINE GENERAL HOSPITAL (PGH)', 'DOH ORGAN DONATION PROGRAM', 'DICT eVERIFY TRUST REGISTRY', 'HYPERLEDGER BESU TESTNET (CHAIN 13371)', 'PHILIPPINE HEART CENTER (PHC)', 'LUNG CENTER OF THE PHILIPPINES'].map((a, i) => (
+            {['NATIONAL KIDNEY INSTITUTE (NKI) · DEMO', 'PHILIPPINE GENERAL HOSPITAL (PGH) · DEMO', 'DOH ORGAN DONATION PROGRAM · SAMPLE DATA', 'Simulated trust registry', 'Simulated chain 13371', 'PHILIPPINE HEART CENTER (PHC) · DEMO', 'LUNG CENTER OF THE PHILIPPINES · DEMO'].map((a, i) => (
               <span key={i} className="marquee-item">🏥 {a}</span>
             ))}
           </div>
@@ -104,6 +103,7 @@ export default function HospitalDashboard() {
               className={`tab-btn${tab === t.id ? ' active' : ''}`}
               onClick={() => setTab(t.id)}
               aria-label={t.label}
+              aria-pressed={tab === t.id}
             >
               <span className="tab-btn-icon">{t.icon}</span>
               <span className="tab-btn-label">{t.label}</span>
@@ -122,7 +122,7 @@ export default function HospitalDashboard() {
       <div className="page-content" style={{ padding: '32px 0' }}>
         <div className="container">
 
-          {/* TAB 1: CLINICAL TRIAGE & REVIEW */}
+          {/* TAB 1: HOSPITAL DEMO REVIEW */}
           {tab === 'matches' && (
             <>
               {/* Live lifecycle indicator — only show when a citizen-portal match is active */}
@@ -160,7 +160,7 @@ export default function HospitalDashboard() {
       </div>
 
       <footer className="footer-mini">
-        DICT eGov Platform · Republic of the Philippines · Demo Build
+        eBuhay prototype · Demo Build
       </footer>
     </main>
   );

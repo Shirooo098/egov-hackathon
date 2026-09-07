@@ -118,21 +118,11 @@ export function MatchProvider({ children }) {
         return updated;
       });
       return anchor;
-    } catch (_err) {
-      const mockAnchor = {
-        chainId: 13371,
-        txHash: '0x8f3c' + Math.random().toString(16).substring(2, 12) + 'a701b2',
-        blockNumber: 154209,
-        timestamp: new Date().toISOString(),
-      };
-      setMatch((prev) => {
-        const updated = { ...prev, blockchainAnchor: mockAnchor, status: 'ready_for_transplant' };
-        saveMatchToStorage(updated);
-        return updated;
-      });
-      return mockAnchor;
+    } catch {
+      toast.error('Blockchain anchoring failed. Check your connection and try again.', { title: 'Anchoring failed' });
+      return null;
     }
-  }, [match.id, match.donor, match.recipient]);
+  }, [match.id, match.donor, match.recipient, toast]);
 
   const signAgreement = useCallback((role) => {
     setMatch((prev) => {
@@ -144,7 +134,7 @@ export function MatchProvider({ children }) {
         status = 'agreement_finalized';
         eMessageToast(toast, 'agreement_signed', {});
         // Silently trigger background Besu anchoring without exposing web3 jargon to citizens
-        anchorToBlockchain();
+        void anchorToBlockchain();
       }
       const updated = { ...prev, donorSigned, recipientSigned, status };
       saveMatchToStorage(updated);
@@ -188,7 +178,6 @@ export function MatchProvider({ children }) {
   }, [match.status]);
 
   const hospitalApproved = isApproved;
-  const doctorApproved = isApproved; // Synonym for legacy components
 
   const consentSigned = useMemo(() => {
     return (match.donorSigned && match.recipientSigned) || ['agreement_finalized', 'contract_signed', 'ready_for_transplant'].includes(match.status);
@@ -209,11 +198,10 @@ export function MatchProvider({ children }) {
     updateMatchFromProfile,
     isApproved,
     hospitalApproved,
-    doctorApproved,
     consentSigned,
     isAgreementFinalized,
     agreementSigned
-  }), [match, advanceStatus, proposeSchedule, setScheduledDate, signAgreement, anchorToBlockchain, setConsentSigned, resetMatch, updateMatchFromProfile, isApproved, hospitalApproved, doctorApproved, consentSigned, isAgreementFinalized, agreementSigned]);
+  }), [match, advanceStatus, proposeSchedule, setScheduledDate, signAgreement, anchorToBlockchain, setConsentSigned, resetMatch, updateMatchFromProfile, isApproved, hospitalApproved, consentSigned, isAgreementFinalized, agreementSigned]);
 
   return (
     <MatchContext.Provider value={value}>

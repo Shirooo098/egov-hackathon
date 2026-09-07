@@ -1,11 +1,8 @@
 /* ============================================================
-   eBuhay DICT eGov Platform — Design System
-   Inspired by: platforms.e.gov.ph
-   Mode: Light-first with dark mode support, clean, professional government
+   eBuhay Civic Care Console — Design System
+   Mode: Light-only prototype for a humane, trustworthy civic care workflow
    Font: Figtree / Noto Sans
    ============================================================ */
-
-@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&family=Noto+Sans:wght@300;400;500;600;700&display=swap');
 
 /* ============================================================
    DESIGN TOKENS  (mirror platforms.e.gov.ph CSS vars + semantic extensions)
@@ -48,7 +45,7 @@
   /* --- Text (Light) --- */
   --foreground: #0F172A;
   --foreground-muted: #64748B;
-  --foreground-subtle: #94A3B8;
+  --foreground-subtle: #475569;
   --foreground-inverse: #FFFFFF;
 
   /* --- Semantic Status Colors --- */
@@ -60,6 +57,7 @@
   --status-success-bg: var(--emerald-10);
   --status-warning-bg: var(--sun-10);
   --status-danger-bg: var(--destructive-10);
+  --surface-civic: #EEF4FF;
 
   /* --- Rainbow top stripe (from platforms.e.gov.ph) --- */
   --stripe-gradient: linear-gradient(to right, var(--primary), var(--destructive), var(--sun));
@@ -380,18 +378,6 @@ img {
   text-align: center;
 }
 
-/* Subtle dot grid (matches the site's feature card inner grid) */
-.hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(148, 163, 184, 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
-  background-size: 32px 32px;
-  pointer-events: none;
-}
-
 /* Soft glow blobs */
 .hero-blob {
   position: absolute;
@@ -441,8 +427,18 @@ img {
   margin: 0 auto var(--s9);
 }
 
+::selection {
+  background: var(--primary-20);
+  color: var(--foreground);
+}
+
+:root {
+  caret-color: var(--primary);
+}
+
 .care-journey-hero {
   padding: 32px 0 28px;
+  background: var(--surface-civic);
 }
 
 .care-journey-hero::before {
@@ -494,17 +490,33 @@ img {
   text-transform: capitalize;
 }
 
+.care-journey-rail :where(li[role='status']) {
+  background: var(--status-info-bg);
+}
+
+.care-journey-rail :where(li[role='status']) strong {
+  color: var(--status-info-fg);
+}
+
 .care-journey-urgency {
   color: var(--destructive) !important;
 }
 
 .hospital-care-rail .care-journey-primary {
-  background: var(--background-alt);
+  background: var(--status-warning-bg);
 }
 
 .hospital-care-rail .care-journey-primary strong {
-  color: var(--destructive);
+  color: var(--status-warning-fg);
   font-size: 1.75rem;
+}
+
+.donor-care-journey .care-journey-primary {
+  background: var(--status-success-bg);
+}
+
+.donor-care-journey .care-journey-primary strong {
+  color: var(--status-success-fg);
 }
 
 @media (max-width: 640px) {
@@ -849,7 +861,7 @@ img {
 }
 
 .btn-success {
-  background: var(--emerald);
+  background: var(--emerald-hover);
   color: white;
   box-shadow: 0 4px 14px rgba(5, 150, 105, 0.2);
 }
@@ -1003,12 +1015,12 @@ img {
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.45);
 }
 .status-pill-go {
-  background: var(--emerald);
+  background: var(--emerald-hover);
   color: #FFFFFF;
 }
 .status-pill-wait {
   background: #F59E0B;
-  color: #FFFFFF;
+  color: var(--status-warning-fg);
 }
 .status-pill-stop {
   background: var(--destructive);
@@ -1203,7 +1215,6 @@ textarea.input {
 .compat-fill {
   height: 100%;
   border-radius: var(--r-full);
-  transition: width 0.8s var(--ease-up);
 }
 
 .compat-high {
@@ -1525,16 +1536,16 @@ textarea.input {
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--background-tertiary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
+  background: var(--foreground-muted);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--foreground-subtle);
+  background: var(--primary);
 }
 
 /* ============================================================
@@ -3095,7 +3106,7 @@ a:focus-visible {
 
 /* --- Status pill foreground tokens --- */
 :root {
-  --status-warning-fg: #92400E;
+  --status-warning-fg: #422006;
   --status-info-fg: var(--primary-active);
   --status-success-fg: var(--emerald-hover);
   --status-danger-fg: #7F1D1D;
@@ -3164,7 +3175,7 @@ a:focus-visible {
   transition: all var(--t-fast);
 }
 .btn-demo:hover {
-  background: var(--emerald);
+  background: var(--emerald-hover);
   color: white;
   border-style: solid;
 }
@@ -3299,6 +3310,10 @@ a:focus-visible {
     top: 56px;
     z-index: 40;
   }
+}
+
+* {
+  scrollbar-color: var(--foreground-muted) var(--background-tertiary);
 }
 
 /* Stepper labels stay readable on phones */
@@ -3782,6 +3797,53 @@ a:focus-visible {
 .onboarding-hero-copy {
   margin: 0 0 24px;
   color: var(--foreground-muted);
+}
+
+.onboarding-shell {
+  background: var(--surface-civic);
+}
+
+.onboarding-card {
+  border-color: var(--primary-20);
+  box-shadow: var(--shadow-blue);
+}
+
+.role-card {
+  border-color: var(--border);
+  transition: border-color var(--t-fast), background var(--t-fast), box-shadow var(--t-fast), transform var(--t-fast);
+}
+
+.role-card:hover,
+.role-card:focus-visible {
+  border-color: var(--primary);
+  background: var(--primary-10);
+  box-shadow: var(--shadow-blue);
+}
+
+.role-card:focus-visible {
+  outline: 3px solid var(--primary-20);
+  outline-offset: 2px;
+}
+
+.role-card-recipient .role-card-icon {
+  color: var(--primary);
+  background: var(--primary-10);
+  border-radius: var(--r-md);
+  padding: 8px;
+}
+
+.role-card-donor .role-card-icon {
+  color: var(--status-success-fg);
+  background: var(--status-success-bg);
+  border-radius: var(--r-md);
+  padding: 8px;
+}
+
+.role-card-donor:hover,
+.role-card-donor:focus-visible {
+  border-color: var(--emerald);
+  background: var(--status-success-bg);
+  box-shadow: var(--shadow-emerald);
 }
 .staff-sign-in-page {
   min-height: calc(100vh - 62px);

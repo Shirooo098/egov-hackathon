@@ -3,9 +3,9 @@ import Stepper from './Stepper';
 
 const STEPS = [
   { key: 'role', label: 'Role' },
-  { key: 'auth', label: 'Auth' },
-  { key: 'sso', label: 'SSO' },
-  { key: 'face', label: 'Liveness' },
+  { key: 'auth', label: 'Access' },
+  { key: 'sso', label: 'Demo code' },
+  { key: 'face', label: 'Face check' },
   { key: 'profile', label: 'Profile' },
 ];
 
@@ -28,9 +28,9 @@ export default function FaceLivenessCheck({
       <div style={{ alignSelf: 'stretch' }}>
         <Stepper steps={STEPS} active={4} />
       </div>
-      <h3 style={{ fontSize: 18, fontWeight: 800 }}>Face Liveness Verification</h3>
+      <h3 style={{ fontSize: 18, fontWeight: 800 }}>Face Liveness Check (Demo)</h3>
       <p style={{ fontSize: 13, color: 'var(--foreground-muted)', maxWidth: 440 }}>
-        A secure eGov capture window has opened. Follow the on-screen prompts to blink and confirm you're a live person.
+        Follow the sample face-check prompts. This prototype demonstrates the step; it does not verify your identity or provide a government liveness result.
       </p>
 
       {/* Stage chips */}

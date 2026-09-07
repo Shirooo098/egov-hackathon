@@ -29,12 +29,12 @@ export function ClinicalTriageTab({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
       <div>
         <div className="section-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span>Pending Medical Triage ({pending.length})</span>
-          <span className="badge badge-warning" style={{ fontSize: 11 }}>Requires Clinical Governance Action</span>
+          <span>Pending Hospital Demo Review ({pending.length})</span>
+          <span className="badge badge-warning" style={{ fontSize: 11 }}>Requires administrator review</span>
         </div>
         {pending.length === 0 ? (
           <div className="card empty-state" style={{ padding: '32px', textAlign: 'center' }}>
-            <p style={{ color: 'var(--foreground-muted)' }}>No pending match evaluations currently requiring triage.</p>
+            <p style={{ color: 'var(--foreground-muted)' }}>No pending demo match evaluations require review.</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -64,9 +64,9 @@ export function ClinicalTriageTab({
                           color: match.blockchainAnchor ? 'var(--primary)' : 'var(--foreground-muted)',
                           border: `1px solid ${match.blockchainAnchor ? 'rgba(0, 56, 168, 0.3)' : 'var(--border)'}`,
                         }}
-                        title={match.blockchainAnchor ? `Besu Tx: ${match.blockchainAnchor.txHash}` : 'Not yet anchored to Besu'}
+                        title={match.blockchainAnchor ? `Simulated anchor: ${match.blockchainAnchor.txHash}` : 'No simulated anchor saved'}
                       >
-                        <ChainIcon size={9} /> {match.blockchainAnchor ? 'Besu Anchored' : 'Besu Not Anchored'}
+                        <ChainIcon size={9} /> {match.blockchainAnchor ? 'Simulated anchor saved' : 'No simulated anchor'}
                       </span>
                     )}
                     <span className={`badge badge-${c.type === 'blood' ? 'primary' : 'success'}`}>{c.organ}</span>
@@ -87,7 +87,7 @@ export function ClinicalTriageTab({
 
                 <div className="compat-wrap" style={{ minWidth: 170 }}>
                   <div className="compat-header">
-                    <span className="compat-label">Automated Matrix Score</span>
+                    <span className="compat-label">Compatibility estimate</span>
                     <span className="compat-value" style={{ color: 'var(--emerald)', fontWeight: 800, fontSize: 18 }}>{c.score}%</span>
                   </div>
                   <div className="compat-track">
@@ -120,8 +120,8 @@ export function ClinicalTriageTab({
       {active.length > 0 && (
         <div>
           <div className="section-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span>Approved &amp; Active Procedures ({active.length})</span>
-            <span className="badge badge-verified" style={{ fontSize: 11 }}>Clinical Clearance Granted</span>
+            <span>Approved &amp; Active Demo Workflows ({active.length})</span>
+            <span className="badge badge-verified" style={{ fontSize: 11 }}>Demo review completed</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {active.map(c => (
@@ -140,7 +140,7 @@ export function ClinicalTriageTab({
               >
                 <div style={{ flex: '1 1 240px' }}>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6, flexWrap: 'wrap' }}>
-                    <span className="badge badge-verified">✓ Approved by PGH</span>
+                    <span className="badge badge-verified">✓ Hospital Administrator demo review completed</span>
                     <span className="badge" style={{ background: 'var(--background-alt)', border: '1px solid var(--border)', fontSize: 10 }}>
                       Status: <strong>{formatStatus(c.status || 'approved').toUpperCase()}</strong>
                     </span>
@@ -156,22 +156,22 @@ export function ClinicalTriageTab({
                   {c.isLiveContext && (match.blockchainAnchor || (match.donorSigned && match.recipientSigned)) && (
                     <div style={{ marginTop: 12, padding: 14, borderRadius: 'var(--r-md)', background: 'rgba(5, 150, 105, 0.05)', border: '1px solid rgba(5, 150, 105, 0.3)', fontSize: 12 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, fontWeight: 800, color: 'var(--emerald)', marginBottom: 6 }}>
-                        <span>✓ Dual E-Signatures Cryptographically Verified (Donor &amp; Recipient)</span>
-                        <span className="badge badge-success" style={{ fontSize: 9 }}>Chain ID: 13371 (Besu)</span>
+                        <span>✓ Both demo signature actions recorded</span>
+                        <span className="badge badge-success" style={{ fontSize: 9 }}>Simulated chain 13371</span>
                       </div>
                       {match.blockchainAnchor ? (
                         <div className="tx-hash" style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--foreground)', background: 'white', padding: 8, borderRadius: 'var(--r-sm)', border: '1px solid var(--border)', wordBreak: 'break-all' }}>
-                          <div><strong>Besu Tx Hash:</strong> <code>{match.blockchainAnchor.txHash}</code></div>
+                          <div><strong>Simulated anchor hash:</strong> <code>{match.blockchainAnchor.txHash}</code></div>
                           <div><strong>Block Number:</strong> #{match.blockchainAnchor.blockNumber}</div>
                           <div style={{ marginTop: 4 }}>
                             <a href={match.blockchainAnchor.explorerUrl || "https://hackathon-blockchain.e.gov.ph"} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: 700 }}>
-                              View Zero-Knowledge Proof On-Chain Explorer ➔
+                              View simulated anchor details ➔
                             </a>
                           </div>
                         </div>
                       ) : (
                         <div style={{ fontSize: 11, color: 'var(--foreground-muted)' }}>
-                          Both citizens have affixed verified digital signatures. Ready for immutable blockchain anchoring.
+                          Both citizens completed the demo signature step. The next action would simulate an anchor; it is not an immutable record.
                         </div>
                       )}
                     </div>
@@ -183,7 +183,7 @@ export function ClinicalTriageTab({
                     ['agreement_finalized', 'contract_signed', 'ready_for_transplant'].includes(match.status) || (match.donorSigned && match.recipientSigned) ? (
                       match.blockchainAnchor ? (
                         <span className="badge badge-success" style={{ padding: '8px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700 }}>
-                          ✓ Besu Audited &amp; Ready for Transplant
+                          ✓ Demo workflow ready for next review step
                         </span>
                       ) : (
                         <button
@@ -191,7 +191,7 @@ export function ClinicalTriageTab({
                           onClick={handleAnchor}
                           style={{ padding: '10px 22px', fontWeight: 800 }}
                         >
-                          <ChainIcon /> Anchor on blockchain
+                          <ChainIcon /> Save simulated anchor
                         </button>
                       )
                     ) : (
@@ -200,7 +200,7 @@ export function ClinicalTriageTab({
                       </span>
                     )
                   ) : (
-                    <span className="badge badge-success">✓ Procedure Ready</span>
+                        <span className="badge badge-success">✓ Demo workflow ready</span>
                   )}
                 </div>
               </div>
@@ -211,13 +211,13 @@ export function ClinicalTriageTab({
 
       {rejected.length > 0 && (
         <div>
-          <div className="section-title" style={{ color: 'var(--foreground-muted)', fontSize: 14 }}>Declined / Returned to Registry ({rejected.length})</div>
+          <div className="section-title" style={{ color: 'var(--foreground-muted)', fontSize: 14 }}>Declined Demo Matches ({rejected.length})</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {rejected.map(c => (
               <div key={c.id} className="card" style={{ padding: '14px 20px', opacity: 0.6, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
                   <strong style={{ textDecoration: 'line-through' }}>{c.donor} ➔ {c.recipient}</strong>
-                  <span style={{ marginLeft: 12, fontSize: 12, color: 'var(--destructive)' }}>Declined during clinical triage</span>
+                  <span style={{ marginLeft: 12, fontSize: 12, color: 'var(--destructive)' }}>This demo match was marked declined. No new match search has started.</span>
                 </div>
                 {c.isLiveContext && (
                   <button className="btn btn-outline btn-sm" onClick={() => advanceStatus('pending_hospital_approval')}>

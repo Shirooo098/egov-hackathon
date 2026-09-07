@@ -29,7 +29,7 @@ export default function Navbar({ currentRole, verified, tier, userProfile, onSig
             </div>
             <div>
               <div className="brand-name">{isHospitalRoute ? 'Philippine General Hospital' : 'eBuhay'}</div>
-              <div className="brand-sub">{isHospitalRoute ? 'Clinical Governance Triage & On-Chain Vault' : 'DICT eGov Platform'}</div>
+              <div className="brand-sub">{isHospitalRoute ? 'Hospital Administrator Demo Review' : 'eBuhay Prototype'}</div>
             </div>
           </div>
         </Link>
@@ -39,10 +39,10 @@ export default function Navbar({ currentRole, verified, tier, userProfile, onSig
           /* Institutional Hospital Context */
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <span className="nav-context-label badge badge-success" style={{ background: 'var(--emerald)', color: 'white', fontWeight: 700, padding: '4px 10px' }}>
-              Institutional Triage Portal
+              Hospital Administrator Demo
             </span>
             <span className="nav-facility-id" style={{ fontSize: 12, color: 'var(--foreground-muted)', fontWeight: 600 }}>
-              Facility ID: PGH-MNL-1000
+              Sample facility: PGH-MNL-1000
             </span>
             <Link to="/" className="btn btn-outline btn-sm" style={{ height: 34, padding: '0 14px', textDecoration: 'none', fontWeight: 600 }}>
               ← Back to Citizen Portal

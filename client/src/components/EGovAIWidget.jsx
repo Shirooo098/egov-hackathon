@@ -5,7 +5,7 @@ const QUICK = [
   { icon: 'scale',    title: 'Organ Donation',    prompt: 'What are the laws on organ donation in the Philippines?' },
   { icon: 'drop',     title: 'Blood Donation',    prompt: 'Who can legally donate blood in the Philippines?' },
   { icon: 'gavel',    title: 'RA 7170',           prompt: 'What is Republic Act 7170?' },
-  { icon: 'register', title: 'Donor Registration', prompt: 'How do I register as an official organ donor?' },
+  { icon: 'register', title: 'Donor Registration', prompt: 'How does the sample organ-donor registration flow work?' },
 ];
 
 const SOURCES = [
@@ -45,7 +45,7 @@ export default function EGovAIWidget() {
               fontFamily: 'var(--font-heading)',
             }}
           >
-            Philippine Health Laws · eGovAI Assistant
+            Philippine Health Law References · Demo assistant
           </span>
           <span
             aria-hidden
@@ -57,7 +57,7 @@ export default function EGovAIWidget() {
             }}
           />
           <span className="badge badge-primary" style={{ fontSize: 10 }}>
-            DICT eGovAI
+            Prototype assistant
           </span>
         </div>
         <h2
@@ -82,8 +82,8 @@ export default function EGovAIWidget() {
             maxWidth: 640,
           }}
         >
-          Ask about organ donation, blood transfusion, or DOH regulatory guidance.
-          Backed by official statutes and DOH clinical guidelines.
+          Ask about organ donation, blood transfusion, or sample DOH regulatory references.
+          This prototype is informational and not legal or clinical advice.
         </p>
 
         {/* Source chips */}
@@ -215,7 +215,7 @@ export default function EGovAIWidget() {
         >
           <div className="spinner spinner-lg" />
           <p style={{ fontSize: 13, color: 'var(--foreground-muted)' }}>
-            Querying DICT eGovAI Laws &amp; Regulations API…
+            Querying the prototype law-reference service…
           </p>
         </div>
       )}
@@ -262,7 +262,7 @@ export default function EGovAIWidget() {
                   color: 'var(--primary)',
                 }}
               >
-                eGovAI Response
+                Prototype assistant response
               </div>
               <div
                 style={{
@@ -271,7 +271,7 @@ export default function EGovAIWidget() {
                   marginTop: 2,
                 }}
               >
-                Verified against RA 7170, RA 7719 &amp; DOH clinical guidelines
+                References are sample context; not verified legal or clinical guidance
               </div>
             </div>
             {session && (

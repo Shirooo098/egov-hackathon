@@ -3,14 +3,14 @@
 // human labels and a tone token (used for badge / pill colors).
 
 export const STATUS_LABELS = {
-  pending_hospital_approval: 'Pending Hospital Approval',
-  approved: 'Hospital Approved',
+  pending_hospital_approval: 'Pending Hospital Demo Review',
+  approved: 'Hospital Demo Review Complete',
   waiting_donor_confirmation: 'Awaiting Donor Confirmation',
   waiting_recipient_confirmation: 'Awaiting Recipient Confirmation',
   scheduled: 'Scheduled',
   agreement_finalized: 'Agreement Finalized',
   contract_signed: 'Contract Signed',
-  ready_for_transplant: 'Ready for Transplant',
+  ready_for_transplant: 'Demo Workflow Ready',
   rejected: 'Match Declined',
 };
 
@@ -79,9 +79,9 @@ export function lifecycleStepIndex(s) {
 
 export const LIFECYCLE_STEPS = [
   { key: 'pending', label: 'Pending Approval', tone: 'warning' },
-  { key: 'approved', label: 'Hospital Approved', tone: 'success' },
+  { key: 'approved', label: 'Hospital Demo Review Complete', tone: 'success' },
   { key: 'schedule', label: 'Schedule Confirmed', tone: 'primary' },
   { key: 'agreement', label: 'Agreement Signed', tone: 'success' },
   { key: 'chat', label: 'Clinical Chat', tone: 'success' },
-  { key: 'ready', label: 'Ready for Transplant', tone: 'success' },
+  { key: 'ready', label: 'Demo Workflow Ready', tone: 'success' },
 ];

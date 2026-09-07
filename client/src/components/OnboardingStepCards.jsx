@@ -4,9 +4,9 @@ import Stepper from './Stepper';
 
 const STEPS = [
   { key: 'role', label: 'Role' },
-  { key: 'auth', label: 'Auth' },
-  { key: 'sso', label: 'SSO' },
-  { key: 'face', label: 'Liveness' },
+  { key: 'auth', label: 'Access' },
+  { key: 'sso', label: 'Demo code' },
+  { key: 'face', label: 'Face check' },
   { key: 'profile', label: 'Profile' },
 ];
 
@@ -19,17 +19,17 @@ export function RoleSelectCard({ choosePortal }) {
       <Stepper steps={STEPS} active={1} />
       <div className="role-pick-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         {[
-          { id: 'recipient', title: 'Recipient Portal', desc: 'Search compatible blood/organ matches, request transplants, and coordinate clinical procedure schedules.', icon: <HeartIcon size={24} />, badge: 'primary' },
-          { id: 'donor', title: 'Donor Portal', desc: 'Register eligibility details, pledge organ/blood donations, and execute encrypted e-signature consent.', icon: <DropIcon size={24} />, badge: 'success' },
+          { id: 'recipient', title: 'Recipient Portal', desc: 'Review a demo request for blood or organ support and choose a sample consultation slot.', icon: <HeartIcon size={24} />, badge: 'primary' },
+          { id: 'donor', title: 'Donor Portal', desc: 'Review a demo donation pledge and upload a sample consent document.', icon: <DropIcon size={24} />, badge: 'success' },
         ].map((item) => (
           <button
             key={item.id}
             aria-label={item.id === 'recipient' ? 'Recipient' : 'Donor'}
             onClick={() => choosePortal(item.id)}
-            className="card card-interactive"
-            style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: 18, textAlign: 'left', border: '1px solid var(--border)' }}
+            className={`card card-interactive role-card role-card-${item.id}`}
+            style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: 18, textAlign: 'left' }}
           >
-            <div style={{ flexShrink: 0, marginTop: 2 }}>{item.icon}</div>
+            <div className="role-card-icon" style={{ flexShrink: 0, marginTop: 2 }}>{item.icon}</div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <strong style={{ fontSize: 15 }}>{item.title}</strong>
@@ -43,7 +43,6 @@ export function RoleSelectCard({ choosePortal }) {
     </div>
   );
 }
-
 export function AuthChoiceCard({ pendingRole, chooseAuthMode, onBack }) {
   return (
     <div className="anim-in">
@@ -58,16 +57,16 @@ export function AuthChoiceCard({ pendingRole, chooseAuthMode, onBack }) {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <button className="btn btn-primary btn-lg btn-full btn-stacked" onClick={() => chooseAuthMode('signin')}>
-          <span className="btn-stacked-title">Sign In with eGov</span>
-          <span className="btn-caption btn-caption-on-primary">Use your existing eVerify identity</span>
+          <span className="btn-stacked-title">Sign In with eGov (Demo)</span>
+          <span className="btn-caption btn-caption-on-primary">Use the demo exchange code supplied by the presenter</span>
         </button>
         <button className="btn btn-outline btn-lg btn-full btn-stacked" onClick={() => chooseAuthMode('signup')}>
-          <span className="btn-stacked-title">Sign Up with eGov</span>
-          <span className="btn-caption">New registration with Face Liveness + e-signature</span>
+          <span className="btn-stacked-title">Sign Up with eGov (Demo)</span>
+          <span className="btn-caption">Walk through the sample profile and consent steps</span>
         </button>
       </div>
       <p style={{ fontSize: 11, color: 'var(--foreground-subtle)', textAlign: 'center', marginTop: 16 }}>
-        Both options authenticate via eGov SSO and confirm you're a live person via Face Liveness before continuing.
+        This prototype shows a sample eGov exchange and face check for Recipient and Donor citizen journeys. It does not verify a government identity.
       </p>
     </div>
   );

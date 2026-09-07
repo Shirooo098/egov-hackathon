@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 export default function SignatureUploader({
   onUploadComplete,
@@ -13,22 +13,33 @@ export default function SignatureUploader({
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const fileInputRef = useRef(null);
+  const intervalRef = useRef(null);
+  const uploadTokenRef = useRef(0);
+
+  useEffect(() => () => {
+    uploadTokenRef.current += 1;
+    clearInterval(intervalRef.current);
+  }, []);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (!selectedFile) return;
 
+    clearInterval(intervalRef.current);
+    const uploadToken = ++uploadTokenRef.current;
     setUploading(true);
     setProgress(0);
     setFile(null);
 
     // Simulate progress bar over 1 second
     let currentProgress = 0;
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
+      if (uploadToken !== uploadTokenRef.current) return;
       currentProgress += 20;
       setProgress(currentProgress);
       if (currentProgress >= 100) {
-        clearInterval(interval);
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
         setUploading(false);
         setFile(selectedFile);
         if (onUploadComplete) onUploadComplete(selectedFile);
@@ -37,6 +48,10 @@ export default function SignatureUploader({
   };
 
   const handleClear = () => {
+    uploadTokenRef.current += 1;
+    clearInterval(intervalRef.current);
+    intervalRef.current = null;
+    setUploading(false);
     setFile(null);
     setProgress(0);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -52,9 +67,20 @@ export default function SignatureUploader({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {!file && !uploading && (
-        <div
+        <>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="image/*,.pdf"
+            style={{ display: 'none' }}
+          />
+          <button
+          type="button"
+          aria-label={`${title}. ${subtitle}`}
           onClick={() => fileInputRef.current?.click()}
           style={{
+            width: '100%',
             border: '2px dashed var(--border-strong)',
             borderRadius: 'var(--r-md)',
             padding: '24px',
@@ -69,17 +95,12 @@ export default function SignatureUploader({
             minHeight: 120,
             justifyContent: 'center',
             boxSizing: 'border-box',
+            color: 'inherit',
+            font: 'inherit',
           }}
           onMouseOver={(e) => (e.currentTarget.style.borderColor = 'var(--primary)')}
           onMouseOut={(e) => (e.currentTarget.style.borderColor = 'var(--border-strong)')}
         >
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept="image/*,.pdf"
-            style={{ display: 'none' }}
-          />
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--foreground-subtle)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="17 8 12 3 7 8" />
@@ -89,7 +110,8 @@ export default function SignatureUploader({
             <div style={{ fontSize: 13, fontWeight: 700 }}>{title}</div>
             <div style={{ fontSize: 11, color: 'var(--foreground-muted)', marginTop: 2 }}>{subtitle}</div>
           </div>
-        </div>
+          </button>
+        </>
       )}
 
       {uploading && (

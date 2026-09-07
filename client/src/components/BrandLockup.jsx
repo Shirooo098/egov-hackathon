@@ -1,9 +1,9 @@
 import React from 'react';
 
 // Reusable brand mark + name + tagline block.
-// Replaces the inline "e" / "eBuhay" / "DICT eGov Platform" pattern
+// Replaces repeated inline eBuhay branding patterns
 // that was repeated across onboarding headers.
-export default function BrandLockup({ size = 'md', align = 'center', tagline = 'DICT eGov Platform' }) {
+export default function BrandLockup({ size = 'md', align = 'center', tagline = 'eBuhay prototype' }) {
   const mark = size === 'sm' ? 36 : 48;
   const titleSize = size === 'sm' ? 18 : 24;
   const subSize = size === 'sm' ? 11 : 13;

@@ -1,10 +1,36 @@
 import React from 'react';
 
-export default function MatchReviewModal({ match, role, consentSigned, doctorApproved = false, hospitalApproved = false, onClose, onAcceptChat, onSchedule }) {
+export default function MatchReviewModal({ match, role, consentSigned, hospitalApproved = false, onClose, onAcceptChat, onSchedule }) {
   const [isMatched, setIsMatched] = React.useState(false);
+  const dialogRef = React.useRef(null);
+  const closeRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!match) return undefined;
+    const previousFocus = document.activeElement;
+    closeRef.current?.focus();
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose?.();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const dialog = dialogRef.current;
+      if (!dialog) return;
+      const focusable = [...dialog.querySelectorAll('button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')];
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    const dialog = dialogRef.current;
+    dialog?.addEventListener('keydown', handleKeyDown);
+    return () => { dialog?.removeEventListener('keydown', handleKeyDown); previousFocus?.focus?.(); };
+  }, [match, onClose]);
   if (!match) return null;
 
-  const isApproved = hospitalApproved || doctorApproved;
+  const isApproved = hospitalApproved;
   const isRecipientView = role === 'recipient';
 
   // Determine participant details
@@ -29,7 +55,14 @@ export default function MatchReviewModal({ match, role, consentSigned, doctorApp
       justifyContent: 'center',
       padding: 20
     }}>
-      <div className="card anim-up" style={{
+      <div
+        ref={dialogRef}
+        className="card anim-up"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="match-review-title"
+        aria-describedby="match-review-description"
+        style={{
         background: 'white',
         maxWidth: 540,
         width: '100%',
@@ -47,11 +80,13 @@ export default function MatchReviewModal({ match, role, consentSigned, doctorApp
             <div className={`badge badge-${isRecipientView ? 'primary' : 'success'}`} style={{ marginBottom: 6 }}>
               {isRecipientView ? 'Donor Evaluation' : 'Recipient Request Review'}
             </div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em' }}>Match Compatibility Review</h2>
+            <h2 id="match-review-title" style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.02em' }}>Match Compatibility Review</h2>
           </div>
-          <button 
+          <button
+            ref={closeRef}
             className="btn btn-ghost btn-sm" 
             onClick={onClose}
+            aria-label="Close match compatibility review"
             style={{ width: 32, height: 32, padding: 0, borderRadius: '50%', fontSize: 16 }}
           >
             ✕
@@ -76,7 +111,7 @@ export default function MatchReviewModal({ match, role, consentSigned, doctorApp
             <div style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span>📍 {location} (Nearby)</span>
               <span>·</span>
-              <span className="badge badge-verified" style={{ fontSize: 9 }}>PhilSys ✓</span>
+              <span className="badge badge-verified" style={{ fontSize: 9 }}>Demo identity profile</span>
             </div>
           </div>
         </div>
@@ -110,17 +145,17 @@ export default function MatchReviewModal({ match, role, consentSigned, doctorApp
         </div>
 
         {/* Medical & Organ Notes */}
-        <div style={{ padding: 14, background: 'var(--primary-10)', border: '1px solid rgba(0,56,168,0.12)', borderRadius: 'var(--r-md)', fontSize: 12, lineHeight: 1.6 }}>
+        <div id="match-review-description" style={{ padding: 14, background: 'var(--primary-10)', border: '1px solid rgba(0,56,168,0.12)', borderRadius: 'var(--r-md)', fontSize: 12, lineHeight: 1.6 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
             <div style={{ fontWeight: 700, color: 'var(--primary)' }}>Clinical Match Summary</div>
             <span className={`badge ${isApproved ? 'badge-success' : isMatched ? 'badge-sun' : 'badge-primary'}`} style={{ fontSize: 9 }}>
-              {isApproved ? 'Hospital Approved ✓' : isMatched ? 'Awaiting Hospital Approval ⏳' : 'Match Evaluation'}
+              {isApproved ? 'Hospital Demo Review Complete ✓' : isMatched ? 'Awaiting Hospital Demo Review ⏳' : 'Sample Match Evaluation'}
             </span>
           </div>
           {isRecipientView ? (
-            <div>Verified donor registered with active organ pledges ({match.donor?.donor_profile?.organ_pledges?.join(', ') || 'Kidney, Cornea'}). Direct messaging requires institutional hospital clearance.</div>
+            <div>Sample donor profile with active organ pledges ({match.donor?.donor_profile?.organ_pledges?.join(', ') || 'Kidney, Cornea'}). Direct messaging opens after the demo review step.</div>
           ) : (
-            <div>Recipient is currently under institutional medical evaluation. ABO blood type O- matches recipient requirement. Direct messaging requires institutional hospital clearance.</div>
+            <div>Sample recipient profile under demo review. ABO blood type O- is shown as a compatibility estimate. Direct messaging opens after the demo review step.</div>
           )}
         </div>
 
@@ -128,7 +163,7 @@ export default function MatchReviewModal({ match, role, consentSigned, doctorApp
         {!consentSigned && (
           <div style={{ fontSize: 11, color: 'var(--foreground-subtle)', display: 'flex', alignItems: 'center', gap: 6 }}>
             <span>🔒</span>
-            <span>Citizen name is masked for privacy. Real name is revealed upon mutual e-signature execution.</span>
+            <span>Citizen name is masked for privacy. The prototype reveals sample names after the agreement step; this does not verify identity.</span>
           </div>
         )}
 
@@ -152,7 +187,7 @@ export default function MatchReviewModal({ match, role, consentSigned, doctorApp
             </button>
           ) : (
             <button className="btn btn-outline" disabled style={{ flex: 1.8, opacity: 0.7, cursor: 'not-allowed' }}>
-              🔒 Awaiting Hospital Approval
+              🔒 Awaiting Hospital Demo Review
             </button>
           )}
         </div>
