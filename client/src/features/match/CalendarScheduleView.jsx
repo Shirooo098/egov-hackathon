@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronLeftIcon, ChevronRightIcon, CalIcon } from './Icons';
+import { ChevronLeftIcon, ChevronRightIcon, CalIcon } from '../../shared/ui/Icons';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];

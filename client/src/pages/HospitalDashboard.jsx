@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useMatch } from '../context/MatchContext';
-import EGovAIWidget from '../components/EGovAIWidget';
-import OrganAnalytics from '../components/OrganAnalytics';
+import EGovAIWidget from '../features/hospital/EGovAIWidget';
+import OrganAnalytics from '../features/hospital/OrganAnalytics';
 import { useToast } from '../context/ToastContext';
-import { ClinicalTriageTab } from '../components/HospitalTabComponents';
+import { ClinicalTriageTab } from '../features/hospital/HospitalTabComponents';
 import { STATIC_MATCHES, URGENCY_BADGES, URGENCY_LABELS, getLiveMatchAsItem, filterMatches } from '../services/domain';
 import { usePersistedStaticMatches } from '../context/usePersistedStaticMatches';
-import { ClipIcon, ScaleIcon, AnalyticsIcon, HospitalIcon } from '../components/Icons';
-import LifecycleStrip from '../components/LifecycleStrip';
+import { ClipIcon, ScaleIcon, AnalyticsIcon, HospitalIcon } from '../shared/ui/Icons';
+import LifecycleStrip from '../features/match/LifecycleStrip';
 
 export default function HospitalDashboard() {
   const { match, advanceStatus, anchorToBlockchain, resetMatch } = useMatch();

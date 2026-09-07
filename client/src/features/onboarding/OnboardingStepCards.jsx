@@ -1,5 +1,5 @@
 import React from 'react';
-import { HeartIcon, DropIcon } from './Icons';
+import { HeartIcon, DropIcon } from '../../shared/ui/Icons';
 import Stepper from './Stepper';
 
 const STEPS = [

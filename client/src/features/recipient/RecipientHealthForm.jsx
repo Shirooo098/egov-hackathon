@@ -1,5 +1,5 @@
 import React from 'react';
-import SignatureUploader from './SignatureUploader';
+import SignatureUploader from '../match/SignatureUploader';
 
 export default function RecipientHealthForm({
   recipientHealth,
