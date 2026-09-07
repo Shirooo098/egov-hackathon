@@ -18,21 +18,12 @@ export default function BlockchainBadge({ matchId, donorId, recipientId, signerR
     setStatus('anchoring');
     try {
       const r = await api.anchorConsent({ matchId: matchId || 'demo-match-001', donorId, recipientId, donorSignature: 'sig_d_' + Date.now(), recipientSignature: 'sig_r_' + Date.now() });
-      setAnchor(r.data); 
+      setAnchor(r.data);
       setStatus('anchored');
       if (onConsentSuccess) onConsentSuccess();
     } catch {
-      // Fallback/Demo mode check
-      setStatus('anchored');
-      const mockAnchor = {
-        chainId: 13371,
-        txHash: '0x7c2a' + Math.random().toString(16).substring(2, 10) + 'f91a',
-        blockNumber: 4821,
-        explorerUrl: 'https://hackathon-blockchain.e.gov.ph',
-        demo: true
-      };
-      setAnchor(mockAnchor);
-      if (onConsentSuccess) onConsentSuccess();
+      setAnchor(null);
+      setStatus('error');
     }
   };
 
@@ -41,19 +32,19 @@ export default function BlockchainBadge({ matchId, donorId, recipientId, signerR
       <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:20 }}>
         <div className="icon-badge icon-badge-lg icon-badge-success"><ChainIcon /></div>
         <div>
-          <div style={{ fontWeight:700, fontSize:15, color:'var(--emerald)' }}>Consent Cryptographically Secured</div>
-          <div style={{ fontSize:12, color:'var(--foreground-muted)', marginTop:2 }}>National E-Signature Audit Vault · Audit ID {anchor.chainId}</div>
+          <div style={{ fontWeight:700, fontSize:15, color:'var(--emerald)' }}>Demo consent record saved</div>
+          <div style={{ fontSize:12, color:'var(--foreground-muted)', marginTop:2 }}>Simulated blockchain anchor · Demo ID {anchor.chainId}</div>
         </div>
-        <span className="badge badge-verified" style={{ marginLeft:'auto' }}>Confirmed</span>
+        <span className="badge badge-verified" style={{ marginLeft:'auto' }}>Demo record</span>
       </div>
       <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-        <div className="chain-tag"><span style={{color:'var(--foreground-subtle)',whiteSpace:'nowrap'}}>Audit Hash</span><span className="tx">{anchor.txHash}</span></div>
+        <div className="chain-tag"><span style={{color:'var(--foreground-subtle)',whiteSpace:'nowrap'}}>Demo hash</span><span className="tx">{anchor.txHash}</span></div>
         <div style={{ display:'flex', gap:16, fontSize:12 }}>
           <span style={{color:'var(--foreground-muted)'}}>Record <strong style={{color:'var(--foreground)'}}>#{anchor.blockNumber}</strong></span>
-          {anchor.demo && <span className="badge badge-moderate">Verified</span>}
+          {anchor.demo && <span className="badge badge-moderate">Simulated</span>}
         </div>
         <a href={anchor.explorerUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm btn-full" style={{marginTop:4}}>
-          <ExternalIcon /> View Encryption Certificate
+          <ExternalIcon /> View demo anchor details
         </a>
       </div>
     </div>
@@ -65,7 +56,7 @@ export default function BlockchainBadge({ matchId, donorId, recipientId, signerR
         <div className="icon-badge icon-badge-lg icon-badge-navy"><ChainIcon /></div>
         <div>
           <div style={{ fontWeight:700, fontSize:15 }}>E-Signature Consent Agreement</div>
-          <div style={{ fontSize:12, color:'var(--foreground-muted)', marginTop:2 }}>Both parties must upload digital signatures to lock and verify agreement</div>
+          <div style={{ fontSize:12, color:'var(--foreground-muted)', marginTop:2 }}>Both parties can add signatures for this prototype workflow; uploads are not identity verification.</div>
         </div>
       </div>
 
@@ -95,9 +86,9 @@ export default function BlockchainBadge({ matchId, donorId, recipientId, signerR
       </div>
 
       <button className="btn btn-primary btn-full btn-lg" disabled={!donorSigned || !recipientSigned || status === 'anchoring'} onClick={anchorChain}>
-        {status === 'anchoring' ? <><span className="spinner" /> Encrypting &amp; Securing…</> : <><ChainIcon /> Authorize &amp; Lock Digital Signature</>}
+        {status === 'anchoring' ? <><span className="spinner" /> Saving demo anchor…</> : <><ChainIcon /> {status === 'error' ? 'Retry demo anchor' : 'Save simulated anchor'}</>}
       </button>
-      {status === 'error' && <p style={{textAlign:'center',color:'var(--destructive)',fontSize:12,marginTop:10}}>Anchoring failed. Please try again.</p>}
+      {status === 'error' && <p role="status" aria-live="polite" style={{textAlign:'center',color:'var(--destructive)',fontSize:12,marginTop:10}}>The demo anchor could not be saved. Check your connection and try again.</p>}
     </div>
   );
 }

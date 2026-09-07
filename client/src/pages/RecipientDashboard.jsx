@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import ChatBox from '../components/ChatBox';
 import GovernmentAgreement from '../components/GovernmentAgreement';
 import ClinicalMatchCard from '../components/ClinicalMatchCard';
@@ -12,14 +12,9 @@ import { useMatch } from '../context/MatchContext';
 import { ALL_ORGANS as ORGANS, BLOOD_TYPES } from '../services/domain';
 import { formatStatus } from '../utils/matchStatus';
 import { HeartIcon, MatchIcon, ChatIcon, ChainIcon, CalIcon } from '../components/Icons';
-import { api } from '../services/api';
-
-// Demo-only: static recipient phone number for the "match found" SMS notification.
-// Swap this out once real recipient phone numbers are collected during onboarding.
-const DEMO_NOTIFY_NUMBER = '+639763098967';
 
 export default function RecipientDashboard({ onboardingHealth }) {
-  const { match, isApproved, consentSigned, updateMatchFromProfile } = useMatch();
+  const { match, isApproved, hospitalApproved, consentSigned, updateMatchFromProfile } = useMatch();
   const [tab, setTab] = useState('mymatch'); // Automate matchmaking display upon portal load (Issue #006)
   const [requestType, setRequestType] = useState(onboardingHealth?.request_type || 'organ');
   const [bloodTypeNeeded, setBloodTypeNeeded] = useState(() => match.recipient?.blood_type_needed || onboardingHealth?.blood_type_needed || 'B+');
@@ -27,32 +22,11 @@ export default function RecipientDashboard({ onboardingHealth }) {
   const [urgencyLevel, setUrgencyLevel] = useState(() => match.recipient?.urgency || match.urgencyLevel || 'urgent');
   const { toast } = useToast();
 
-  // Guards against double-fire (e.g. React StrictMode double-invoking effects in dev)
-  const smsFiredRef = useRef(false);
-
-  useEffect(() => {
-    if (smsFiredRef.current) return;
-    smsFiredRef.current = true;
-
-    const message =
-      "eBuhay: Good news! A potential donor match has been found for your request. " +
-      "Please log in to the app to review the match details.";
-
-    api.sendSms(DEMO_NOTIFY_NUMBER, message)
-      .then(() => {
-        console.log('✅ Match-found SMS sent to', DEMO_NOTIFY_NUMBER);
-      })
-      .catch((err) => {
-        // Don't block the dashboard UI on SMS failure — just log it.
-        console.error('eMessage SMS failed:', err.message);
-      });
-  }, []);
-
   const saveProfile = (e) => {
     e.preventDefault();
     const res = updateMatchFromProfile('recipient', { bloodTypeNeeded, organNeeded, urgencyLevel });
     if (res.success) {
-      toast.success('Recipient medical evaluation preferences and PhilSys verification updated.', { title: 'Preferences Saved', duration: 4000 });
+      toast.success('Recipient medical preferences updated in this demo.', { title: 'Preferences Saved', duration: 4000 });
     } else {
       toast.warning(res.error || 'Failed to update preferences', { title: 'Sync Warning', duration: 4000 });
     }
@@ -75,7 +49,7 @@ export default function RecipientDashboard({ onboardingHealth }) {
       <section className="hero care-journey-hero">
         <div className="container">
           <div className="hero-eyebrow anim-up" style={{ color: 'var(--primary)' }}>
-            <HeartIcon size={14} /> Recipient Portal · PhilSys Tier I
+            <HeartIcon size={14} /> Recipient Portal · Demo profile
           </div>
           <h1 className="care-journey-title anim-up-d1">Recipient Care Journey</h1>
           <ul className="care-journey-rail anim-up-d3" aria-label="Recipient current care facts">
@@ -91,7 +65,7 @@ export default function RecipientDashboard({ onboardingHealth }) {
       <div className="dashboard-network-band">
         <div className="marquee-outer">
           <div className="marquee-track dashboard-marquee-track">
-            {['DOH NATIONAL TRANSPLANT PROGRAM', 'PHILIPPINE GENERAL HOSPITAL (PGH)', 'DICT eVERIFY TRUST REGISTRY', 'PHILSYS BIOMETRIC CREDENTIAL', 'NATIONAL KIDNEY INSTITUTE (NKI)', 'RA NO. 7170 COMPLIANCE', 'REACTIVE eMESSAGE ALERT SYSTEM'].map((a, i) => (
+            {['DOH NATIONAL TRANSPLANT PROGRAM · DEMO', 'PHILIPPINE GENERAL HOSPITAL (PGH) · DEMO', 'Simulated trust registry', 'Sample identity credential', 'NATIONAL KIDNEY INSTITUTE (NKI) · DEMO', 'Sample policy reference', 'Simulated notification system'].map((a, i) => (
               <span key={i} className="marquee-item">🏥 {a}</span>
             ))}
           </div>
@@ -108,6 +82,7 @@ export default function RecipientDashboard({ onboardingHealth }) {
               onClick={() => setTab(t.id)}
               disabled={t.locked}
               aria-label={t.label}
+              aria-pressed={tab === t.id}
               title={t.locked ? `${t.label} (locked)` : t.label}
             >
               <span className="tab-btn-icon">{t.icon}</span>
@@ -143,8 +118,8 @@ export default function RecipientDashboard({ onboardingHealth }) {
                   <div>
                     <div style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.02em' }}>Carlos Santos</div>
                     <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-                      <span className="badge badge-verified">PhilSys ✓ Tier I</span>
-                      <span className="badge badge-primary">PCN: 9284-1029-4810</span>
+                      <span className="badge badge-verified">Demo identity profile</span>
+                      <span className="badge badge-primary">Sample ID: 9284-1029-4810</span>
                     </div>
                   </div>
                 </div>
@@ -152,15 +127,15 @@ export default function RecipientDashboard({ onboardingHealth }) {
                 <form onSubmit={saveProfile} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Medical Need Type</label>
-                      <select className="input" value={requestType} onChange={e => setRequestType(e.target.value)} style={{ width: '100%' }}>
+                      <label htmlFor="recipient-dashboard-request-type" style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Medical Need Type</label>
+                      <select id="recipient-dashboard-request-type" className="input" value={requestType} onChange={e => setRequestType(e.target.value)} style={{ width: '100%' }}>
                         <option value="organ">Anatomical Organ Transplantation</option>
                         <option value="blood">Blood transfusion / compatibility</option>
                       </select>
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Required Blood Group</label>
-                      <select className="input" value={bloodTypeNeeded} onChange={e => setBloodTypeNeeded(e.target.value)} style={{ width: '100%' }}>
+                      <label htmlFor="recipient-dashboard-blood-type" style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Required Blood Group</label>
+                      <select id="recipient-dashboard-blood-type" className="input" value={bloodTypeNeeded} onChange={e => setBloodTypeNeeded(e.target.value)} style={{ width: '100%' }}>
                         {BLOOD_TYPES.map(t => <option key={t}>{t}</option>)}
                       </select>
                     </div>
@@ -168,16 +143,16 @@ export default function RecipientDashboard({ onboardingHealth }) {
 
                   {requestType === 'organ' && (
                     <div>
-                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Target Anatomical Organ</label>
-                      <select className="input" value={organNeeded} onChange={e => setOrganNeeded(e.target.value)} style={{ width: '100%' }}>
+                    <label htmlFor="recipient-dashboard-organ" style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Target Anatomical Organ</label>
+                    <select id="recipient-dashboard-organ" className="input" value={organNeeded} onChange={e => setOrganNeeded(e.target.value)} style={{ width: '100%' }}>
                         {ORGANS.map(o => <option key={o} value={o}>{o} Transplantation</option>)}
                       </select>
                     </div>
                   )}
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Clinical Urgency &amp; Triage Level</label>
-                    <select className="input" value={urgencyLevel} onChange={e => setUrgencyLevel(e.target.value)} style={{ width: '100%' }}>
+                    <label htmlFor="recipient-dashboard-urgency" style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Clinical Urgency &amp; Triage Level</label>
+                    <select id="recipient-dashboard-urgency" className="input" value={urgencyLevel} onChange={e => setUrgencyLevel(e.target.value)} style={{ width: '100%' }}>
                       <option value="moderate">Moderate Priority - Outpatient Coordination</option>
                       <option value="urgent">Urgent Priority - Active Hospital Roster</option>
                       <option value="critical">Critical Priority - Immediate Surgical ICU Waitlist</option>
@@ -185,11 +160,11 @@ export default function RecipientDashboard({ onboardingHealth }) {
                   </div>
 
                   <div style={{ padding: '14px 18px', background: 'rgba(0, 56, 168, 0.04)', borderRadius: 'var(--r-md)', border: '1px solid rgba(0, 56, 168, 0.15)', fontSize: '12px', color: 'var(--foreground)' }}>
-                    ℹ️ Changing your clinical profile triggers automated re-computation of compatibility scores across all available DOH volunteer donor profiles.
+                    ℹ️ Changing your profile refreshes the compatibility estimate shown in this prototype. It does not query a live donor registry.
                   </div>
 
                   <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ fontWeight: 800 }}>
-                    Synchronize Medical Preferences ✓
+                    Save demo medical preferences ✓
                   </button>
                 </form>
               </div>
@@ -215,8 +190,8 @@ export default function RecipientDashboard({ onboardingHealth }) {
                 </>
               ) : (
                 <LockedTabPanel
-                  title="Picking a date unlocks once the hospital approves"
-                  message="As soon as the hospital approves your match, you'll be able to pick a date here."
+                  title="Picking a date unlocks after the hospital demo review"
+                  message="After the hospital completes its demo review, you'll be able to pick a date here."
                   ctaLabel="Go to My Match"
                   onCta={() => setTab('mymatch')}
                 />
@@ -248,7 +223,7 @@ export default function RecipientDashboard({ onboardingHealth }) {
           {/* CLINICAL CHAT TAB (Issue #010) */}
           {tab === 'chat' && (
             <div style={{ maxWidth: 720, margin: '0 auto' }}>
-              <ChatBox currentRole="recipient" consentSigned={isChatUnlocked} doctorApproved={isApproved} hospitalApproved={isApproved} />
+              <ChatBox currentRole="recipient" consentSigned={isChatUnlocked} hospitalApproved={hospitalApproved} />
             </div>
           )}
 
@@ -256,7 +231,7 @@ export default function RecipientDashboard({ onboardingHealth }) {
       </div>
 
       <footer className="footer-mini">
-        DICT eGov Platform · Republic of the Philippines · Demo Build
+        eBuhay prototype · Demo Build
       </footer>
     </main>
   );

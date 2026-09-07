@@ -33,18 +33,13 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
   if (match.status === 'rejected') {
     return (
       <div className="card anim-in" style={{ padding: '48px', textAlign: 'center', background: 'white', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-sm)' }}>
-        <div className="spinner spinner-lg" style={{ margin: '0 auto 20px', width: 44, height: 44, borderWidth: 4 }} />
         <h3 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--primary)', marginBottom: 10, fontFamily: 'var(--font-heading)' }}>
-          Looking for another match...
+          Demo match declined
         </h3>
         <p style={{ fontSize: '14px', color: 'var(--foreground-muted)', maxWidth: 540, margin: '0 auto 24px', lineHeight: 1.6 }}>
-          This match didn't work out, but we're still searching for you. We'll let you know as soon as we find a good one.
+          No new match search has started. Choose Start over to review another sample match.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 18px', background: 'rgba(0, 56, 168, 0.05)', borderRadius: 'var(--r-full)', border: '1px solid rgba(0, 56, 168, 0.2)', fontSize: '12px', fontWeight: 700, color: 'var(--primary)' }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)' }} />
-            Still searching
-          </div>
           <button
             type="button"
             className="btn btn-ghost btn-sm"
@@ -71,7 +66,7 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
         {/* Eyebrow row: status pill + percentage on the same quiet line */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
           <span className={`badge ${match.status === 'pending_hospital_approval' ? 'badge-warning' : 'badge-success'}`} style={{ letterSpacing: '0.08em' }}>
-            {match.status === 'pending_hospital_approval' ? 'Hospital is reviewing' : 'Match approved ✓'}
+            {match.status === 'pending_hospital_approval' ? 'Hospital demo review pending' : 'Demo match approved ✓'}
           </span>
           <span className="match-header-score" style={{ fontSize: 14, color: 'var(--emerald)', fontWeight: 700, display: 'inline-flex', alignItems: 'baseline', gap: 4 }}>
             <span style={{ fontSize: 20, fontWeight: 900, letterSpacing: '-0.02em' }}>{match.compatibilityScore}%</span>
@@ -107,7 +102,7 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
           <span>at</span>
           <strong style={{ color: 'var(--primary)', fontWeight: 700 }}>{match.hospital.name}</strong>
           <span style={{ color: 'var(--foreground-subtle)' }}>·</span>
-          <span style={{ color: 'var(--foreground-subtle)' }}>Verified safe for procedure</span>
+          <span style={{ color: 'var(--foreground-subtle)' }}>Hospital review context · demo data</span>
         </p>
       </div>
 
@@ -116,7 +111,7 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
         <div>
           <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>What you're donating / receiving</div>
           <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--foreground)', marginTop: 2 }}>{match.organ}</div>
-          <div style={{ fontSize: '12px', color: 'var(--emerald)', fontWeight: 600 }}>Safe to proceed</div>
+          <div style={{ fontSize: '12px', color: 'var(--emerald)', fontWeight: 600 }}>Compatibility estimate · not clinical clearance</div>
         </div>
         <div>
           <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>{partnerRole}'s name</div>
@@ -130,7 +125,7 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
         <div>
           <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>Priority</div>
           <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--destructive)', marginTop: 2 }}>{match.urgencyLevel ? match.urgencyLevel : 'Urgent'}</div>
-          <div style={{ fontSize: '12px', color: 'var(--foreground-muted)' }}>National waiting list</div>
+          <div style={{ fontSize: '12px', color: 'var(--foreground-muted)' }}>Demo priority view</div>
         </div>
       </div>
 
@@ -143,7 +138,7 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
               Waiting for the hospital to review
             </div>
             <div style={{ fontSize: '13px', color: 'var(--foreground)', marginTop: '4px', lineHeight: 1.5 }}>
-              A doctor is checking your match. You'll get a text message once they decide.
+              A hospital administrator is reviewing this demo match. This screen does not provide clinical clearance or guarantee a text message.
             </div>
           </div>
         </div>
@@ -156,7 +151,7 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
             <span style={{ fontSize: 24 }}>🤝</span>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 800, fontSize: '18px', color: 'var(--foreground)' }}>Appointment is set</div>
-              <div style={{ fontSize: '13px', color: 'var(--emerald)', fontWeight: 700 }}>✓ Saved at the hospital</div>
+              <div style={{ fontSize: '13px', color: 'var(--emerald)', fontWeight: 700 }}>✓ Schedule saved in this demo</div>
             </div>
             {isSigned ? (
               <span className="badge badge-verified">Agreement signed ✓</span>
@@ -222,7 +217,7 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
                 Pick a date together
               </h3>
               <p style={{ fontSize: '13px', color: 'var(--foreground-muted)', margin: '4px 0 0' }}>
-                The hospital approved your match. Suggest a date below.
+                The hospital review demo approved this match. Suggest a date below; a doctor must make any clinical decision.
               </p>
             </div>
           </div>
@@ -283,7 +278,7 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
                 </div>
               </div>
               <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 12, marginBottom: 0, lineHeight: 1.5 }}>
-                They got a text message. You'll be notified once they respond.
+                A simulated notification was queued in this demo. Check back here for their response.
               </p>
               <button
                 type="button"
@@ -301,11 +296,11 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
               </h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', marginBottom: '18px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: 'var(--foreground)' }}>
+                  <label htmlFor="clinical-date" style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: 'var(--foreground)' }}>
                     Date
                   </label>
                   <input
-                    type="date"
+                    id="clinical-date" type="date"
                     className="input"
                     value={dateInput}
                     onChange={e => setDateInput(e.target.value)}
@@ -314,11 +309,11 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: 'var(--foreground)' }}>
+                  <label htmlFor="clinical-time" style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: 'var(--foreground)' }}>
                     Time
                   </label>
                   <select
-                    className="input"
+                    id="clinical-time" className="input"
                     value={timeInput}
                     onChange={e => setTimeInput(e.target.value)}
                     style={{ width: '100%', fontWeight: 700, fontSize: 14 }}
@@ -330,11 +325,11 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
                   </select>
                 </div>
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: 'var(--foreground)' }}>
+                  <label htmlFor="clinical-location" style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px', color: 'var(--foreground)' }}>
                     Where
                   </label>
                   <input
-                    type="text"
+                    id="clinical-location" type="text"
                     className="input"
                     value={locationInput}
                     onChange={e => setLocationInput(e.target.value)}

@@ -28,14 +28,14 @@ export function DonorProfileTab({
           <div>
             <div style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.03em' }}>Juan Dela Cruz</div>
             <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-              <span className="badge badge-verified">PhilSys ✓ Tier I</span>
+              <span className="badge badge-verified">Demo identity profile</span>
               <span className={`badge ${avail ? 'badge-success' : 'badge-muted'}`}>{avail ? '● Available' : '○ Unavailable'}</span>
             </div>
           </div>
           <div style={{ marginLeft: 'auto' }}>
             <div className="toggle-wrap">
               <span style={{ fontSize: 12, color: 'var(--foreground-muted)' }}>Availability</span>
-              <button className={`toggle ${avail ? 'on' : 'off'}`} onClick={() => setAvail(v => !v)} aria-label="Toggle availability">
+              <button type="button" className={`toggle ${avail ? 'on' : 'off'}`} onClick={() => setAvail(v => !v)} aria-label="Toggle availability" aria-pressed={avail}>
                 <div className="toggle-knob" />
               </button>
             </div>
@@ -43,16 +43,16 @@ export function DonorProfileTab({
         </div>
         <div className="grid-2">
           <div className="field">
-            <label className="label">Blood Type</label>
-            <select className="input" value={bloodType} onChange={e => setBloodType(e.target.value)}>
+            <label className="label" htmlFor="donor-blood-type">Blood Type</label>
+            <select id="donor-blood-type" className="input" value={bloodType} onChange={e => setBloodType(e.target.value)}>
               {BLOOD_TYPES.map(t => <option key={t}>{t}</option>)}
             </select>
           </div>
           <div className="field">
-            <label className="label">Blood Donor Status</label>
+            <span className="label">Blood Donor Status</span>
             <div style={{ display: 'flex', alignItems: 'center', height: 42 }}>
               <div className="toggle-wrap">
-                <button className={`toggle ${isBlood ? 'on' : 'off'}`} onClick={() => setIsBlood(v => !v)} aria-label="Toggle blood donor">
+                <button type="button" className={`toggle ${isBlood ? 'on' : 'off'}`} onClick={() => setIsBlood(v => !v)} aria-label="Toggle blood donor" aria-pressed={isBlood}>
                   <div className="toggle-knob" />
                 </button>
                 <span style={{ fontSize: 13, color: 'var(--foreground-muted)' }}>{isBlood ? 'Registered blood donor' : 'Not registered'}</span>
@@ -68,7 +68,7 @@ export function DonorProfileTab({
           {ALL_ORGANS.map(organ => {
             const pledged = organs.includes(organ);
             return (
-              <button key={organ} onClick={() => toggleOrgan(organ)} style={{
+              <button type="button" key={organ} aria-pressed={pledged} onClick={() => toggleOrgan(organ)} style={{
                 padding: '8px 16px', borderRadius: 'var(--r-full)',
                 border: `1.5px solid ${pledged ? 'rgba(5,150,105,0.4)' : 'var(--border)'}`,
                 background: pledged ? 'rgba(5,150,105,0.06)' : 'var(--background-alt)',
@@ -84,7 +84,7 @@ export function DonorProfileTab({
           })}
         </div>
         <div style={{ padding: '12px 16px', background: 'var(--primary-10)', border: '1px solid rgba(0,56,168,0.12)', borderRadius: 'var(--r-md)', borderLeft: '3px solid var(--primary)', fontSize: 13, color: 'var(--primary)', lineHeight: 1.65 }}>
-          Organ pledges are secured with PhilSys eVerify. Legal consent is encrypted and recorded in the national audit registry.
+          Organ pledges are sample data for this prototype. The demo does not verify identity or create a legal consent record.
         </div>
       </div>
 
@@ -113,7 +113,7 @@ export function DonorMatchesTab({
           {[
             { key: 'list', label: '1. Browse Recipients', active: matchStep === 'list' },
             { key: 'matched', label: '2. Match Requested', active: ['matched', 'approved', 'scheduled'].includes(matchStep) },
-            { key: 'approved', label: '3. Hospital Approved', active: ['approved', 'scheduled'].includes(matchStep) },
+            { key: 'approved', label: '3. Hospital Review Complete', active: ['approved', 'scheduled'].includes(matchStep) },
             { key: 'scheduled', label: '4. Scheduled', active: matchStep === 'scheduled' },
           ].map(s => (
             <div key={s.key} className="hero-stat" style={{
@@ -157,7 +157,7 @@ export function DonorMatchesTab({
             <button className="btn btn-primary btn-sm" onClick={e => { e.stopPropagation(); handleMatchRequest({ recipientName: 'Ana Reyes', blood_type: 'A+', organ_needed: 'Kidney', urgency: 'urgent', location: 'Makati City', hospital: 'Makati Medical Center' }); }}>Request Match →</button>
           </div>
           <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 12, textAlign: 'center' }}>
-            Click a recipient to send a match request. Hospital medical clearance required before scheduling.
+            Click a recipient to send a demo match request. A doctor must make any clinical decision before scheduling.
           </p>
         </div>
       )}
@@ -174,11 +174,11 @@ export function DonorMatchesTab({
                 Awaiting institutional hospital review for <strong>{matchedRecipient.recipientName}</strong> ({matchedRecipient.blood_type || matchedRecipient.organ_needed})
               </div>
             </div>
-            <span className="badge badge-sun" style={{ fontSize: 11 }}>Pending Hospital Approval</span>
+            <span className="badge badge-sun" style={{ fontSize: 11 }}>Pending Hospital Demo Review</span>
           </div>
           <div style={{ padding: '14px 18px', background: 'rgba(5, 150, 105, 0.05)', border: '1px solid rgba(5, 150, 105, 0.25)', borderRadius: 'var(--r-md)', borderLeft: '4px solid var(--emerald)', fontSize: 13, color: 'var(--foreground)', lineHeight: 1.65 }}>
             <strong style={{ color: 'var(--emerald)', display: 'block', marginBottom: 4 }}>🏥 Institutional Evaluation Pending</strong>
-            In accordance with national clinical governance, approval must be granted by medical authorities via the authoritative <strong>Hospital Dashboard</strong> (<code>/hospital-dashboard</code>). When approved by Philippine General Hospital (PGH), your status will update here automatically without page reload.
+            A hospital administrator can complete the review step in the <strong>Hospital Dashboard</strong> (<code>/hospital-dashboard</code>). This demo review is not doctor-issued clinical clearance. When the PGH sample review is complete, your status updates here without a page reload.
           </div>
           <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' }}>
             <button className="btn btn-ghost" onClick={resetMatchFlow}><CrossIcon /> Cancel Request</button>
@@ -194,12 +194,12 @@ export function DonorMatchesTab({
                 ✓
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--emerald)' }}>Match Approved by Hospital</div>
+                <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--emerald)' }}>Demo Match Review Complete</div>
                 <div style={{ fontSize: 13, color: 'var(--foreground-muted)', marginTop: 2 }}>
                   Recipient: <strong>{matchedRecipient.recipientName}</strong> · Type: <strong>{matchedRecipient.blood_type ? 'Blood (' + matchedRecipient.blood_type + ')' : 'Organ (' + matchedRecipient.organ_needed + ')'}</strong>
                 </div>
               </div>
-              <span className="badge badge-success">Approved ✓</span>
+              <span className="badge badge-success">Demo review complete ✓</span>
             </div>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               <button className="btn btn-primary btn-lg" onClick={() => setTab('schedule')}>
@@ -227,7 +227,7 @@ export function DonorMatchesTab({
           <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Appointment Confirmed!</h3>
           <p style={{ fontSize: 14, color: 'var(--foreground-muted)', marginBottom: 20 }}>
             Your {matchedRecipient?.blood_type ? 'blood donation' : 'organ donation coordination'} has been scheduled.
-            The recipient and hospital clinical team have been notified.
+            A simulated notification was queued for the recipient and hospital demo view.
           </p>
           <button className="btn btn-primary" onClick={resetMatchFlow}><CrossIcon /> Back to Matches</button>
         </div>

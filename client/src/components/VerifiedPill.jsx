@@ -1,7 +1,7 @@
 import React from 'react';
 
-// Replaces the small "PhilSys ✓ Tier I" text in the navbar with a
-// avatar-style initial circle + first name + verified check.
+// Replaces the small identity-status text in the navbar with a
+// avatar-style initial circle + first name + demo profile marker.
 // More humane, less institutional, and reads as a person not a system.
 
 function CheckGlyph({ size = 12, color = 'white' }) {
@@ -49,7 +49,7 @@ export default function VerifiedPill({ firstName, lastName, tier = 'Tier I' }) {
         {displayName}
       </span>
       <span
-        title={`PhilSys ${tier} Verified`}
+        title={`Demo identity profile · ${tier}`}
         style={{
           display: 'inline-flex',
           alignItems: 'center',

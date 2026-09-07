@@ -22,19 +22,19 @@ export default function OrganAnalytics({ role }) {
           <span style={{ fontSize: 12, color: 'var(--emerald)', fontWeight: 600 }}>↑ 14% this month</span>
         </div>
         <div className="card card-sm" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>Transplants Completed</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>Sample procedures</span>
           <strong style={{ fontSize: 28, fontWeight: 800, color: 'var(--emerald)' }}>89</strong>
-          <span style={{ fontSize: 12, color: 'var(--foreground-muted)' }}>DICT Audit Certified</span>
+          <span style={{ fontSize: 12, color: 'var(--foreground-muted)' }}>Sample dashboard data</span>
         </div>
         <div className="card card-sm" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>eVerify Verification Rate</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>Sample profile rate</span>
           <strong style={{ fontSize: 28, fontWeight: 800, color: 'var(--navy-mid)' }}>98.4%</strong>
-          <span style={{ fontSize: 12, color: 'var(--emerald)', fontWeight: 600 }}>DICT Audit Certified</span>
+          <span style={{ fontSize: 12, color: 'var(--emerald)', fontWeight: 600 }}>Prototype estimate</span>
         </div>
         <div className="card card-sm" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>Donation Agreements Secured</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>Sample agreements</span>
           <strong style={{ fontSize: 28, fontWeight: 800, color: 'var(--destructive)' }}>100%</strong>
-          <span style={{ fontSize: 12, color: 'var(--foreground-subtle)' }}>Encrypted Audit Registry</span>
+          <span style={{ fontSize: 12, color: 'var(--foreground-subtle)' }}>Simulated agreement records</span>
         </div>
       </div>
 
@@ -42,7 +42,7 @@ export default function OrganAnalytics({ role }) {
         {/* Left Card: National Organ Pledge Distribution */}
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 800 }}>National Pledge Registry</h3>
+            <h3 style={{ fontSize: 16, fontWeight: 800 }}>Sample pledge distribution</h3>
             <span className="badge badge-primary">Organ Distribution</span>
           </div>
 
@@ -74,9 +74,9 @@ export default function OrganAnalytics({ role }) {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
               <h3 style={{ fontSize: 16, fontWeight: 800 }}>
-                {role === 'recipient' && 'Transplant Match Insights'}
-                {role === 'donor' && 'Pledge Legacy Impact'}
-                {role === 'hospital' && 'Institutional Command Indicators'}
+                {role === 'recipient' && 'Demo match insights'}
+                {role === 'donor' && 'Sample pledge impact'}
+                {role === 'hospital' && 'Demo workflow indicators'}
               </h3>
               <span className="badge badge-muted">Role Analytics</span>
             </div>
@@ -89,7 +89,7 @@ export default function OrganAnalytics({ role }) {
                   <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 4 }}>Time elapsed from initial request verification to clinical schedule proposal.</p>
                 </div>
                 <div style={{ padding: '14px', background: 'var(--background-alt)', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Transplant Success Rate</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Sample procedure rate</div>
                   <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--emerald)' }}>94.2%</div>
                   <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 4 }}>Percentage of matches completing successful clinical procedures.</p>
                 </div>
@@ -99,14 +99,14 @@ export default function OrganAnalytics({ role }) {
             {role === 'donor' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div style={{ padding: '14px', background: 'var(--background-alt)', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Forecasted Lives Restored</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Illustrative pledge capacity</div>
                   <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--emerald)' }}>192 Citizens</div>
                   <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 4 }}>Calculated capacity from cumulative active pledges across the region.</p>
                 </div>
                 <div style={{ padding: '14px', background: 'var(--background-alt)', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Digital Signature Encryption</div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--primary)' }}>256-bit Secured</div>
-                  <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 4 }}>E-signatures are encrypted instantly and verified on the DICT national audit registry.</p>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Digital signature demo</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--primary)' }}>Simulated</div>
+                  <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 4 }}>Signature actions are represented in this prototype and are not verified on a national registry.</p>
                 </div>
               </div>
             )}
@@ -119,16 +119,16 @@ export default function OrganAnalytics({ role }) {
                   <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 4 }}>Percentage of schedule proposals accepted by hospitals, donors, and recipients.</p>
                 </div>
                 <div style={{ padding: '14px', background: 'var(--background-alt)', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Total System Transactions</div>
-                  <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--destructive)' }}>4,821 Blocks</div>
-                  <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 4 }}>Total donation agreements anchored on-chain for clinical procedures.</p>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Sample workflow records</div>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: 'var(--destructive)' }}>4,821 demo events</div>
+                  <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 4 }}>Illustrative records in this prototype; no on-chain clinical transactions are claimed.</p>
                 </div>
               </div>
             )}
           </div>
 
           <div style={{ padding: '12px 16px', background: 'var(--primary-10)', border: '1px solid rgba(0,56,168,0.12)', borderRadius: 'var(--r-md)', borderLeft: '3px solid var(--primary)', fontSize: 12, color: 'var(--primary)', lineHeight: 1.6, marginTop: 'auto' }}>
-            Analytics are synced with the DOH Transplant Registry Database and validated by PSA/PhilSys.
+            Analytics use sample data for this prototype. They are not synced with a national registry or validated by PSA/PhilSys.
           </div>
         </div>
       </div>

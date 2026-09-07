@@ -3,9 +3,9 @@ import Stepper from './Stepper';
 
 const STEPS = [
   { key: 'role', label: 'Role' },
-  { key: 'auth', label: 'Auth' },
-  { key: 'sso', label: 'SSO' },
-  { key: 'face', label: 'Liveness' },
+  { key: 'auth', label: 'Access' },
+  { key: 'sso', label: 'Demo code' },
+  { key: 'face', label: 'Face check' },
   { key: 'profile', label: 'Profile' },
 ];
 
@@ -28,18 +28,18 @@ export default function EgovSsoForm({
         <button type="button" className="btn btn-ghost btn-sm" style={{ marginLeft: 'auto' }} onClick={onBack}>Back</button>
       </div>
 
-      <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, textAlign: 'center' }}>eGov Single Sign-On</h3>
+      <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, textAlign: 'center' }}>eGov Exchange Code (Demo)</h3>
       <p style={{ fontSize: 13, color: 'var(--foreground-muted)', textAlign: 'center', marginBottom: 20 }}>
-        Authenticate on eGov, then paste the exchange code it issues below. We exchange it for an access token and pull your verified profile.
+        Paste the demo exchange code supplied by the presenter. This prototype shows a sample profile; it does not verify a government identity.
       </p>
 
       <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div className="field">
-          <label className="label">Exchange Code</label>
+          <label className="label" htmlFor="egov-exchange-code">Demo exchange code</label>
           <input
-            className="input"
+            id="egov-exchange-code" className="input"
             type="text"
-            placeholder="e.g. generated_exchange_code"
+            placeholder="Paste the code supplied by the presenter"
             value={exchangeCode}
             onChange={(e) => setExchangeCode(e.target.value)}
           />
@@ -56,7 +56,7 @@ export default function EgovSsoForm({
             Back
           </button>
           <button className="btn btn-primary" type="submit" style={{ flex: 2 }} disabled={ssoLoading}>
-            {ssoLoading ? <><span className="spinner" style={{ borderColor: 'white', borderTopColor: 'transparent' }} /> Verifying with eGov…</> : 'Continue'}
+            {ssoLoading ? <><span className="spinner" style={{ borderColor: 'white', borderTopColor: 'transparent' }} /> Checking demo code…</> : 'Continue with demo code'}
           </button>
         </div>
       </form>
@@ -86,8 +86,8 @@ export default function EgovSsoForm({
               gap: 2,
             }}
           >
-            <span>⚡ Quick Demo Sign-In</span>
-            <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--foreground-muted)' }}>(skips eGov network + liveness, lands you in the dashboard)</span>
+            <span>⚡ Use Quick Demo Sign-In</span>
+            <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--foreground-muted)' }}>(uses a sample identity, skips live eGov and face-check steps)</span>
           </button>
         </>
       )}

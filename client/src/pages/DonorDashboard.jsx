@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import ChatBox from '../components/ChatBox';
 import GovernmentAgreement from '../components/GovernmentAgreement';
 import ClinicalMatchCard from '../components/ClinicalMatchCard';
@@ -12,14 +12,9 @@ import { DonorProfileTab } from '../components/DonorTabComponents';
 import { ALL_ORGANS, BLOOD_TYPES } from '../services/domain';
 import { formatStatus } from '../utils/matchStatus';
 import { UserIcon, MatchIcon, ChatIcon, ChainIcon, DropIcon } from '../components/Icons';
-import { api } from '../services/api';
-
-// Demo-only: static donor phone number for the "match found" SMS notification.
-// Swap this out once real donor phone numbers are collected during onboarding.
-const DEMO_NOTIFY_NUMBER = '+639763098967';
 
 export default function DonorDashboard({ onboardingPledge }) {
-  const { match, isApproved, consentSigned, updateMatchFromProfile } = useMatch();
+  const { match, hospitalApproved, consentSigned, updateMatchFromProfile } = useMatch();
   const [tab, setTab] = useState('mymatch'); // Default to automatic match console upon portal load (Issue #006)
   const [bloodType, setBloodType] = useState(() => match.donor?.blood_type || onboardingPledge?.bloodType || 'O-');
   const [isBlood, setIsBlood] = useState(onboardingPledge?.isBlood !== undefined ? onboardingPledge.isBlood : true);
@@ -38,27 +33,6 @@ export default function DonorDashboard({ onboardingPledge }) {
     }
     setAvail(nextAvail);
   };
-  // Guards against double-fire (e.g. React StrictMode double-invoking effects in dev)
-  const smsFiredRef = useRef(false);
-
-  useEffect(() => {
-    if (smsFiredRef.current) return;
-    smsFiredRef.current = true;
-
-    const message =
-      "eBuhay: A potential recipient match has been found based on your donation pledge. " +
-      "Please log in to the app to review the match details.";
-
-    api.sendSms(DEMO_NOTIFY_NUMBER, message)
-      .then(() => {
-        console.log('✅ Match-found SMS sent to', DEMO_NOTIFY_NUMBER);
-      })
-      .catch((err) => {
-        // Don't block the dashboard UI on SMS failure — just log it.
-        console.error('eMessage SMS failed:', err.message);
-      });
-  }, []);
-
   const toggleOrgan = o => setOrgans(p => p.includes(o) ? p.filter(x => x !== o) : [...p, o]);
 
   const saveProfile = () => {
@@ -67,7 +41,7 @@ export default function DonorDashboard({ onboardingPledge }) {
       toast.warning(res.error, { title: 'Profile Sync Warning', duration: 5000 });
       return;
     }
-    toast.success('PhilSys Tier I Donor Profile preferences synchronized.', { title: 'Profile Saved', duration: 4000 });
+    toast.success('Donor profile preferences updated in this demo.', { title: 'Profile Saved', duration: 4000 });
   };
 
   const isAgreementUnlocked = ['scheduled', 'agreement_finalized', 'contract_signed', 'ready_for_transplant'].includes(match.status);
@@ -82,14 +56,14 @@ export default function DonorDashboard({ onboardingPledge }) {
 
   return (
     <main id="main-content" tabIndex={-1} style={{ minHeight: '100vh', background: 'var(--background)' }}>
-      <section className="hero care-journey-hero">
+      <section className="hero care-journey-hero donor-care-journey">
         <div className="container">
           <div className="hero-eyebrow anim-up" style={{ color: 'var(--emerald)' }}>
-            <DropIcon size={14} /> Donor Portal · PhilSys Tier I
+            <DropIcon size={14} /> Donor Portal · Demo profile
           </div>
           <h1 className="care-journey-title anim-up-d1">Donor Care Journey</h1>
           <ul className="care-journey-rail anim-up-d3" aria-label="Donor current care facts">
-            <li role="status"><span>Current Match</span><strong>{formatStatus(match.status)}</strong></li>
+            <li className="care-journey-primary" role="status"><span>Current Match</span><strong>{formatStatus(match.status)}</strong></li>
             <li><span>Blood type</span><strong>{bloodType}</strong></li>
             <li><span>Pledged organs</span><strong>{organs.length}</strong></li>
             <li><span>Availability</span><strong>{avail ? 'Active' : 'Off'}</strong></li>
@@ -101,7 +75,7 @@ export default function DonorDashboard({ onboardingPledge }) {
       <div className="dashboard-network-band">
         <div className="marquee-outer">
           <div className="marquee-track dashboard-marquee-track">
-            {['PHILIPPINE RED CROSS', 'DOH ORGAN DONATION PROGRAM', 'PHILIPPINE GENERAL HOSPITAL (PGH)', 'DICT eVERIFY TRUST REGISTRY', 'NATIONAL KIDNEY INSTITUTE (NKI)', 'RA NO. 7170 COMPLIANT', 'REACTIVE eMESSAGE PUSH SYSTEM'].map((a, i) => (
+            {['PHILIPPINE RED CROSS · DEMO', 'DOH ORGAN DONATION PROGRAM · DEMO', 'PHILIPPINE GENERAL HOSPITAL (PGH) · DEMO', 'Simulated trust registry', 'NATIONAL KIDNEY INSTITUTE (NKI) · DEMO', 'Sample policy reference', 'Simulated notification system'].map((a, i) => (
               <span key={i} className="marquee-item">🏥 {a}</span>
             ))}
           </div>
@@ -118,6 +92,7 @@ export default function DonorDashboard({ onboardingPledge }) {
               onClick={() => setTab(t.id)}
               disabled={t.locked}
               aria-label={t.label}
+              aria-pressed={tab === t.id}
               title={t.locked ? `${t.label} (locked)` : t.label}
             >
               <span className="tab-btn-icon">{t.icon}</span>
@@ -182,7 +157,7 @@ export default function DonorDashboard({ onboardingPledge }) {
           {/* CLINICAL CHAT TAB (Issue #010) */}
           {tab === 'chat' && (
             <div style={{ maxWidth: 720, margin: '0 auto' }}>
-              <ChatBox currentRole="donor" consentSigned={isChatUnlocked} doctorApproved={isApproved} hospitalApproved={isApproved} />
+              <ChatBox currentRole="donor" consentSigned={isChatUnlocked} hospitalApproved={hospitalApproved} />
             </div>
           )}
 
@@ -190,7 +165,7 @@ export default function DonorDashboard({ onboardingPledge }) {
       </div>
 
       <footer className="footer-mini">
-        DICT eGov Platform · Republic of the Philippines · Demo Build
+        eBuhay prototype · Demo Build
       </footer>
     </main>
   );

@@ -4,12 +4,12 @@ import { maskedName } from '../utils/maskedName';
 import { eMessageToast } from '../utils/eMessageToast';
 
 const DEMO_MESSAGES = [
-  { id: 1, sender: 'donor',     text: 'Good day! I have reviewed and completed my e-signature on our DOH clinical donation agreement.', time: '10:30 AM' },
-  { id: 2, sender: 'recipient', text: 'Thank you so much! I have also signed the government document. This means everything to me and my family.', time: '10:32 AM' },
-  { id: 3, sender: 'donor',     text: 'I will see you at Philippine General Hospital (PGH) on our confirmed procedure schedule!', time: '10:33 AM' },
+  { id: 1, sender: 'donor',     text: 'Good day! I reviewed the sample donation agreement for this demo.', time: '10:30 AM' },
+  { id: 2, sender: 'recipient', text: 'Thank you. I reviewed the sample agreement too.', time: '10:32 AM' },
+  { id: 3, sender: 'donor',     text: 'I will see you at Philippine General Hospital (PGH) if we confirm the demonstrated schedule.', time: '10:33 AM' },
 ];
 
-export default function ChatBox({ currentRole = 'recipient', consentSigned = false, doctorApproved = false }) {
+export default function ChatBox({ currentRole = 'recipient', consentSigned = false, hospitalApproved = false }) {
   const [messages, setMessages] = useState(DEMO_MESSAGES);
   const [text, setText] = useState('');
   const endRef = useRef();
@@ -18,12 +18,12 @@ export default function ChatBox({ currentRole = 'recipient', consentSigned = fal
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   const send = () => {
-    if (!text.trim() || !doctorApproved) return;
+    if (!text.trim() || !hospitalApproved) return;
     const newText = text.trim();
     setMessages(p => [...p, { id: Date.now(), sender: currentRole, text: newText, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
     setText('');
 
-    // Demonstrate SMS alert dispatch without blocking conversational interaction (Issue #010)
+    // Demonstrate a simulated notification without blocking the conversation.
     eMessageToast(toast, 'chat_message', { other });
   };
 
@@ -33,22 +33,22 @@ export default function ChatBox({ currentRole = 'recipient', consentSigned = fal
     : maskedName(currentRole === 'donor' ? 'recipient' : 'donor');
 
   // STRICT LOCK SCREEN: Prohibit chat unless approved by institutional clinical review
-  if (!doctorApproved) {
+  if (!hospitalApproved) {
     return (
       <div className="card anim-in" style={{ padding: 40, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 460, gap: 16, background: 'white' }}>
         <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(245,158,11,0.1)', color: 'var(--sun)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>
           🔒
         </div>
         <div>
-          <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Chat will open after the hospital approves your match</h3>
+          <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8 }}>Chat will open after the hospital demo review</h3>
           <p style={{ fontSize: 13, color: 'var(--foreground-muted)', maxWidth: 460, lineHeight: 1.6 }}>
-            You'll be able to talk to your match here once a doctor reviews your case and gives the go-ahead.
+            Chat opens after the hospital review step in this demo. A hospital administrator review is not a doctor’s clinical clearance.
           </p>
         </div>
 
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', background: 'var(--background-alt)', padding: '10px 18px', borderRadius: 'var(--r-full)', border: '1px solid var(--border)', fontSize: 12 }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--sun)' }} />
-          <span style={{ fontWeight: 600, color: 'var(--sun)' }}>Waiting for hospital approval</span>
+          <span style={{ fontWeight: 600, color: 'var(--sun)' }}>Waiting for hospital review</span>
         </div>
       </div>
     );
@@ -71,11 +71,11 @@ export default function ChatBox({ currentRole = 'recipient', consentSigned = fal
           </div>
           <div style={{ fontSize: 11, color: 'var(--emerald)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--emerald)', display: 'inline-block' }} />
-            Online · {consentSigned ? 'Verified Tier I PhilSys Citizen ✓' : 'PGH Approved Clinical Partner'}
+            Demo conversation · {consentSigned ? 'Identity details shown after agreement step' : 'Names remain masked'}
           </div>
         </div>
         {consentSigned ? (
-          <span className="badge badge-verified" style={{ padding: '6px 12px', fontSize: 11 }}>PhilSys Unmasked ID ✓</span>
+          <span className="badge badge-verified" style={{ padding: '6px 12px', fontSize: 11 }}>Demo identity details shown</span>
         ) : (
           <span className="badge" style={{ fontSize: 11, background: 'rgba(0,0,0,0.05)' }}>Anonymous Communication</span>
         )}
@@ -109,7 +109,7 @@ export default function ChatBox({ currentRole = 'recipient', consentSigned = fal
           value={text}
           onChange={e => setText(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-          placeholder="Type a verified clinical communication message… (Enter to send)"
+          placeholder="Type a demo message… (Enter to send)"
           rows={1}
           style={{ resize: 'none', lineHeight: 1.5, minHeight: 44, flex: 1, fontSize: 13 }}
           aria-label="Message input"

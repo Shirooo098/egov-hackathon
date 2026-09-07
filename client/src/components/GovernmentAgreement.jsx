@@ -31,13 +31,13 @@ export default function GovernmentAgreement({ role = 'recipient' }) {
       {/* Official Header */}
       <div style={{ textAlign: 'center', borderBottom: '2px solid var(--primary)', paddingBottom: '20px', marginBottom: '24px' }}>
         <div style={{ fontSize: '13px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--primary)', letterSpacing: '1.5px' }}>
-          Government of the Philippines
+          eBuhay demonstration agreement
         </div>
         <h2 style={{ fontSize: '22px', fontWeight: 900, marginTop: '12px', color: 'var(--foreground)', letterSpacing: '-0.02em', fontFamily: 'var(--font-heading)' }}>
           Donation Agreement
         </h2>
         <div style={{ fontSize: '12px', color: 'var(--foreground-subtle)', marginTop: '4px' }}>
-          A simple, secure promise between you and your match.
+          Sample workflow copy for this prototype; it is not a government form or legal advice.
         </div>
       </div>
 
@@ -74,7 +74,7 @@ export default function GovernmentAgreement({ role = 'recipient' }) {
 
       {/* Who's involved */}
       <div style={{ marginBottom: '24px' }}>
-        <h3 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', borderLeft: '4px solid var(--primary)', paddingLeft: '10px', marginBottom: '14px' }}>
+        <h3 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', borderLeft: '1px solid var(--primary)', paddingLeft: '10px', marginBottom: '14px' }}>
           Who's involved
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px 18px', background: 'var(--background-alt)', padding: '16px 18px', borderRadius: 'var(--r-md)', border: '1px solid var(--border)', fontSize: '13px', lineHeight: 1.55 }}>
@@ -106,17 +106,17 @@ export default function GovernmentAgreement({ role = 'recipient' }) {
             <strong>You're doing this freely.</strong> Nobody is paying you or pressuring you. This is your choice.
           </li>
           <li>
-            <strong>The hospital will take care of you.</strong> Doctors at {match.hospital.name} will check everything is safe before, during, and after.
+            <strong>Clinical care is separate.</strong> A doctor must make any clinical decision; this hospital administrator demo does not provide medical clearance.
           </li>
           <li>
-            <strong>Your signature is real.</strong> When you sign below, it's legally binding — same as signing on paper.
+            <strong>This signature is simulated.</strong> It records your action in this prototype and is not a verified identity, legal signature, or authorization.
           </li>
         </ol>
       </details>
 
       {/* Signatures */}
       <div style={{ marginBottom: '28px' }}>
-        <h3 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', borderLeft: '4px solid var(--primary)', paddingLeft: '10px', marginBottom: '16px' }}>
+        <h3 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', borderLeft: '1px solid var(--primary)', paddingLeft: '10px', marginBottom: '16px' }}>
           Signatures
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
@@ -135,7 +135,7 @@ export default function GovernmentAgreement({ role = 'recipient' }) {
                 <span style={{ fontSize: '20px' }}>✍️</span>
                 <div style={{ fontSize: '12px' }}>
                   <div style={{ fontWeight: 700, color: 'var(--emerald)' }}>Signed</div>
-                  <div style={{ color: 'var(--foreground-subtle)', fontSize: '11px' }}>Verified</div>
+                  <div style={{ color: 'var(--foreground-subtle)', fontSize: '11px' }}>Recorded in demo</div>
                 </div>
               </div>
             ) : role === 'donor' && !submitted ? (
@@ -162,7 +162,7 @@ export default function GovernmentAgreement({ role = 'recipient' }) {
                 <span style={{ fontSize: '20px' }}>✍️</span>
                 <div style={{ fontSize: '12px' }}>
                   <div style={{ fontWeight: 700, color: 'var(--emerald)' }}>Signed</div>
-                  <div style={{ color: 'var(--foreground-subtle)', fontSize: '11px' }}>Verified</div>
+                  <div style={{ color: 'var(--foreground-subtle)', fontSize: '11px' }}>Recorded in demo</div>
                 </div>
               </div>
             ) : role === 'recipient' && !submitted ? (
@@ -202,7 +202,7 @@ export default function GovernmentAgreement({ role = 'recipient' }) {
 
       {currentPartySigned && (
         <div style={{ textAlign: 'center', borderTop: '1px solid var(--border)', paddingTop: '20px', color: 'var(--foreground-muted)', fontSize: '13px', fontWeight: 600 }}>
-          ✓ Your legal declaration is officially submitted under DOH-PGH clinical authority.
+          ✓ Your demo agreement action was recorded. It is not a legal declaration or clinical authorization.
         </div>
       )}
     </div>

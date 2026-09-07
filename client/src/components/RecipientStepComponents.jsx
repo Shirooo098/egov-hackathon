@@ -16,15 +16,15 @@ export function DeclareNeedStep({
       <div className="card anim-up">
         <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 'var(--s3)' }}>What do you need?</h2>
         <p style={{ fontSize: 13, color: 'var(--foreground-muted)', marginBottom: 'var(--s7)' }}>
-          Select the type of donation you require. The system will match you with compatible donors automatically.
-          <br /><strong>Note:</strong> Urgency level is determined by your medical records via API integration (simulated here).
+          Select the type of donation you require. The prototype will show sample compatibility results.
+          <br /><strong>Note:</strong> Urgency level is sample input in this demo; no medical-record API is connected.
         </p>
 
         <div className="grid-auto" style={{ marginBottom: 'var(--s7)' }}>
           <div className="field">
-            <label className="label">Request Type</label>
+            <label className="label" htmlFor="declare-request-type">Request Type</label>
             <select
-              className={`input ${errors.request_type ? 'input-error' : ''}`}
+              id="declare-request-type" className={`input ${errors.request_type ? 'input-error' : ''}`}
               value={params.request_type}
               onChange={e => handleParamChange('request_type', e.target.value)}
             >
@@ -34,9 +34,9 @@ export function DeclareNeedStep({
             {errors.request_type && <div className="field-message field-error"><span>⚠</span>{errors.request_type}</div>}
           </div>
           <div className="field">
-            <label className="label">Blood Type Needed</label>
+            <label className="label" htmlFor="declare-blood-type">Blood Type Needed</label>
             <select
-              className={`input ${errors.blood_type_needed ? 'input-error' : ''}`}
+              id="declare-blood-type" className={`input ${errors.blood_type_needed ? 'input-error' : ''}`}
               value={params.blood_type_needed}
               onChange={e => handleParamChange('blood_type_needed', e.target.value)}
             >
@@ -46,9 +46,9 @@ export function DeclareNeedStep({
           </div>
           {params.request_type === 'organ' && (
             <div className="field">
-              <label className="label">Organ Needed</label>
+              <label className="label" htmlFor="declare-organ-needed">Organ Needed</label>
               <select
-                className={`input ${errors.organ_needed ? 'input-error' : ''}`}
+                id="declare-organ-needed" className={`input ${errors.organ_needed ? 'input-error' : ''}`}
                 value={params.organ_needed}
                 onChange={e => handleParamChange('organ_needed', e.target.value)}
               >
@@ -61,7 +61,7 @@ export function DeclareNeedStep({
         </div>
 
         <div style={{ padding: '12px 16px', background: 'var(--primary-10)', border: '1px solid rgba(0,56,168,0.12)', borderRadius: 'var(--r-md)', borderLeft: '3px solid var(--primary)', fontSize: 13, color: 'var(--primary)', lineHeight: 1.65 }}>
-          <strong>Medical Record Integration (Future):</strong> Urgency level (Critical/Urgent/Moderate) will be auto-populated from your electronic medical records via PhilHealth/DOH API. For now, the system defaults to <strong>Moderate</strong>.
+          <strong>Medical-record integration (future):</strong> This prototype does not connect to PhilHealth or DOH records. It defaults to <strong>Moderate</strong> until a clinician supplies a value.
         </div>
       </div>
 
@@ -107,7 +107,7 @@ export function FindDonorsStep({
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div className="section-title" style={{ margin: 0 }}>{matches.length} Donor{matches.length > 1 ? 's' : ''} Found</div>
-            <span className="badge badge-verified">ABO / Rh Verified</span>
+            <span className="badge badge-verified">ABO / Rh sample match</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {matches.map((m, i) => {
@@ -130,7 +130,7 @@ export function FindDonorsStep({
                     <div className="compat-header"><span className="compat-label">Match</span><span className="compat-value" style={{ color: scoreColor }}>{score}%</span></div>
                     <div className="compat-track"><div className={`compat-fill compat-${tier}`} style={{ width: `${score}%` }} /></div>
                   </div>
-                  {m.donor.everify_status === 'verified' ? <span className="badge badge-verified">PhilSys ✓</span> : <span className="badge badge-muted">Unverified</span>}
+                  {m.donor.everify_status === 'verified' ? <span className="badge badge-verified">Demo identity profile</span> : <span className="badge badge-muted">Identity not verified</span>}
                   <button className="btn btn-primary btn-sm" onClick={e => { e.stopPropagation(); handleMatch(m); }}>Match →</button>
                 </div>
               );
@@ -165,8 +165,8 @@ export function MatchPendingStep({
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
           <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(245,158,11,0.1)', color: 'var(--sun)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>⏳</div>
           <div>
-            <div style={{ fontWeight: 800, fontSize: 16 }}>Match Requested — Awaiting Hospital Approval</div>
-            <div style={{ fontSize: 13, color: 'var(--foreground-muted)', marginTop: 2 }}>Your match request has been sent to the institutional medical team for clinical review.</div>
+            <div style={{ fontWeight: 800, fontSize: 16 }}>Match Requested — Awaiting Hospital Demo Review</div>
+            <div style={{ fontSize: 13, color: 'var(--foreground-muted)', marginTop: 2 }}>Your request is shown in the hospital administrator demo review queue.</div>
           </div>
         </div>
 
@@ -186,8 +186,8 @@ export function MatchPendingStep({
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
             <div style={{ padding: '12px 14px', background: 'rgba(5, 150, 105, 0.05)', border: '1px solid rgba(5, 150, 105, 0.25)', borderRadius: 'var(--r-md)', fontSize: 13 }}>
-              <strong style={{ color: 'var(--emerald)', display: 'block', marginBottom: 4 }}>🏥 Awaiting Institutional Evaluation at PGH</strong>
-              Self-service approval simulation has been retired in strict compliance with medical governance. Clinical clearance must be executed by hospital administrators via <code>/hospital-dashboard</code>. Once approved, this view will update immediately without reloading.
+              <strong style={{ color: 'var(--emerald)', display: 'block', marginBottom: 4 }}>🏥 Awaiting PGH demo review</strong>
+              A hospital administrator can complete this prototype review via <code>/hospital-dashboard</code>. It is not doctor-issued clinical clearance and does not authorize treatment.
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 12, color: 'var(--foreground-subtle)' }}>Expected review: Within 24 hours</span>
@@ -200,7 +200,7 @@ export function MatchPendingStep({
       </div>
 
       <div style={{ padding: '12px 16px', background: 'var(--primary-10)', border: '1px solid rgba(0,56,168,0.12)', borderRadius: 'var(--r-md)', borderLeft: '3px solid var(--primary)', fontSize: 13, color: 'var(--primary)', lineHeight: 1.65 }}>
-        <strong>Clinical Protocol:</strong> Under National Organ Transplantation Regulations, all recipient-donor matches require attending hospital clinical compatibility review before consent anchoring. The medical specialists evaluate HLA matching, crossmatch results, and recipient surgical fitness.
+        <strong>Sample clinical context:</strong> Real matching would require qualified clinicians to review compatibility and fitness. This prototype does not evaluate HLA, crossmatch results, or surgical fitness.
       </div>
     </div>
   );

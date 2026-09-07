@@ -4,7 +4,7 @@ import LockGlyph from './LockGlyph';
 // Shared "feature currently restricted" panel.
 // Replaces the 3 near-duplicate inline cards in the citizen dashboards.
 export default function LockedTabPanel({
-  title = 'Currently Restricted',
+  title = 'Not available yet',
   message,
   ctaLabel = 'Return to My Match',
   onCta,

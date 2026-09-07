@@ -4,7 +4,7 @@ import { egovApi } from '../services/egovApi';
 const GREETING = {
   id: 'greeting',
   sender: 'ai',
-  text: "Hi! I'm the eGov AI Assistant. Ask me anything about Philippine government services — TIN IDs, PhilSys, organ/blood donation regulations, or how eBuhay works.",
+  text: "Hi! I'm the eBuhay prototype assistant. Ask about sample Philippine government-service references, organ/blood donation information, or how this demo works. I cannot provide legal or clinical advice.",
   time: '',
 };
 
@@ -14,9 +14,28 @@ export default function FloatingAIChat() {
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
   const endRef = useRef();
+  const launcherRef = useRef(null);
+  const inputRef = useRef(null);
+  const closeChat = () => {
+    setOpen(false);
+    launcherRef.current?.focus();
+  };
 
   useEffect(() => {
-    if (open) endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!open) return undefined;
+    inputRef.current?.focus();
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeChat();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open]);
+
+  useEffect(() => {
+    if (open) endRef.current?.scrollIntoView?.({ behavior: 'smooth' });
   }, [messages, open]);
 
   const timeNow = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -32,7 +51,7 @@ export default function FloatingAIChat() {
     try {
       const res = await egovApi.askAI(prompt, 'PH');
       setMessages(p => [...p, { id: Date.now() + 1, sender: 'ai', text: res.data, time: timeNow() }]);
-    } catch (err) {
+    } catch {
       setMessages(p => [...p, {
         id: Date.now() + 1,
         sender: 'ai',
@@ -47,21 +66,21 @@ export default function FloatingAIChat() {
   return (
     <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12 }}>
       {open && (
-        <div className="floating-ai-panel card anim-in" style={{ width: 360, maxWidth: '90vw', height: 480, display: 'flex', flexDirection: 'column', overflow: 'hidden', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-md)', background: 'white' }}>
+        <div id="floating-ai-panel" className="floating-ai-panel card anim-in" role="dialog" aria-modal="false" aria-labelledby="floating-ai-chat-title" style={{ width: 360, maxWidth: '90vw', height: 'min(480px, calc(100vh - 110px))', maxHeight: 'calc(100vh - 110px)', display: 'flex', flexDirection: 'column', overflow: 'hidden', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-md)', background: 'white' }}>
           {/* Header */}
           <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)', background: 'var(--background-alt)', display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), #0284C7)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 15 }}>
               e
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 800, fontSize: 14 }}>eGov AI Assistant</div>
+              <h2 id="floating-ai-chat-title" style={{ fontWeight: 800, fontSize: 14, margin: 0 }}>Prototype assistant</h2>
               <div style={{ fontSize: 11, color: 'var(--emerald)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5 }}>
                 <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--emerald)', display: 'inline-block' }} />
-                Online
+                Demo service
               </div>
             </div>
             <button
-              onClick={() => setOpen(false)}
+              onClick={closeChat}
               aria-label="Close chat"
               className="btn btn-ghost btn-icon"
               style={{ width: 32, height: 32, borderRadius: 'var(--r-md)' }}
@@ -81,7 +100,7 @@ export default function FloatingAIChat() {
               const self = m.sender === 'user';
               return (
                 <div key={m.id} style={{ display: 'flex', flexDirection: 'column', alignItems: self ? 'flex-end' : 'flex-start', gap: 4 }}>
-                  <div className={`bubble ${self ? 'bubble-sent' : 'bubble-recv'}`} style={{ maxWidth: '85%', padding: '10px 14px', fontSize: 13, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                  <div className={`bubble ${self ? 'bubble-sent' : 'bubble-recv'}`} style={{ maxWidth: '85%', minWidth: 0, padding: '10px 14px', fontSize: 13, lineHeight: 1.5, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
                     {m.text}
                   </div>
                   {m.time && <span style={{ fontSize: 10, color: 'var(--foreground-subtle)', paddingInline: 4 }}>{m.time}</span>}
@@ -102,6 +121,7 @@ export default function FloatingAIChat() {
           {/* Input */}
           <div style={{ padding: '12px 14px', borderTop: '1px solid var(--border)', background: 'var(--background-alt)', display: 'flex', gap: 8, alignItems: 'flex-end' }}>
             <textarea
+              ref={inputRef}
               className="input"
               value={text}
               onChange={e => setText(e.target.value)}
@@ -127,8 +147,12 @@ export default function FloatingAIChat() {
 
       {/* Floating toggle button */}
       <button
+        ref={launcherRef}
         onClick={() => setOpen(o => !o)}
         aria-label={open ? 'Close AI assistant' : 'Open AI assistant'}
+        aria-expanded={open}
+        aria-controls="floating-ai-panel"
+        aria-haspopup="dialog"
         className="floating-ai-launcher"
         style={{
           width: 58, height: 58, borderRadius: '50%',

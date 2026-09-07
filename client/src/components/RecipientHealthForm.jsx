@@ -9,13 +9,14 @@ export default function RecipientHealthForm({
 }) {
   return (
     <div className="anim-in">
-      <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 18, textAlign: 'center' }}>Recipient Health Declaration</h3>
+      <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, textAlign: 'center' }}>Recipient Health Details (Demo)</h3>
+      <p style={{ fontSize: 13, color: 'var(--foreground-muted)', textAlign: 'center', marginBottom: 18 }}>Enter sample details for this prototype journey. This is not a medical assessment or a live transplant request.</p>
       <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div className="grid-2">
           <div className="field">
-            <label className="label">Need Category</label>
+            <label className="label" htmlFor="recipient-request-type">Need Category</label>
             <select
-              className="input"
+              id="recipient-request-type" className="input"
               value={recipientHealth.request_type}
               onChange={e => setRecipientHealth({ ...recipientHealth, request_type: e.target.value })}
             >
@@ -26,9 +27,9 @@ export default function RecipientHealthForm({
 
           {recipientHealth.request_type === 'organ' ? (
             <div className="field">
-              <label className="label">Organ Needed</label>
+              <label className="label" htmlFor="recipient-organ-needed">Organ Needed</label>
               <select
-                className="input"
+                id="recipient-organ-needed" className="input"
                 value={recipientHealth.organ_needed}
                 onChange={e => setRecipientHealth({ ...recipientHealth, organ_needed: e.target.value })}
               >
@@ -42,9 +43,9 @@ export default function RecipientHealthForm({
             </div>
           ) : (
             <div className="field">
-              <label className="label">Blood Type Needed</label>
+              <label className="label" htmlFor="recipient-blood-type-needed">Blood Type Needed</label>
               <select
-                className="input"
+                id="recipient-blood-type-needed" className="input"
                 value={recipientHealth.blood_type_needed}
                 onChange={e => setRecipientHealth({ ...recipientHealth, blood_type_needed: e.target.value })}
               >
@@ -56,9 +57,9 @@ export default function RecipientHealthForm({
 
         <div className="grid-2">
           <div className="field">
-            <label className="label">Urgency Priority</label>
+            <label className="label" htmlFor="recipient-urgency-level">Urgency Priority</label>
             <select
-              className="input"
+              id="recipient-urgency-level" className="input"
               value={recipientHealth.urgency_level}
               onChange={e => setRecipientHealth({ ...recipientHealth, urgency_level: e.target.value })}
             >
@@ -68,9 +69,9 @@ export default function RecipientHealthForm({
             </select>
           </div>
           <div className="field">
-            <label className="label">Currently on Dialysis/Support?</label>
+            <label className="label" htmlFor="recipient-dialysis">Currently on Dialysis/Support?</label>
             <select
-              className="input"
+              id="recipient-dialysis" className="input"
               value={recipientHealth.dialysis}
               onChange={e => setRecipientHealth({ ...recipientHealth, dialysis: e.target.value })}
             >
@@ -81,9 +82,9 @@ export default function RecipientHealthForm({
         </div>
 
         <div className="field">
-          <label className="label">Pre-existing Medical Conditions / Clinical Notes</label>
+          <label className="label" htmlFor="recipient-conditions">Pre-existing Medical Conditions / Clinical Notes</label>
           <textarea
-            className="input"
+            id="recipient-conditions" className="input"
             rows={3}
             placeholder="Detail chronic illnesses, previous transplant surgeries, or clinical allergies..."
             value={recipientHealth.conditions}
@@ -91,10 +92,10 @@ export default function RecipientHealthForm({
           />
         </div>
 
-        <div className="field" style={{ border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: 16, background: 'white' }}>
-          <label className="label" style={{ marginBottom: 4 }}>1. Past Medical Record / Lab Documentation</label>
+        <fieldset className="field" style={{ border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: 16, background: 'white' }}>
+          <legend className="label" style={{ marginBottom: 4 }}>1. Past Medical Record / Lab Documentation</legend>
           <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginBottom: 12 }}>
-            Upload lab results or medical records, or choose to schedule a diagnostic consultation instead.
+            For this demo, upload a sample document or choose a sample consultation slot.
           </p>
           <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
             <button
@@ -128,13 +129,13 @@ export default function RecipientHealthForm({
           ) : (
             <div style={{ padding: 14, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 'var(--r-md)', display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ fontWeight: 700, color: 'var(--sun)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span>⚠️ Schedule Diagnostic Consultation Slot</span>
+                <span>⚠️ Choose a Demo Consultation Slot</span>
               </div>
               <div className="grid-2">
                 <div className="field">
-                  <label className="label" style={{ fontSize: 11 }}>Attending Specialty</label>
+                  <label className="label" htmlFor="recipient-specialty" style={{ fontSize: 11 }}>Attending Specialty</label>
                   <select
-                    className="input"
+                    id="recipient-specialty" className="input"
                     style={{ height: 34, fontSize: 12 }}
                     value={recipientHealth.hospitalSpecialty || recipientHealth.doctorSpecialty || "General Diagnostic Specialist"}
                     onChange={e => setRecipientHealth({ ...recipientHealth, hospitalSpecialty: e.target.value, doctorSpecialty: e.target.value })}
@@ -147,9 +148,9 @@ export default function RecipientHealthForm({
                   </select>
                 </div>
                 <div className="field">
-                  <label className="label" style={{ fontSize: 11 }}>Consultation Date</label>
+                <label className="label" htmlFor="recipient-appointment-date" style={{ fontSize: 11 }}>Consultation Date</label>
                   <input
-                    className="input"
+                    id="recipient-appointment-date" className="input"
                     type="date"
                     style={{ height: 34, fontSize: 12 }}
                     value={recipientHealth.appointmentDate}
@@ -158,9 +159,9 @@ export default function RecipientHealthForm({
                 </div>
               </div>
               <div className="field">
-                <label className="label" style={{ fontSize: 11 }}>Preferred Time Slot</label>
+                <label className="label" htmlFor="recipient-appointment-time" style={{ fontSize: 11 }}>Preferred Time Slot</label>
                 <select
-                  className="input"
+                  id="recipient-appointment-time" className="input"
                   style={{ height: 34, fontSize: 12 }}
                   value={recipientHealth.appointmentTime}
                   onChange={e => setRecipientHealth({ ...recipientHealth, appointmentTime: e.target.value })}
@@ -172,17 +173,17 @@ export default function RecipientHealthForm({
                 </select>
               </div>
               <div style={{ padding: '8px 12px', background: 'white', borderRadius: 'var(--r-sm)', border: '1px solid var(--border)', fontSize: 11, color: 'var(--foreground-subtle)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span>📅 Reserved Slot:</span>
+                <span>📅 Demo slot:</span>
                 <strong style={{ color: 'var(--primary)' }}>{recipientHealth.appointmentDate} @ {recipientHealth.appointmentTime} ({recipientHealth.hospitalSpecialty || recipientHealth.doctorSpecialty})</strong>
               </div>
             </div>
           )}
-        </div>
+        </fieldset>
 
-        <div className="field" style={{ border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: 16, background: 'white' }}>
-          <label className="label" style={{ marginBottom: 4 }}>2. Mandatory Recipient Digital Signature Document (PDF or Image)</label>
+        <fieldset className="field" style={{ border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: 16, background: 'white' }}>
+          <legend className="label" style={{ marginBottom: 4 }}>2. Mandatory Recipient Digital Signature Document (PDF or Image)</legend>
           <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginBottom: 12 }}>
-            Please upload your digital signature document to authorize your medical declaration and transplant request.
+            Upload a sample signature document to complete this prototype step. It does not authorize a live medical request.
           </p>
           <SignatureUploader
             variant="signature"
@@ -193,12 +194,12 @@ export default function RecipientHealthForm({
             onUploadComplete={(file) => setRecipientHealth({ ...recipientHealth, signatureFile: file.name })}
             onClear={() => setRecipientHealth({ ...recipientHealth, signatureFile: null })}
           />
-        </div>
+        </fieldset>
 
         <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
           <button className="btn btn-ghost" type="button" onClick={onBack} style={{ flex: 1 }}>Back</button>
           <button className="btn btn-primary" type="submit" style={{ flex: 2 }} disabled={!recipientHealth.signatureFile}>
-            {recipientHealth.hasMedicalRecord === 'no' ? 'Book Slot & Enter Portal →' : 'Register & Enter Portal'}
+            {recipientHealth.hasMedicalRecord === 'no' ? 'Save Demo Slot & Enter Portal →' : 'Save Demo Details & Enter Portal'}
           </button>
         </div>
       </form>
