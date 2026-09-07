@@ -1,5 +1,5 @@
 import React from 'react';
-import { LIFECYCLE_STEPS, lifecycleStepIndex, formatStatus } from '../utils/matchStatus';
+import { LIFECYCLE_STEPS, lifecycleStepIndex, formatStatus } from '../../utils/matchStatus';
 
 function CheckMini({ color = 'white' }) {
   return (

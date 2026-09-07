@@ -1,23 +1,23 @@
 import React, { lazy, Suspense, useState, useEffect, useRef } from 'react';
-import FloatingAIChat from './components/FloatingAIChat';
+import FloatingAIChat from './shared/ui/FloatingAIChat';
 import { Navigate, Routes, Route, useNavigate } from 'react-router-dom';
-import Navbar from './components/Navbar';
+import Navbar from './shared/ui/Navbar';
 import { api } from './services/api';
 import { egovApi } from './services/egovApi';
 import { useToast } from './context/ToastContext';
 import { useMatch } from './context/MatchContext';
-import { RoleSelectCard, AuthChoiceCard } from './components/OnboardingStepCards';
-import StaffSignIn from './components/StaffSignIn';
-import { clearHospitalDemoSession, hasHospitalDemoSession } from './components/staffDemoSession';
+import { RoleSelectCard, AuthChoiceCard } from './features/onboarding/OnboardingStepCards';
+import StaffSignIn from './features/hospital/StaffSignIn';
+import { clearHospitalDemoSession, hasHospitalDemoSession } from './features/hospital/staffDemoSession';
 import './styles/global.css';
 
 const RecipientDashboard = lazy(() => import('./pages/RecipientDashboard'));
 const DonorDashboard = lazy(() => import('./pages/DonorDashboard'));
 const HospitalDashboard = lazy(() => import('./pages/HospitalDashboard'));
-const EgovSsoForm = lazy(() => import('./components/EgovSsoForm'));
-const FaceLivenessCheck = lazy(() => import('./components/FaceLivenessCheck'));
-const RecipientHealthForm = lazy(() => import('./components/RecipientHealthForm'));
-const DonorPledgeForm = lazy(() => import('./components/DonorPledgeForm'));
+const EgovSsoForm = lazy(() => import('./features/onboarding/EgovSsoForm'));
+const FaceLivenessCheck = lazy(() => import('./features/onboarding/FaceLivenessCheck'));
+const RecipientHealthForm = lazy(() => import('./features/recipient/RecipientHealthForm'));
+const DonorPledgeForm = lazy(() => import('./features/donor/DonorPledgeForm'));
 
 // Onboarding Steps Enum
 const STEPS = {
@@ -54,6 +54,7 @@ function HospitalRoute() {
 }
 
 export default function App() {
+  const navigate = useNavigate();
   const toast = useToast();
   const { consentSigned, setConsentSigned } = useMatch();
 
@@ -288,38 +289,45 @@ export default function App() {
     setLivenessSession(null);
     setLivenessStage(0);
     setPledgeAnchor(null);
+    navigate('/', { replace: true });
     toast.info('Signed out successfully', { title: 'Signed Out' });
   };
 
   const goBackTo = (targetStep) => setStep(targetStep);
+
+  const citizenDashboard = (expectedRole, Dashboard, dashboardProps) => {
+    if (!role) return <Navigate to="/" replace />;
+    if (role !== expectedRole) return <Navigate to={`/${role}`} replace />;
+
+    return (
+      <>
+        <a href="#main-content" className="skip-link">Skip to main content</a>
+        <Navbar currentRole={role} verified={verified} tier={tier} userProfile={userProfile} onSignOut={handleSignOut} />
+        <Suspense fallback={<main id="main-content" tabIndex={-1} className="page-content"><div role="status" aria-live="polite">Loading your care journey...</div></main>}>
+          <Dashboard {...dashboardProps} />
+        </Suspense>
+      </>
+    );
+  };
 
   return (
     <>
       <Routes>
         <Route path="/staff-sign-in" element={<StaffSignIn />} />
         <Route path="/hospital-dashboard" element={<HospitalRoute />} />
-        <Route path="/" element={
+        <Route path="/recipient" element={citizenDashboard('recipient', RecipientDashboard, { consentSigned, setConsentSigned, onboardingHealth: recipientHealth })} />
+        <Route path="/donor" element={citizenDashboard('donor', DonorDashboard, { consentSigned, setConsentSigned, onboardingPledge: donorPledge })} />
+        <Route path="/" element={role ? <Navigate to={`/${role}`} replace /> : (
           <>
             <a href="#main-content" className="skip-link">Skip to main content</a>
             <Navbar
-              currentRole={role}
+              currentRole={null}
               verified={verified}
               tier={tier}
               userProfile={userProfile}
               onSignOut={handleSignOut}
               showStaffEntry={!role && step === STEPS.ROLE_SELECT}
             />
-            {role ? (
-              role === 'recipient' ? (
-                <Suspense fallback={<main id="main-content" tabIndex={-1} className="page-content"><div role="status" aria-live="polite">Loading your care journey…</div></main>}>
-                  <RecipientDashboard consentSigned={consentSigned} setConsentSigned={setConsentSigned} onboardingHealth={recipientHealth} />
-                </Suspense>
-              ) : (
-                <Suspense fallback={<main id="main-content" tabIndex={-1} className="page-content"><div role="status" aria-live="polite">Loading your care journey…</div></main>}>
-                  <DonorDashboard consentSigned={consentSigned} setConsentSigned={setConsentSigned} onboardingPledge={donorPledge} />
-                </Suspense>
-              )
-            ) : (
               <main id="main-content" tabIndex={-1} className="page-content onboarding-shell" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 62px)', padding: '24px 0' }}>
                 <div className="container" style={{ maxWidth: 800, width: '100%' }}>
                   <div className="card anim-up onboarding-card" style={{ padding: '40px', maxWidth: 640, margin: '0 auto' }}>
@@ -395,9 +403,8 @@ export default function App() {
                   </div>
                 </div>
               </main>
-            )}
           </>
-        } />
+        )} />
       </Routes>
       <FloatingAIChat />
     </>

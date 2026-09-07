@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useMatch } from '../context/MatchContext';
+import { useMatch } from '../../context/MatchContext';
+import { CheckIcon, MatchIcon } from '../../shared/ui/Icons';
 
 export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab }) {
   const { match, proposeSchedule, setScheduledDate, resetMatch } = useMatch();
@@ -44,9 +45,9 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
             type="button"
             className="btn btn-ghost btn-sm"
             onClick={resetMatch}
-            style={{ fontSize: 12, color: 'var(--foreground-subtle)' }}
+            style={{ fontSize: 12, color: 'var(--foreground-muted)' }}
           >
-            ↺ Start over
+            Start over
           </button>
         </div>
       </div>
@@ -57,16 +58,13 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
   const isSigned = match.donorSigned && match.recipientSigned || ['agreement_finalized', 'contract_signed', 'ready_for_transplant'].includes(match.status);
 
   return (
-    <div className="card anim-in match-card" style={{ padding: '32px', background: 'white', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-md)', position: 'relative', overflow: 'hidden' }}>
-      {/* Persistent Top Header — editorial / magazine layout */}
+    <div className="card anim-in match-card" style={{ padding: 'clamp(20px, 4vw, 32px)', background: 'white', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-md)', position: 'relative', overflow: 'hidden' }}>
+      {/* Persistent top header - editorial layout */}
       <div className="match-header" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '24px', marginBottom: '28px', position: 'relative' }}>
-        {/* Thin top accent rule */}
-        <div style={{ position: 'absolute', top: -32, left: -32, right: -32, height: 3, background: 'linear-gradient(90deg, var(--primary) 0%, var(--emerald) 100%)', borderTopLeftRadius: 'var(--r-lg)', borderTopRightRadius: 'var(--r-lg)' }} />
-
         {/* Eyebrow row: status pill + percentage on the same quiet line */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
           <span className={`badge ${match.status === 'pending_hospital_approval' ? 'badge-warning' : 'badge-success'}`} style={{ letterSpacing: '0.08em' }}>
-            {match.status === 'pending_hospital_approval' ? 'Hospital demo review pending' : 'Demo match approved ✓'}
+            {match.status === 'pending_hospital_approval' ? 'Hospital demo review pending' : <><span aria-hidden="true" style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={12} /></span> Demo match approved</>}
           </span>
           <span className="match-header-score" style={{ fontSize: 14, color: 'var(--emerald)', fontWeight: 700, display: 'inline-flex', alignItems: 'baseline', gap: 4 }}>
             <span style={{ fontSize: 20, fontWeight: 900, letterSpacing: '-0.02em' }}>{match.compatibilityScore}%</span>
@@ -74,7 +72,7 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
           </span>
         </div>
 
-        {/* Editorial title — large, light weight, type-led */}
+        {/* Editorial title - large, light weight, type-led */}
         <h2 style={{
           fontFamily: 'var(--font-heading)',
           fontSize: 'clamp(28px, 5vw, 38px)',
@@ -87,7 +85,7 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
           Your {match.organ} match.
         </h2>
 
-        {/* Hospital attribution — quiet, italic, with hairline rule */}
+        {/* Hospital attribution - quiet, with hairline rule */}
         <p style={{
           fontSize: 15,
           color: 'var(--foreground-muted)',
@@ -100,21 +98,21 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
           flexWrap: 'wrap',
         }}>
           <span>at</span>
-          <strong style={{ color: 'var(--primary)', fontWeight: 700 }}>{match.hospital.name}</strong>
-          <span style={{ color: 'var(--foreground-subtle)' }}>·</span>
-          <span style={{ color: 'var(--foreground-subtle)' }}>Hospital review context · demo data</span>
+          <strong style={{ color: 'var(--primary)', fontWeight: 700, overflowWrap: 'anywhere' }}>{match.hospital.name}</strong>
+          <span aria-hidden="true">/</span>
+          <span>Hospital review context / demo data</span>
         </p>
       </div>
 
       {/* Persistent Match Details Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', background: 'var(--background-alt)', padding: '18px', borderRadius: 'var(--r-md)', border: '1px solid var(--border)', marginBottom: '28px' }}>
-        <div>
-          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>What you're donating / receiving</div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-muted)', textTransform: 'uppercase' }}>What you're donating / receiving</div>
           <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--foreground)', marginTop: 2 }}>{match.organ}</div>
-          <div style={{ fontSize: '12px', color: 'var(--emerald)', fontWeight: 600 }}>Compatibility estimate · not clinical clearance</div>
+          <div style={{ fontSize: '12px', color: 'var(--emerald)', fontWeight: 600 }}>Compatibility estimate / not clinical clearance</div>
         </div>
-        <div>
-          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>{partnerRole}'s name</div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-muted)', textTransform: 'uppercase' }}>{partnerRole}'s name</div>
           <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--foreground)', marginTop: 2 }}>
             {isSigned ? partnerName : 'Hidden until you sign'}
           </div>
@@ -122,8 +120,8 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
             {isSigned ? 'You can both see each other now' : 'Their name shows up after you sign'}
           </div>
         </div>
-        <div>
-          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>Priority</div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-muted)', textTransform: 'uppercase' }}>Priority</div>
           <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--destructive)', marginTop: 2 }}>{match.urgencyLevel ? match.urgencyLevel : 'Urgent'}</div>
           <div style={{ fontSize: '12px', color: 'var(--foreground-muted)' }}>Demo priority view</div>
         </div>
@@ -131,8 +129,7 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
 
       {/* STAGE A: PENDING HOSPITAL APPROVAL */}
       {match.status === 'pending_hospital_approval' && (
-        <div style={{ background: 'rgba(245, 158, 11, 0.05)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: 'var(--r-md)', padding: '20px', display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-          <span style={{ fontSize: 24, flexShrink: 0 }}>⏳</span>
+        <div role="status" aria-live="polite" style={{ background: 'rgba(245, 158, 11, 0.05)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: 'var(--r-md)', padding: '20px', display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
           <div>
             <div style={{ fontWeight: 800, fontSize: '15px', color: '#B45309' }}>
               Waiting for the hospital to review
@@ -148,13 +145,13 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
       {['scheduled', 'contract_signed', 'ready_for_transplant', 'agreement_finalized'].includes(match.status) && (
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-            <span style={{ fontSize: 24 }}>🤝</span>
+            <span aria-hidden="true" style={{ display: 'inline-flex', verticalAlign: 'middle' }}><MatchIcon size={22} /></span>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 800, fontSize: '18px', color: 'var(--foreground)' }}>Appointment is set</div>
-              <div style={{ fontSize: '13px', color: 'var(--emerald)', fontWeight: 700 }}>✓ Schedule saved in this demo</div>
+              <div style={{ fontSize: '13px', color: 'var(--emerald)', fontWeight: 700 }}><span aria-hidden="true" style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={12} /></span> Schedule saved in this demo</div>
             </div>
             {isSigned ? (
-              <span className="badge badge-verified">Agreement signed ✓</span>
+              <span className="badge badge-verified"><span aria-hidden="true" style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={11} /></span> Agreement signed</span>
             ) : (
               <span className="badge badge-warning">Sign agreement next</span>
             )}
@@ -211,8 +208,8 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
       {!['pending_hospital_approval', 'scheduled', 'contract_signed', 'ready_for_transplant', 'agreement_finalized'].includes(match.status) && (
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-            <span style={{ fontSize: 24 }}>🤝</span>
-            <div>
+            <span aria-hidden="true" style={{ display: 'inline-flex', verticalAlign: 'middle' }}><MatchIcon size={22} /></span>
+            <div style={{ minWidth: 0 }}>
               <h3 style={{ fontSize: '18px', fontWeight: 900, color: 'var(--foreground)', margin: 0 }}>
                 Pick a date together
               </h3>
@@ -228,18 +225,18 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
               <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--primary)', marginBottom: '14px' }}>
                 {partnerName} suggested a date
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', background: 'white', padding: '16px', borderRadius: 'var(--r-md)', border: '1px solid var(--border)', marginBottom: '18px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', background: 'white', padding: '16px', borderRadius: 'var(--r-md)', marginBottom: '18px' }}>
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>Date</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-muted)', textTransform: 'uppercase' }}>Date</div>
                   <div style={{ fontSize: '17px', fontWeight: 900, color: 'var(--foreground)', marginTop: 2 }}>{match.proposedSchedule.date}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>Time</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-muted)', textTransform: 'uppercase' }}>Time</div>
                   <div style={{ fontSize: '17px', fontWeight: 900, color: 'var(--emerald)', marginTop: 2 }}>{match.proposedSchedule.time}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>Where</div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--foreground)', marginTop: 2 }}>{match.proposedSchedule.location}</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-muted)', textTransform: 'uppercase' }}>Where</div>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--foreground)', marginTop: 2, overflowWrap: 'anywhere' }}>{match.proposedSchedule.location}</div>
                 </div>
               </div>
               <button
@@ -248,7 +245,7 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
                 style={{ fontWeight: 800, padding: '14px', background: 'var(--emerald)', border: 'none' }}
                 onClick={handleConfirm}
               >
-                Confirm this date ✓
+                <span aria-hidden="true" style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={14} /></span> Confirm this date
               </button>
               <button
                 type="button"
@@ -263,18 +260,18 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
               <div style={{ fontSize: '15px', fontWeight: 800, color: '#B45309', marginBottom: '14px' }}>
                 Waiting for {partnerName} to confirm
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', background: 'white', padding: '16px', borderRadius: 'var(--r-md)', border: '1px solid var(--border)', marginBottom: '4px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '12px', background: 'white', padding: '16px', borderRadius: 'var(--r-md)', marginBottom: '4px' }}>
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>Date</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-muted)', textTransform: 'uppercase' }}>Date</div>
                   <div style={{ fontSize: '17px', fontWeight: 900, color: 'var(--foreground)', marginTop: 2 }}>{match.proposedSchedule.date}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>Time</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-muted)', textTransform: 'uppercase' }}>Time</div>
                   <div style={{ fontSize: '17px', fontWeight: 900, color: 'var(--emerald)', marginTop: 2 }}>{match.proposedSchedule.time}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-subtle)', textTransform: 'uppercase' }}>Where</div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--foreground)', marginTop: 2 }}>{match.proposedSchedule.location}</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--foreground-muted)', textTransform: 'uppercase' }}>Where</div>
+                  <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--foreground)', marginTop: 2, overflowWrap: 'anywhere' }}>{match.proposedSchedule.location}</div>
                 </div>
               </div>
               <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 12, marginBottom: 0, lineHeight: 1.5 }}>
@@ -339,7 +336,7 @@ export default function ClinicalMatchCard({ role = 'recipient', onNavigateTab })
                 </div>
               </div>
               <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ fontWeight: 800, padding: '14px' }}>
-                Send this date to {partnerName} ✓
+                <span aria-hidden="true" style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={14} /></span> Send this date to {partnerName}
               </button>
               {showCounterForm && (
                 <button
