@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import ChatBox from '../components/ChatBox';
-import GovernmentAgreement from '../components/GovernmentAgreement';
-import ClinicalMatchCard from '../components/ClinicalMatchCard';
-import CalendarScheduleView from '../components/CalendarScheduleView';
-import LockedTabPanel from '../components/LockedTabPanel';
-import LockGlyph from '../components/LockGlyph';
-import LiveDot from '../components/LiveDot';
-import LifecycleStrip from '../components/LifecycleStrip';
+import ChatBox from '../features/match/ChatBox';
+import GovernmentAgreement from '../features/match/GovernmentAgreement';
+import ClinicalMatchCard from '../features/match/ClinicalMatchCard';
+import CalendarScheduleView from '../features/match/CalendarScheduleView';
+import LockedTabPanel from '../shared/ui/LockedTabPanel';
+import LockGlyph from '../shared/ui/LockGlyph';
+import LiveDot from '../shared/ui/LiveDot';
+import LifecycleStrip from '../features/match/LifecycleStrip';
 import { useToast } from '../context/ToastContext';
 import { useMatch } from '../context/MatchContext';
 import { ALL_ORGANS as ORGANS, BLOOD_TYPES } from '../services/domain';
 import { formatStatus } from '../utils/matchStatus';
-import { HeartIcon, MatchIcon, ChatIcon, ChainIcon, CalIcon } from '../components/Icons';
+import { HeartIcon, MatchIcon, ChatIcon, ChainIcon, CalIcon } from '../shared/ui/Icons';
 
 export default function RecipientDashboard({ onboardingHealth }) {
   const { match, isApproved, hospitalApproved, consentSigned, updateMatchFromProfile } = useMatch();

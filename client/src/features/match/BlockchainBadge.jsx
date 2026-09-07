@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { api } from '../services/api';
+import { api } from '../../services/api';
 import SignatureUploader from './SignatureUploader';
 
 export default function BlockchainBadge({ matchId, donorId, recipientId, signerRole = 'recipient', consentSigned, onConsentSuccess }) {

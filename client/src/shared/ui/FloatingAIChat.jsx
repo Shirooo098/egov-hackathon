@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { egovApi } from '../services/egovApi';
+import { egovApi } from '../../services/egovApi';
 
 const GREETING = {
   id: 'greeting',

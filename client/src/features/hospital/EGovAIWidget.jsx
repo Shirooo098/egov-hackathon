@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { api } from '../services/api';
+import { api } from '../../services/api';
 
 const QUICK = [
   { icon: 'scale',    title: 'Organ Donation',    prompt: 'What are the laws on organ donation in the Philippines?' },
