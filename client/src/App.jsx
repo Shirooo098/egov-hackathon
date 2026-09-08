@@ -1,20 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
-import FloatingAIChat from './components/FloatingAIChat';
-import { Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import RecipientDashboard from './pages/RecipientDashboard';
-import DonorDashboard from './pages/DonorDashboard';
-import HospitalDashboard from './pages/HospitalDashboard';
+import React, { lazy, Suspense, useState, useEffect, useRef } from 'react';
+import FloatingAIChat from './components/ui/FloatingAIChat';
+import { Navigate, Routes, Route, useNavigate } from 'react-router-dom';
+import Navbar from './components/ui/Navbar';
 import { api } from './services/api';
 import { egovApi } from './services/egovApi';
 import { useToast } from './context/ToastContext';
 import { useMatch } from './context/MatchContext';
-import { RoleSelectCard, AuthChoiceCard } from './components/OnboardingStepCards';
-import EgovSsoForm from './components/EgovSsoForm';
-import FaceLivenessCheck from './components/FaceLivenessCheck';
-import RecipientHealthForm from './components/RecipientHealthForm';
-import DonorPledgeForm from './components/DonorPledgeForm';
+import { RoleSelectCard, AuthChoiceCard } from './features/onboarding/OnboardingStepCards';
+import StaffSignIn from './features/hospital/StaffSignIn';
+import { clearHospitalDemoSession, hasHospitalDemoSession } from './features/hospital/staffDemoSession';
 import './styles/global.css';
+import './components/ui/shared-ui.css';
+
+const RecipientDashboard = lazy(() => import('./pages/RecipientDashboard'));
+const DonorDashboard = lazy(() => import('./pages/DonorDashboard'));
+const HospitalDashboard = lazy(() => import('./pages/HospitalDashboard'));
+const EgovSsoForm = lazy(() => import('./features/onboarding/EgovSsoForm'));
+const FaceLivenessCheck = lazy(() => import('./features/onboarding/FaceLivenessCheck'));
+const RecipientHealthForm = lazy(() => import('./features/recipient/RecipientHealthForm'));
+const DonorPledgeForm = lazy(() => import('./features/donor/DonorPledgeForm'));
 
 // Onboarding Steps Enum
 const STEPS = {
@@ -26,7 +30,32 @@ const STEPS = {
   DONOR_PLEDGE: 'DONOR_PLEDGE',         // 5b. Sign-up only: donor pledge form
 };
 
+function HospitalRoute() {
+  const navigate = useNavigate();
+  if (!hasHospitalDemoSession()) return <Navigate to="/staff-sign-in" replace />;
+
+  return (
+    <>
+      <a href="#main-content" className="skip-link">Skip to main content</a>
+      <Navbar
+        currentRole={null}
+        verified={true}
+        tier="Hospital demo staff"
+        userProfile={null}
+        onSignOut={() => {
+          clearHospitalDemoSession();
+          navigate('/staff-sign-in', { replace: true });
+        }}
+      />
+      <Suspense fallback={<main id="main-content" tabIndex={-1} className="page-content"><div role="status" aria-live="polite">Loading hospital dashboard…</div></main>}>
+        <HospitalDashboard />
+      </Suspense>
+    </>
+  );
+}
+
 export default function App() {
+  const navigate = useNavigate();
   const toast = useToast();
   const { consentSigned, setConsentSigned } = useMatch();
 
@@ -50,7 +79,7 @@ export default function App() {
   // Liveness state
   const [livenessSession, setLivenessSession] = useState(null); // { token, url }
   const [livenessStage, setLivenessStage] = useState(0); // 0 idle, 1 waiting on popup, 2 polling, 3 success, 4 fail
-  const [livenessMessage, setLivenessMessage] = useState('Preparing secure liveness session...');
+  const [livenessMessage, setLivenessMessage] = useState('Preparing the demo face-check session...');
   const livenessPopupRef = useRef(null);
 
   // Recipient Health Form States
@@ -80,6 +109,7 @@ export default function App() {
   });
   const [anchoringPledge, setAnchoringPledge] = useState(false);
   const [pledgeAnchor, setPledgeAnchor] = useState(null);
+  const [pledgeError, setPledgeError] = useState('');
 
   // ---------- STEP 1: Role selection ----------
   const choosePortal = (portalId) => {
@@ -94,11 +124,32 @@ export default function App() {
     setStep(STEPS.SSO_PENDING);
   };
 
+  // Quick Demo Sign-In: bypasses the live eGov network and liveness steps,
+  // and lands the user straight into a verified dashboard with a fake profile.
+  // This is intended only for the live demo (when an evaluator doesn't have an
+  // active eGov account or partner credentials) — per DEMO_GUIDE.md.
+  const handleDemoSignIn = () => {
+    setSsoLoading(true);
+    setSsoError('');
+    // Simulate a fast eGov round-trip
+    setTimeout(() => {
+      const demoProfile = pendingRole === 'recipient'
+        ? { first_name: 'Carlos', last_name: 'Santos', email: '[email protected]', mobile: '+639170000001', pcn: '9284-1029-4810', birth_date: '1985-04-12' }
+        : { first_name: 'Maria', last_name: 'Reyes', email: '[email protected]', mobile: '+639170000002', pcn: '1092-7654-3320', birth_date: '1992-09-08' };
+      setUserProfile(demoProfile);
+      setTier('Sample identity · Demo only');
+      setVerified(true);
+      setSsoLoading(false);
+      toast.success('Sample identity loaded. No government identity was verified.', { title: 'Quick Demo Sign-In' });
+      setRole(pendingRole);
+    }, 600);
+  };
+
   // ---------- STEP 3: eGov SSO (exchange_code -> access_token -> profile) ----------
   const handleSsoSubmit = async (e) => {
     e.preventDefault();
     if (!exchangeCode.trim()) {
-      setSsoError('Enter the exchange code issued by eGov after you authenticate.');
+      setSsoError('Paste the demo exchange code supplied by the presenter, then try again.');
       return;
     }
     setSsoLoading(true);
@@ -117,12 +168,12 @@ export default function App() {
         signature: p.signature,
         pcn: p.national_id?.pcn,
       });
-      setTier('eGov Verified');
-      toast.success('eGov identity confirmed', { title: 'SSO Verified' });
+      setTier('Sample identity · Demo only');
+      toast.success('Sample profile loaded. No government identity was verified.', { title: 'Demo exchange complete' });
       setStep(STEPS.LIVENESS);
-    } catch (err) {
-      setSsoError(err.message || 'SSO authentication failed. Check the exchange code and try again.');
-      toast.error('SSO authentication failed', { title: 'Sign-in Error' });
+    } catch {
+      setSsoError('We could not complete the demo sign-in. Check the exchange code and try again.');
+      toast.error('We could not complete the demo sign-in. Check the exchange code and try again.', { title: 'Sign-in Error' });
     } finally {
       setSsoLoading(false);
     }
@@ -131,7 +182,7 @@ export default function App() {
   // ---------- STEP 4: Face Liveness (create session -> popup -> poll result) ----------
   const startLivenessCheck = async () => {
     setLivenessStage(1);
-    setLivenessMessage('Opening secure liveness capture window...');
+    setLivenessMessage('Opening the demo face-check window...');
     try {
       const callbackUrl = `${window.location.origin}${window.location.pathname}#liveness-complete`;
       const session = await egovApi.createLivenessSession({ callbackUrl });
@@ -144,7 +195,7 @@ export default function App() {
       );
 
       setLivenessStage(2);
-      setLivenessMessage('Waiting for face liveness verification...');
+      setLivenessMessage('Waiting for the demo face check...');
 
       const result = await egovApi.pollLivenessResult(session.token);
 
@@ -154,9 +205,9 @@ export default function App() {
 
       if (result.status === 'SUCCEEDED' && result.confidence_score >= 95.0) {
         setLivenessStage(3);
-        setLivenessMessage(`Biometric match confirmed (confidence ${result.confidence_score.toFixed(2)}%)`);
+        setLivenessMessage('Demo face check complete. No government identity was verified.');
         setVerified(true);
-        toast.success('Face liveness verified', { title: 'Verified' });
+        toast.success('Demo face check complete', { title: 'Demo step complete' });
 
         setTimeout(() => {
           if (authMode === 'signin') {
@@ -170,14 +221,14 @@ export default function App() {
       } else {
         setLivenessStage(4);
         setLivenessMessage(
-          `Liveness check ${result.status === 'SUCCEEDED' ? 'confidence too low' : 'failed'} — please retry.`
+          `Demo face check ${result.status === 'SUCCEEDED' ? 'did not meet the sample threshold' : 'failed'} — select “Retry Liveness Check” to try again.`
         );
-        toast.error('Liveness verification did not meet the confidence threshold', { title: 'Retry Required' });
+        toast.error('Demo face check did not complete. Retry the demo step.', { title: 'Retry Required' });
       }
-    } catch (err) {
+    } catch {
       setLivenessStage(4);
-      setLivenessMessage(err.message || 'Liveness verification failed.');
-      toast.error(err.message || 'Liveness verification failed', { title: 'Liveness Error' });
+      setLivenessMessage('The demo face check could not start or finish. Close any open capture window and try again.');
+      toast.error('The demo face check could not start or finish. Close any open capture window and try again.', { title: 'Liveness Error' });
     }
   };
 
@@ -205,6 +256,7 @@ export default function App() {
     if (!donorPledge.ageConsent || !donorPledge.signatureName.trim()) return;
 
     setAnchoringPledge(true);
+    setPledgeError('');
     try {
       const r = await api.anchorConsent({
         matchId: 'pledge-' + Date.now(),
@@ -214,19 +266,16 @@ export default function App() {
         recipientSignature: 'sig_system',
       });
       setPledgeAnchor(r.data);
+      setTimeout(() => {
+        setAnchoringPledge(false);
+        setRole('donor');
+        toast.success('Demo pledge recorded.', { title: 'Demo Pledge Saved' });
+      }, 1800);
     } catch {
-      setPledgeAnchor({
-        chainId: 13371,
-        txHash: '0x7c2a' + Math.random().toString(16).substring(2, 10) + 'f91a',
-        blockNumber: 4821,
-      });
-    }
-
-    setTimeout(() => {
+      setPledgeError('We could not save the demo pledge. Check the service connection and try again.');
       setAnchoringPledge(false);
-      setRole('donor');
-      toast.success('Organ pledge registered on-chain', { title: 'Pledge Anchored' });
-    }, 1800);
+      toast.error('We could not save the demo pledge. Check the service connection and try again.', { title: 'Try Again' });
+    }
   };
 
   const handleSignOut = () => {
@@ -241,47 +290,54 @@ export default function App() {
     setLivenessSession(null);
     setLivenessStage(0);
     setPledgeAnchor(null);
+    navigate('/', { replace: true });
     toast.info('Signed out successfully', { title: 'Signed Out' });
   };
 
   const goBackTo = (targetStep) => setStep(targetStep);
 
+  const citizenDashboard = (expectedRole, Dashboard, dashboardProps) => {
+    if (!role) return <Navigate to="/" replace />;
+    if (role !== expectedRole) return <Navigate to={`/${role}`} replace />;
+
+    return (
+      <>
+        <a href="#main-content" className="skip-link">Skip to main content</a>
+        <Navbar currentRole={role} verified={verified} tier={tier} userProfile={userProfile} onSignOut={handleSignOut} />
+        <Suspense fallback={<main id="main-content" tabIndex={-1} className="page-content"><div role="status" aria-live="polite">Loading your care journey...</div></main>}>
+          <Dashboard {...dashboardProps} />
+        </Suspense>
+      </>
+    );
+  };
+
   return (
     <>
       <Routes>
-        <Route path="/hospital-dashboard" element={
-          <>
-            <a href="#main-content" className="skip-link">Skip to main content</a>
-            <Navbar currentRole={null} verified={true} tier="Hospital Authority" userProfile={null} onSignOut={() => { }} />
-            <HospitalDashboard />
-          </>
-        } />
-        <Route path="/" element={
+        <Route path="/staff-sign-in" element={<StaffSignIn />} />
+        <Route path="/hospital-dashboard" element={<HospitalRoute />} />
+        <Route path="/recipient" element={citizenDashboard('recipient', RecipientDashboard, { consentSigned, setConsentSigned, onboardingHealth: recipientHealth })} />
+        <Route path="/donor" element={citizenDashboard('donor', DonorDashboard, { consentSigned, setConsentSigned, onboardingPledge: donorPledge })} />
+        <Route path="/" element={role ? <Navigate to={`/${role}`} replace /> : (
           <>
             <a href="#main-content" className="skip-link">Skip to main content</a>
             <Navbar
-              currentRole={role}
+              currentRole={null}
               verified={verified}
               tier={tier}
               userProfile={userProfile}
               onSignOut={handleSignOut}
+              showStaffEntry={!role && step === STEPS.ROLE_SELECT}
             />
-            {role ? (
-              role === 'recipient' ? (
-                <RecipientDashboard consentSigned={consentSigned} setConsentSigned={setConsentSigned} onboardingHealth={recipientHealth} />
-              ) : (
-                <DonorDashboard consentSigned={consentSigned} setConsentSigned={setConsentSigned} onboardingPledge={donorPledge} />
-              )
-            ) : (
-              <div id="main-content" className="page-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--background-alt)', minHeight: 'calc(100vh - 62px)', padding: '24px 0' }}>
-                <div className="container" style={{ maxWidth: 800, width: '100%' }}>
-                  <div className="card anim-up" style={{ padding: '40px', maxWidth: 640, margin: '0 auto', background: 'white' }}>
+              <main id="main-content" tabIndex={-1} className="page-content onboarding-shell">
+                <div className="container onboarding-container">
+                  <div className="card anim-up onboarding-card">
 
-                    {step !== STEPS.LIVENESS && (
-                      <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                        <div style={{ width: 48, height: 48, borderRadius: 12, background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 900, margin: '0 auto 16px' }}>e</div>
-                        <h2 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>Secure eBuhay Onboarding</h2>
-                        <p style={{ fontSize: 14, color: 'var(--foreground-muted)' }}>National platform secured with eGov Single Sign-On and Face Liveness verification.</p>
+                    {step !== STEPS.LIVENESS && step !== STEPS.ROLE_SELECT && (
+                      <div className="onboarding-heading">
+                        <div className="onboarding-mark">e</div>
+                        <h2>eBuhay Citizen Onboarding</h2>
+                        <p>Prototype flow showing a sample eGov exchange and face-check step.</p>
                       </div>
                     )}
 
@@ -299,7 +355,7 @@ export default function App() {
 
                     {/* STEP 3: SSO EXCHANGE */}
                     {step === STEPS.SSO_PENDING && (
-                      <EgovSsoForm
+                      <Suspense fallback={<div role="status" aria-live="polite">Loading sign-in…</div>}><EgovSsoForm
                         pendingRole={pendingRole}
                         authMode={authMode}
                         exchangeCode={exchangeCode}
@@ -307,48 +363,49 @@ export default function App() {
                         ssoError={ssoError}
                         ssoLoading={ssoLoading}
                         onSubmit={handleSsoSubmit}
+                        onDemoSignIn={handleDemoSignIn}
                         onBack={() => goBackTo(STEPS.AUTH_CHOICE)}
-                      />
+                      /></Suspense>
                     )}
 
                     {/* STEP 4: FACE LIVENESS */}
                     {step === STEPS.LIVENESS && (
-                      <FaceLivenessCheck
+                      <Suspense fallback={<div role="status" aria-live="polite">Loading face-check…</div>}><FaceLivenessCheck
                         livenessStage={livenessStage}
                         setLivenessStage={setLivenessStage}
                         livenessMessage={livenessMessage}
                         onBack={() => goBackTo(STEPS.AUTH_CHOICE)}
-                      />
+                      /></Suspense>
                     )}
 
                     {/* STEP 5a: RECIPIENT HEALTH DECLARATION (sign-up only) */}
                     {step === STEPS.RECIPIENT_HEALTH && (
-                      <RecipientHealthForm
+                      <Suspense fallback={<div role="status" aria-live="polite">Loading health form…</div>}><RecipientHealthForm
                         recipientHealth={recipientHealth}
                         setRecipientHealth={setRecipientHealth}
                         onSubmit={handleRecipientHealthSubmit}
                         onBack={() => goBackTo(STEPS.AUTH_CHOICE)}
-                      />
+                      /></Suspense>
                     )}
 
                     {/* STEP 5b: DONOR ORGAN PLEDGE (sign-up only) */}
                     {step === STEPS.DONOR_PLEDGE && (
-                      <DonorPledgeForm
+                      <Suspense fallback={<div role="status" aria-live="polite">Loading pledge form…</div>}><DonorPledgeForm
                         donorPledge={donorPledge}
                         setDonorPledge={setDonorPledge}
                         onSubmit={handleDonorPledgeSubmit}
                         onBack={() => goBackTo(STEPS.AUTH_CHOICE)}
                         anchoringPledge={anchoringPledge}
                         pledgeAnchor={pledgeAnchor}
-                      />
+                        pledgeError={pledgeError}
+                      /></Suspense>
                     )}
 
                   </div>
                 </div>
-              </div>
-            )}
+              </main>
           </>
-        } />
+        )} />
       </Routes>
       <FloatingAIChat />
     </>

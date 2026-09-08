@@ -1,0 +1,44 @@
+.government-agreement { padding: 32px; background: white; border: 2px solid var(--primary); border-radius: var(--r-lg); box-shadow: var(--shadow-md); }
+.government-agreement__header { text-align: center; border-bottom: 2px solid var(--primary); padding-bottom: 20px; margin-bottom: 24px; }
+.government-agreement__eyebrow { font-size: 13px; font-weight: 800; text-transform: uppercase; color: var(--primary); letter-spacing: 1.5px; }
+.government-agreement__title { font-size: 22px; font-weight: 900; margin-top: 12px; color: var(--foreground); letter-spacing: -0.02em; font-family: var(--font-heading); }
+.government-agreement__disclaimer { font-size: 12px; color: var(--foreground-subtle); margin-top: 4px; }
+.government-agreement__callout { display: flex; align-items: center; margin-bottom: 24px; }
+.government-agreement__callout--complete { padding: 18px 24px; background: rgba(5, 150, 105, 0.08); border: 1px solid rgba(5, 150, 105, 0.4); border-radius: var(--r-md); gap: 16px; }
+.government-agreement__callout--pending { padding: 16px 20px; background: rgba(0, 56, 168, 0.05); border: 1px solid rgba(0, 56, 168, 0.2); border-radius: var(--r-md); gap: 14px; }
+.government-agreement__callout-icon { color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; flex-shrink: 0; }
+.government-agreement__callout-icon--complete { width: 44px; height: 44px; background: var(--emerald); font-size: 22px; font-weight: 900; }
+.government-agreement__callout-icon--pending { width: 38px; height: 38px; background: var(--primary); font-size: 18px; font-weight: 800; }
+.government-agreement__callout-title { font-weight: 800; }
+.government-agreement__callout-title--complete { font-size: 16px; color: var(--emerald); }
+.government-agreement__callout-title--pending { font-size: 15px; color: var(--primary); }
+.government-agreement__callout-copy { margin-top: 2px; }
+.government-agreement__callout-copy--complete { font-size: 13px; color: var(--foreground); line-height: 1.5; }
+.government-agreement__callout-copy--pending { font-size: 13px; color: var(--foreground-muted); }
+.government-agreement__section { margin-bottom: 24px; }
+.government-agreement__signatures { margin-bottom: 28px; }
+.government-agreement__section-title { font-size: 15px; font-weight: 800; color: var(--primary); text-transform: uppercase; border-left: 1px solid var(--primary); padding-left: 10px; margin-bottom: 14px; }
+.government-agreement__signatures .government-agreement__section-title { margin-bottom: 16px; }
+.government-agreement__participant-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px 18px; background: var(--background-alt); padding: 16px 18px; border-radius: var(--r-md); border: 1px solid var(--border); font-size: 13px; line-height: 1.55; }
+.government-agreement__organ { color: var(--emerald); }
+.government-agreement__hospital { color: var(--primary); }
+.government-agreement__terms { margin-bottom: 24px; background: #F8FAFC; border-radius: var(--r-md); border: 1px solid var(--border); font-size: 13px; line-height: 1.7; color: var(--foreground); }
+.government-agreement__terms-summary { padding: 14px 16px; font-weight: 700; color: var(--primary); cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; }
+.government-agreement__terms-hint { font-size: 12px; color: var(--foreground-muted); font-weight: 600; }
+.government-agreement__terms-list { padding: 0 18px 14px 32px; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.government-agreement__signature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.government-agreement__signature-card { border: 1px solid var(--border); border-radius: var(--r-md); padding: 16px; }
+.government-agreement__signature-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.government-agreement__signature-name { font-weight: 700; font-size: 13px; }
+.government-agreement__status-badge { font-size: 11px; }
+.government-agreement__signed-record { padding: 12px; background: white; border: 1px solid var(--border); border-radius: var(--r-sm); display: flex; align-items: center; gap: 10px; }
+.government-agreement__signed-icon { font-size: 20px; }
+.government-agreement__signed-copy { font-size: 12px; }
+.government-agreement__signed-title { font-weight: 700; color: var(--emerald); }
+.government-agreement__signed-detail { color: var(--foreground-subtle); font-size: 11px; }
+.government-agreement__waiting { padding: 24px; text-align: center; color: var(--foreground-muted); font-style: italic; font-size: 12px; background: var(--background-alt); border-radius: var(--r-sm); }
+.government-agreement__actions { border-top: 1px solid var(--border); padding-top: 20px; }
+.government-agreement__submit { font-weight: 800; padding: 14px; font-size: 16px; }
+.government-agreement__submit-hint { text-align: center; font-size: 12px; color: var(--foreground-muted); margin-top: 8px; font-style: italic; }
+.government-agreement__recorded-notice { text-align: center; border-top: 1px solid var(--border); padding-top: 20px; color: var(--foreground-muted); font-size: 13px; font-weight: 600; }
+@media (max-width: 640px) { .government-agreement { padding: 20px; } }
