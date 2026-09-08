@@ -49,7 +49,7 @@ afterEach(() => {
 
 async function enterDemoRole(role) {
   const body = renderApp();
-  act(() => body.querySelector(`button[aria-label="${role[0].toUpperCase()}${role.slice(1)}"]`).click());
+  act(() => body.querySelector(`a[href="/onboarding/${role}"]`).click());
   act(() => Array.from(body.querySelectorAll('button')).find((button) => button.textContent.includes('Sign In with eGov')).click());
   await vi.waitFor(() => expect(body.textContent).toContain('Quick Demo Sign-In'));
   act(() => Array.from(body.querySelectorAll('button')).find((button) => button.textContent.includes('Quick Demo Sign-In')).click());
