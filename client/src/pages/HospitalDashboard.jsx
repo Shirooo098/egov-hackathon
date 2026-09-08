@@ -6,12 +6,12 @@ import { useToast } from '../context/ToastContext';
 import { ClinicalTriageTab } from '../features/hospital/HospitalTabComponents';
 import { STATIC_MATCHES, URGENCY_BADGES, URGENCY_LABELS, getLiveMatchAsItem, filterMatches } from '../services/domain';
 import { usePersistedStaticMatches } from '../context/usePersistedStaticMatches';
-import { ClipIcon, ScaleIcon, AnalyticsIcon, HospitalIcon } from '../shared/ui/Icons';
+import { ClipIcon, ScaleIcon, AnalyticsIcon, HospitalIcon } from '../components/ui/Icons';
 import LifecycleStrip from '../features/match/LifecycleStrip';
 
 export default function HospitalDashboard() {
   const { match, advanceStatus, anchorToBlockchain, resetMatch } = useMatch();
-  const { toast } = useToast();
+  const { success, warning } = useToast();
   
   const [tab, setTab] = useState('matches');
   const [staticState, setStaticState] = usePersistedStaticMatches(STATIC_MATCHES);
@@ -21,7 +21,7 @@ export default function HospitalDashboard() {
       advanceStatus('approved');
     } else {
       setStaticState(prev => prev.map(c => c.id === matchId ? { ...c, status: 'approved' } : c));
-      toast.success(`Demo match ${matchId} approved for the hospital review workflow.`, { title: 'Demo Review Approved' });
+      success(`Demo match ${matchId} approved for the hospital review workflow.`, { title: 'Demo Review Approved' });
     }
   };
 
@@ -30,7 +30,7 @@ export default function HospitalDashboard() {
       advanceStatus('rejected');
     } else {
       setStaticState(prev => prev.map(c => c.id === matchId ? { ...c, status: 'rejected' } : c));
-      toast.warning(`This demo match was marked declined. No new match search has started.`, { title: 'Demo Match Declined' });
+      warning(`This demo match was marked declined. No new match search has started.`, { title: 'Demo Match Declined' });
     }
   };
 
@@ -67,10 +67,10 @@ export default function HospitalDashboard() {
   }).length;
 
   return (
-    <main id="main-content" tabIndex={-1} className="min-h-screen" style={{ background: 'var(--background)' }}>
+    <main id="main-content" tabIndex={-1} className="min-h-screen dashboard-page">
       <section className="hero care-journey-hero hospital-care-journey">
         <div className="container">
-          <div className="hero-eyebrow anim-up" style={{ color: 'var(--emerald)' }}>
+          <div className="hero-eyebrow anim-up dashboard-hero-eyebrow-hospital">
             <HospitalIcon size={14} /> Hospital Console
           </div>
           <h1 className="care-journey-title anim-up-d1">Hospital Care Journey</h1>
@@ -119,7 +119,7 @@ export default function HospitalDashboard() {
         </div>
       </div>
 
-      <div className="page-content" style={{ padding: '32px 0' }}>
+      <div className="page-content dashboard-content-hospital">
         <div className="container">
 
           {/* TAB 1: HOSPITAL DEMO REVIEW */}
@@ -127,7 +127,7 @@ export default function HospitalDashboard() {
             <>
               {/* Live lifecycle indicator — only show when a citizen-portal match is active */}
               {(match && match.id) && (
-                <div style={{ marginBottom: 24 }}>
+                <div className="dashboard-section-gap">
                   <LifecycleStrip status={match.status} compact />
                 </div>
               )}
@@ -148,7 +148,7 @@ export default function HospitalDashboard() {
 
           {/* TAB 2: LAWS AI */}
           {tab === 'laws' && (
-            <div style={{ maxWidth: 800, margin: '0 auto' }}>
+            <div className="dashboard-narrow-800">
               <EGovAIWidget />
             </div>
           )}

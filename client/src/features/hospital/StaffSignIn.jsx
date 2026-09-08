@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../../shared/ui/Navbar';
+import Navbar from '../../components/ui/Navbar';
 import { startHospitalDemoSession } from './staffDemoSession';
 
 export default function StaffSignIn() {

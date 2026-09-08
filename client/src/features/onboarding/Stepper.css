@@ -1,0 +1,7 @@
+.stepper{display:flex;align-items:flex-start;gap:0;justify-content:space-between;margin-bottom:24px;width:100%}
+.stepper-item{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1 1 0;min-width:0;z-index:2}
+.stepper-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;transition:background var(--t-std)}
+.stepper-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--foreground-subtle);white-space:nowrap;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.stepper-label.active{color:var(--primary)}.stepper-label.done{color:var(--emerald)}
+.stepper-line{flex:1 1 0;height:2px;background:var(--border);margin-top:12px;margin-inline:4px;min-width:8px;transition:background var(--t-std)}
+.stepper-line.done{background:var(--emerald)}

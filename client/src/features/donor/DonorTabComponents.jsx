@@ -1,7 +1,8 @@
+import './DonorTabComponents.css';
 import React from 'react';
 import CalendarScheduleView from '../match/CalendarScheduleView';
 import { useToast } from '../../context/ToastContext';
-import { CheckIcon, CalIcon } from '../../shared/ui/Icons';
+import { CheckIcon, CalIcon } from '../../components/ui/Icons';
 
 function CrossIcon() {
   return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
@@ -21,20 +22,20 @@ export function DonorProfileTab({
   ALL_ORGANS,
 }) {
   return (
-    <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 18 }}>
+    <div className="migrated-21b3263f">
       <div className="card anim-up">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 24 }}>
-          <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'linear-gradient(135deg, var(--emerald), #0284C7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 24, color: 'white', boxShadow: '0 8px 20px rgba(5,150,105,0.2)' }}>J</div>
+        <div className="migrated-d35325e3">
+          <div className="migrated-f875b2f9">J</div>
           <div>
-            <div style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.03em' }}>Juan Dela Cruz</div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+            <div className="migrated-f7b61a15">Juan Dela Cruz</div>
+            <div className="migrated-7d8107a4">
               <span className="badge badge-verified">Demo identity profile</span>
               <span className={`badge ${avail ? 'badge-success' : 'badge-muted'}`}>{avail ? '● Available' : '○ Unavailable'}</span>
             </div>
           </div>
-          <div style={{ marginLeft: 'auto' }}>
+          <div className="migrated-6dac5f26">
             <div className="toggle-wrap">
-              <span style={{ fontSize: 12, color: 'var(--foreground-muted)' }}>Availability</span>
+              <span className="migrated-bd45f3c8">Availability</span>
               <button type="button" className={`toggle ${avail ? 'on' : 'off'}`} onClick={() => setAvail(v => !v)} aria-label="Toggle availability" aria-pressed={avail}>
                 <div className="toggle-knob" />
               </button>
@@ -50,12 +51,12 @@ export function DonorProfileTab({
           </div>
           <div className="field">
             <span className="label">Blood Donor Status</span>
-            <div style={{ display: 'flex', alignItems: 'center', height: 42 }}>
+            <div className="migrated-86a9e904">
               <div className="toggle-wrap">
                 <button type="button" className={`toggle ${isBlood ? 'on' : 'off'}`} onClick={() => setIsBlood(v => !v)} aria-label="Toggle blood donor" aria-pressed={isBlood}>
                   <div className="toggle-knob" />
                 </button>
-                <span style={{ fontSize: 13, color: 'var(--foreground-muted)' }}>{isBlood ? 'Registered blood donor' : 'Not registered'}</span>
+                <span className="migrated-48613e4d">{isBlood ? 'Registered blood donor' : 'Not registered'}</span>
               </div>
             </div>
           </div>
@@ -64,18 +65,14 @@ export function DonorProfileTab({
 
       <div className="card anim-up-d1">
         <div className="section-title">Organ Donation Pledges</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 18 }}>
+        <div className="migrated-b822dd5d">
           {ALL_ORGANS.map(organ => {
             const pledged = organs.includes(organ);
             return (
-              <button type="button" key={organ} aria-pressed={pledged} onClick={() => toggleOrgan(organ)} style={{
-                padding: '8px 16px', borderRadius: 'var(--r-full)',
+              <button type="button" key={organ} className="organ-pledge-button" aria-pressed={pledged} onClick={() => toggleOrgan(organ)} style={{
                 border: `1.5px solid ${pledged ? 'rgba(5,150,105,0.4)' : 'var(--border)'}`,
                 background: pledged ? 'rgba(5,150,105,0.06)' : 'var(--background-alt)',
                 color: pledged ? 'var(--emerald)' : 'var(--foreground-muted)',
-                fontWeight: 600, fontSize: 13, cursor: 'pointer',
-                transition: 'all var(--t-fast)',
-                display: 'flex', alignItems: 'center', gap: 6,
               }}>
                 {pledged && <CheckIcon />}
                 {organ[0].toUpperCase() + organ.slice(1)}
@@ -83,7 +80,7 @@ export function DonorProfileTab({
             );
           })}
         </div>
-        <div style={{ padding: '12px 16px', background: 'var(--primary-10)', border: '1px solid rgba(0,56,168,0.12)', borderRadius: 'var(--r-md)', borderLeft: '3px solid var(--primary)', fontSize: 13, color: 'var(--primary)', lineHeight: 1.65 }}>
+        <div className="migrated-8a78b4b0">
           Organ pledges are sample data for this prototype. The demo does not verify identity or create a legal consent record.
         </div>
       </div>
@@ -107,20 +104,18 @@ export function DonorMatchesTab({
   const toast = useToast();
 
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto' }}>
-      <div className="card anim-up" style={{ marginBottom: 'var(--s7)', padding: '16px 20px' }}>
-        <div style={{ display: 'flex', gap: 'var(--s4)', flexWrap: 'wrap', alignItems: 'center' }}>
+    <div className="migrated-3bffa33f">
+      <div className="card anim-up migrated-488bdc30" >
+        <div className="migrated-a6c0ef47">
           {[
             { key: 'list', label: '1. Browse Recipients', active: matchStep === 'list' },
             { key: 'matched', label: '2. Match Requested', active: ['matched', 'approved', 'scheduled'].includes(matchStep) },
             { key: 'approved', label: '3. Hospital Review Complete', active: ['approved', 'scheduled'].includes(matchStep) },
             { key: 'scheduled', label: '4. Scheduled', active: matchStep === 'scheduled' },
           ].map(s => (
-            <div key={s.key} className="hero-stat" style={{
+            <div key={s.key} className="hero-stat donor-hero-stat" style={{
               opacity: s.active ? 1 : 0.4,
               transform: s.active ? 'scale(1.02)' : 'none',
-              transition: 'all 0.3s ease',
-              padding: 'var(--s3) var(--s4)',
               background: s.active ? 'rgba(0,56,168,0.05)' : 'transparent',
               borderRadius: 'var(--r-md)',
               border: s.active ? '1px solid var(--primary)' : '1px solid var(--border)'
@@ -128,7 +123,7 @@ export function DonorMatchesTab({
               <div className="hero-stat-val" style={{ color: s.active ? 'var(--primary)' : 'var(--foreground-muted)', fontWeight: s.active ? 800 : 500 }}>
                 {s.active ? '●' : '○'}
               </div>
-              <div className="hero-stat-lbl" style={{ fontSize: 11 }}>{s.label}</div>
+              <div className="hero-stat-lbl migrated-000d1144" >{s.label}</div>
             </div>
           ))}
         </div>
@@ -137,50 +132,50 @@ export function DonorMatchesTab({
       {matchStep === 'list' && (
         <div className="card anim-up">
           <div className="section-title">Recipients Needing {isBlood ? 'Blood' : 'Organ'} Donation</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: 16, background: 'var(--background-alt)', borderRadius: 'var(--r-lg)', border: '1px solid var(--border)', cursor: 'pointer' }} onClick={() => handleMatchRequest({ recipientName: 'Ana Reyes', blood_type: 'A+', organ_needed: 'Kidney', urgency: 'urgent', location: 'Makati City', hospital: 'Makati Medical Center' })}>
-            <div className={`blood-pill ${isBlood ? 'blood-pill-blood' : 'blood-pill-organ'}`} style={{ fontSize: 14, padding: '6px 12px' }}>
+          <div className="migrated-fd3b73e7" onClick={() => handleMatchRequest({ recipientName: 'Ana Reyes', blood_type: 'A+', organ_needed: 'Kidney', urgency: 'urgent', location: 'Makati City', hospital: 'Makati Medical Center' })}>
+            <div className={`blood-pill migrated-2ae3fe74 ${isBlood ? 'blood-pill-blood' : 'blood-pill-organ'}`} >
               {isBlood ? 'A+' : 'Kidney'}
             </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: 15 }}>
+            <div className="migrated-7e90f870">
+              <div className="migrated-39fc62a1">
                 {consentSigned ? 'Ana Reyes' : 'Anonymous Recipient #9C41'}
               </div>
-              <div style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 2 }}>
+              <div className="migrated-51a835e5">
                 Makati City · {isBlood ? 'Blood request' : 'Organ request: Kidney'} · Urgent
               </div>
             </div>
-            <div className="compat-wrap" style={{ minWidth: 130 }}>
-              <div className="compat-header"><span className="compat-label">Match</span><span className="compat-value" style={{ color: 'var(--emerald)' }}>95%</span></div>
-              <div className="compat-track"><div className="compat-fill compat-high" style={{ width: '95%' }} /></div>
+            <div className="compat-wrap migrated-1117ac49" >
+              <div className="compat-header"><span className="compat-label">Match</span><span className="compat-value migrated-79c35e68" >95%</span></div>
+              <div className="compat-track"><div className="compat-fill compat-high migrated-c7ce2d69"  /></div>
             </div>
             <span className="badge badge-urgent">Urgent</span>
             <button className="btn btn-primary btn-sm" onClick={e => { e.stopPropagation(); handleMatchRequest({ recipientName: 'Ana Reyes', blood_type: 'A+', organ_needed: 'Kidney', urgency: 'urgent', location: 'Makati City', hospital: 'Makati Medical Center' }); }}>Request Match →</button>
           </div>
-          <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 12, textAlign: 'center' }}>
+          <p className="migrated-47d18f40">
             Click a recipient to send a demo match request. A doctor must make any clinical decision before scheduling.
           </p>
         </div>
       )}
 
       {matchStep === 'matched' && matchedRecipient && (
-        <div className="card anim-up" style={{ border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.02)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
-            <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(245,158,11,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
+        <div className="card anim-up migrated-5beafa4c" >
+          <div className="migrated-1d83d2af">
+            <div className="migrated-e489ec0a">
               ⏳
             </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--sun)' }}>Match Request Sent</div>
-              <div style={{ fontSize: 13, color: 'var(--foreground-muted)', marginTop: 2 }}>
+            <div className="migrated-7e90f870">
+              <div className="migrated-aaa56af6">Match Request Sent</div>
+              <div className="migrated-663c703d">
                 Awaiting institutional hospital review for <strong>{matchedRecipient.recipientName}</strong> ({matchedRecipient.blood_type || matchedRecipient.organ_needed})
               </div>
             </div>
-            <span className="badge badge-sun" style={{ fontSize: 11 }}>Pending Hospital Demo Review</span>
+            <span className="badge badge-sun" >Pending Hospital Demo Review</span>
           </div>
-          <div style={{ padding: '14px 18px', background: 'rgba(5, 150, 105, 0.05)', border: '1px solid rgba(5, 150, 105, 0.25)', borderRadius: 'var(--r-md)', borderLeft: '4px solid var(--emerald)', fontSize: 13, color: 'var(--foreground)', lineHeight: 1.65 }}>
-            <strong style={{ color: 'var(--emerald)', display: 'block', marginBottom: 4 }}>🏥 Institutional Evaluation Pending</strong>
+          <div className="migrated-67b81f21">
+            <strong className="migrated-64098849">🏥 Institutional Evaluation Pending</strong>
             A hospital administrator can complete the review step in the <strong>Hospital Dashboard</strong> (<code>/hospital-dashboard</code>). This demo review is not doctor-issued clinical clearance. When the PGH sample review is complete, your status updates here without a page reload.
           </div>
-          <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' }}>
+          <div className="migrated-c909f22d">
             <button className="btn btn-ghost" onClick={resetMatchFlow}><CrossIcon /> Cancel Request</button>
           </div>
         </div>
@@ -188,27 +183,27 @@ export function DonorMatchesTab({
 
       {matchStep === 'approved' && matchedRecipient && (
         <>
-          <div className="card anim-up" style={{ marginBottom: 'var(--s7)', border: '1px solid rgba(5,150,105,0.3)', background: 'rgba(5,150,105,0.02)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
-              <div style={{ width: 48, height: 48, borderRadius: 12, background: 'rgba(5,150,105,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>
+          <div className="card anim-up migrated-1bade796" >
+            <div className="migrated-1d83d2af">
+              <div className="migrated-4452b347">
                 ✓
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 800, fontSize: 16, color: 'var(--emerald)' }}>Demo Match Review Complete</div>
-                <div style={{ fontSize: 13, color: 'var(--foreground-muted)', marginTop: 2 }}>
+              <div className="migrated-7e90f870">
+                <div className="migrated-0489cd60">Demo Match Review Complete</div>
+                <div className="migrated-663c703d">
                   Recipient: <strong>{matchedRecipient.recipientName}</strong> · Type: <strong>{matchedRecipient.blood_type ? 'Blood (' + matchedRecipient.blood_type + ')' : 'Organ (' + matchedRecipient.organ_needed + ')'}</strong>
                 </div>
               </div>
               <span className="badge badge-success">Demo review complete ✓</span>
             </div>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <div className="migrated-c3460274">
               <button className="btn btn-primary btn-lg" onClick={() => setTab('schedule')}>
                 <CalIcon /> View Available Slots &amp; Schedule
               </button>
             </div>
           </div>
 
-          <div style={{ maxWidth: 760, margin: '0 auto' }}>
+          <div className="migrated-bf5bb6ee">
             <CalendarScheduleView
               matchType={matchedRecipient.blood_type ? 'blood' : 'organ'}
               slots={donorSlots}
@@ -220,12 +215,12 @@ export function DonorMatchesTab({
       )}
 
       {matchStep === 'scheduled' && (
-        <div className="card anim-up" style={{ border: '1px solid rgba(5,150,105,0.3)', background: 'rgba(5,150,105,0.02)', textAlign: 'center', padding: 40 }}>
-          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(5,150,105,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, margin: '0 auto 20px' }}>
+        <div className="card anim-up migrated-f7b33e46" >
+          <div className="migrated-c185b1c4">
             ✓
           </div>
-          <h3 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Appointment Confirmed!</h3>
-          <p style={{ fontSize: 14, color: 'var(--foreground-muted)', marginBottom: 20 }}>
+          <h3 className="migrated-1d1678b7">Appointment Confirmed!</h3>
+          <p className="migrated-a3850396">
             Your {matchedRecipient?.blood_type ? 'blood donation' : 'organ donation coordination'} has been scheduled.
             A simulated notification was queued for the recipient and hospital demo view.
           </p>

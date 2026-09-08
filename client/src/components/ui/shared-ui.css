@@ -1,0 +1,82 @@
+.brand-lockup { display:flex; flex-direction:column; gap:6px; }
+.brand-lockup-mark { border-radius:12px; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-family:var(--font-heading); font-weight:900; box-shadow:var(--shadow-blue); }
+.brand-lockup-title { font-family:var(--font-heading); font-weight:800; letter-spacing:-0.03em; color:var(--foreground); }
+.brand-lockup-tagline { color:var(--foreground-muted); }
+.floating-ai-root { position:fixed; bottom:24px; right:24px; z-index:9999; display:flex; flex-direction:column; align-items:flex-end; gap:12px; }
+.floating-ai-panel { width:360px; max-width:90vw; height:min(480px,calc(100vh - 110px)); max-height:calc(100vh - 110px); display:flex; flex-direction:column; overflow:hidden; border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow-md); background:white; }
+.floating-ai-header,.floating-ai-input { display:flex; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid var(--border); background:var(--background-alt); }
+.floating-ai-input { padding:12px 14px; border-bottom:0; border-top:1px solid var(--border); align-items:flex-end; gap:8px; }
+.floating-ai-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,var(--primary),#0284C7); color:white; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; }
+.floating-ai-title-wrap { flex:1; }
+.floating-ai-title { font-weight:800; font-size:14px; margin:0; }
+.floating-ai-status { font-size:11px; color:var(--emerald); font-weight:700; display:flex; align-items:center; gap:5px; }
+.floating-ai-status-dot { width:6px; height:6px; border-radius:50%; background:var(--emerald); display:inline-block; }
+.floating-ai-close { width:32px; height:32px; border-radius:var(--r-md); }
+.floating-ai-messages { flex:1; overflow:auto; padding:18px; display:flex; flex-direction:column; gap:12px; background:white; }
+.floating-ai-message { display:flex; flex-direction:column; gap:4px; }
+.floating-ai-message-self { align-items:flex-end; }
+.floating-ai-bubble { max-width:85%; min-width:0; padding:10px 14px; font-size:13px; line-height:1.5; white-space:pre-wrap; overflow-wrap:anywhere; }
+.floating-ai-time { font-size:10px; color:var(--foreground-subtle); padding-inline:4px; }
+.floating-ai-thinking { display:flex; flex-direction:column; align-items:flex-start; }
+.floating-ai-thinking .bubble { padding:10px 14px; font-size:13px; }
+.floating-ai-spinner { width:14px; height:14px; border-width:2px; display:inline-block; vertical-align:middle; margin-right:6px; }
+.floating-ai-textarea { resize:none; line-height:1.5; min-height:40px; flex:1; font-size:13px; }
+.floating-ai-send { height:40px; width:44px; flex-shrink:0; border-radius:var(--r-md); }
+.floating-ai-launcher { width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg,var(--primary),#0284C7); color:white; border:0; cursor:pointer; box-shadow:0 10px 24px rgba(0,56,168,.3); display:flex; align-items:center; justify-content:center; font-size:24px; transition:transform .15s ease; }
+.verified-pill { display:inline-flex; align-items:center; gap:8px; padding:4px 10px 4px 4px; background:var(--background-alt); border:1px solid var(--border); border-radius:var(--r-full); }
+.verified-pill-avatar { width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,var(--primary),#0284C7); color:white; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+.verified-pill-name { font-size:12px; font-weight:700; color:var(--foreground); }
+.verified-pill-check { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:50%; background:var(--emerald); color:white; }
+.locked-panel { padding:48px 32px; text-align:center; background:var(--card); border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow-sm); }
+.locked-panel-icon { width:56px; height:56px; margin:0 auto 16px; border-radius:50%; background:var(--sun-10); color:var(--sun-hover); display:flex; align-items:center; justify-content:center; }
+.locked-panel-title { font-size:20px; font-weight:800; margin-bottom:8px; color:var(--foreground); }
+.locked-panel-message { font-size:14px; color:var(--foreground-muted); max-width:520px; margin:0 auto 24px; line-height:1.6; }
+.locked-panel-cta { font-weight:800; padding:12px 24px; }
+.lock-glyph { flex-shrink:0; }
+.live-dot { width:8px; height:8px; border-radius:50%; background:var(--emerald); display:inline-block; }
+.toast { position:relative; }
+.toast-progress-success { color:var(--emerald); }
+.toast-progress-error { color:var(--destructive); }
+.toast-progress-warning { color:var(--sun); }
+.toast-progress-info { color:var(--primary); }
+.dashboard-page { min-height:100vh; background:var(--background); }
+.dashboard-content { padding:36px 0; }
+.dashboard-content-hospital { padding:32px 0; }
+.dashboard-narrow-840 { max-width:840px; margin:0 auto; }
+.dashboard-narrow-800 { max-width:800px; margin:0 auto; }
+.dashboard-narrow-780 { max-width:780px; margin:0 auto; }
+.dashboard-narrow-720 { max-width:720px; margin:0 auto; }
+.dashboard-section-gap { margin-bottom:20px; }
+.dashboard-hero-eyebrow-donor,.dashboard-hero-eyebrow-hospital { color:var(--emerald); }
+.onboarding-shell { display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 62px); padding:24px 0; }
+.onboarding-container { max-width:800px; width:100%; }
+.onboarding-card { padding:40px; max-width:640px; margin:0 auto; }
+.onboarding-heading { text-align:center; margin-bottom:32px; }
+.onboarding-mark { width:48px; height:48px; border-radius:12px; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:900; margin:0 auto 16px; }
+.onboarding-heading h2 { font-size:24px; font-weight:800; letter-spacing:-.03em; margin-bottom:8px; }
+.onboarding-heading p { font-size:14px; color:var(--foreground-muted); }
+.navbar-brand-link { text-decoration:none; color:inherit; display:flex; align-items:center; gap:10px; }
+.navbar-brand { display:flex; align-items:center; gap:10px; cursor:pointer; }
+.hospital-brand-mark { background:var(--emerald); }
+.navbar-actions { display:flex; align-items:center; gap:16px; }
+.navbar-actions-citizen { flex-wrap:wrap; }
+.nav-context-hospital { background:var(--emerald); color:white; font-weight:700; padding:4px 10px; }
+.nav-facility-id { font-size:12px; color:var(--foreground-muted); font-weight:600; }
+.nav-back { height:34px; padding:0 14px; text-decoration:none; font-weight:600; }
+.nav-staff-entry { height:32px; padding:0 12px; font-size:12px; color:var(--foreground-muted); border:1px solid var(--border); text-decoration:none; }
+.nav-unverified { padding:6px 14px; }
+.nav-exit { height:32px; padding:0 12px; }
+.nav-exit-icon { display:none; }
+.dashboard-narrow-680 { max-width:680px; margin:0 auto; }
+.dashboard-hero-eyebrow-recipient { color:var(--primary); }
+.recipient-profile-card { padding:32px; background:white; border:1px solid var(--border); border-radius:var(--r-lg); box-shadow:var(--shadow-sm); }
+.recipient-profile-header { display:flex; align-items:center; gap:18px; margin-bottom:24px; border-bottom:1px solid var(--border); padding-bottom:20px; }
+.recipient-profile-avatar { width:60px; height:60px; border-radius:50%; background:linear-gradient(135deg,var(--primary),#0284C7); display:flex; align-items:center; justify-content:center; font-family:var(--font-heading); font-weight:900; font-size:24px; color:white; box-shadow:0 8px 20px rgba(0,56,168,.2); }
+.recipient-profile-name { font-weight:800; font-size:20px; letter-spacing:-.02em; }
+.recipient-profile-badges { display:flex; gap:8px; margin-top:6px; }
+.recipient-profile-form { display:flex; flex-direction:column; gap:20px; }
+.recipient-profile-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; }
+.recipient-field-label { display:block; font-size:12px; font-weight:700; margin-bottom:6px; }
+.recipient-field-control { width:100%; }
+.recipient-notice { padding:14px 18px; background:rgba(0,56,168,.04); border-radius:var(--r-md); border:1px solid rgba(0,56,168,.15); font-size:12px; color:var(--foreground); }
+.recipient-submit { font-weight:800; }

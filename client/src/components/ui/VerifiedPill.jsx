@@ -18,48 +18,19 @@ export default function VerifiedPill({ firstName, lastName, tier = 'Tier I' }) {
   return (
     <div
       className="verified-pill"
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 8,
-        padding: '4px 10px 4px 4px',
-        background: 'var(--background-alt)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--r-full)',
-      }}
     >
       <div
         aria-hidden="true"
-        style={{
-          width: 26,
-          height: 26,
-          borderRadius: '50%',
-          background: 'linear-gradient(135deg, var(--primary), #0284C7)',
-          color: 'white',
-          fontSize: 12,
-          fontWeight: 800,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+        className="verified-pill-avatar"
       >
         {initial}
       </div>
-      <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--foreground)' }}>
+      <span className="verified-pill-name">
         {displayName}
       </span>
       <span
         title={`Demo identity profile · ${tier}`}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 16,
-          height: 16,
-          borderRadius: '50%',
-          background: 'var(--emerald)',
-          color: 'white',
-        }}
+        className="verified-pill-check"
       >
         <CheckGlyph />
       </span>

@@ -1,3 +1,4 @@
+import './FaceLivenessCheck.css';
 import React from 'react';
 import Stepper from './Stepper';
 
@@ -24,17 +25,17 @@ export default function FaceLivenessCheck({
   onBack,
 }) {
   return (
-    <div className="anim-in" style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
-      <div style={{ alignSelf: 'stretch' }}>
+    <div className="anim-in migrated-7f597a40" >
+      <div className="migrated-05a2dd68">
         <Stepper steps={STEPS} active={4} />
       </div>
-      <h3 style={{ fontSize: 18, fontWeight: 800 }}>Face Liveness Check (Demo)</h3>
-      <p style={{ fontSize: 13, color: 'var(--foreground-muted)', maxWidth: 440 }}>
+      <h3 className="migrated-9f19d7d0">Face Liveness Check (Demo)</h3>
+      <p className="migrated-dd39b1f9">
         Follow the sample face-check prompts. This prototype demonstrates the step; it does not verify your identity or provide a government liveness result.
       </p>
 
       {/* Stage chips */}
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div className="migrated-beb2c9f2">
         {STAGE_CHIPS.map((chip) => {
           const isActive =
             (chip.id === 1 && (livenessStage === 1 || livenessStage === 2)) ||
@@ -45,8 +46,8 @@ export default function FaceLivenessCheck({
           return (
             <span
               key={chip.id}
-              className={`badge ${isActive ? 'badge-primary' : isDone ? 'badge-success' : 'badge-muted'}`}
-              style={{ fontSize: 10, padding: '4px 10px' }}
+              className={`badge migrated-46a2b1dd ${isActive ? 'badge-primary' : isDone ? 'badge-success' : 'badge-muted'}`}
+
             >
               {chip.id}. {chip.label}
             </span>
@@ -54,21 +55,16 @@ export default function FaceLivenessCheck({
         })}
       </div>
 
-      <div style={{
-        position: 'relative', width: 200, height: 200, borderRadius: '50%',
-        border: `4px solid ${livenessStage === 3 ? 'var(--emerald)' : livenessStage === 4 ? 'var(--danger, #DC2626)' : 'var(--primary)'}`,
-        background: '#1E293B', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
-      }}>
+      <div className="face-liveness-preview" style={{ borderColor: livenessStage === 3 ? 'var(--emerald)' : livenessStage === 4 ? 'var(--danger, #DC2626)' : 'var(--primary)' }}>
         {livenessStage < 3 && (
-          <div style={{ position: 'absolute', left: 0, right: 0, height: 4, background: 'var(--primary)', animation: 'flowDash 2s linear infinite', top: '50%' }} />
+          <div className="migrated-6a6769ab" />
         )}
-        <svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" style={{ zIndex: 1 }}>
+        <svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" className="migrated-f73aaf90">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>
         {livenessStage === 3 && (
-          <div className="anim-in" style={{ position: 'absolute', inset: 0, background: 'rgba(5,150,105,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', zIndex: 5 }}>
+          <div className="anim-in migrated-446b105d" >
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
@@ -76,12 +72,12 @@ export default function FaceLivenessCheck({
         )}
       </div>
 
-      <div style={{ fontWeight: 700, fontSize: 14, color: livenessStage === 3 ? 'var(--emerald)' : livenessStage === 4 ? 'var(--danger, #DC2626)' : 'var(--primary)', padding: '8px 16px', background: 'var(--background-alt)', borderRadius: 'var(--r-full)', border: '1px solid var(--border)' }}>
+      <div className="face-liveness-status" style={{ color: livenessStage === 3 ? 'var(--emerald)' : livenessStage === 4 ? 'var(--danger, #DC2626)' : 'var(--primary)' }}>
         {livenessMessage}
       </div>
 
       {livenessStage === 4 && (
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className="migrated-1d233a92">
           <button className="btn btn-ghost" onClick={onBack}>Back</button>
           <button className="btn btn-primary" onClick={() => setLivenessStage(0)}>Retry Liveness Check</button>
         </div>
