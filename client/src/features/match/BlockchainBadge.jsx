@@ -1,3 +1,4 @@
+import './BlockchainBadge.css';
 import React, { useState } from 'react';
 import { api } from '../../services/api';
 import SignatureUploader from './SignatureUploader';
@@ -28,22 +29,22 @@ export default function BlockchainBadge({ matchId, donorId, recipientId, signerR
   };
 
   if (status === 'anchored' && anchor) return (
-    <div className="card" style={{ border: '1px solid rgba(5,150,105,0.25)', background: 'rgba(5,150,105,0.03)' }}>
-      <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:20 }}>
+    <div className="card blockchain-badge-card blockchain-badge-card--anchored">
+      <div className="blockchain-badge-row">
         <div className="icon-badge icon-badge-lg icon-badge-success"><ChainIcon /></div>
         <div>
-          <div style={{ fontWeight:700, fontSize:15, color:'var(--emerald)' }}>Demo consent record saved</div>
-          <div style={{ fontSize:12, color:'var(--foreground-muted)', marginTop:2 }}>Simulated blockchain anchor · Demo ID {anchor.chainId}</div>
+          <div className="blockchain-badge-title">Demo consent record saved</div>
+          <div className="blockchain-badge-meta">Simulated blockchain anchor · Demo ID {anchor.chainId}</div>
         </div>
-        <span className="badge badge-verified" style={{ marginLeft:'auto' }}>Demo record</span>
+        <span className="badge badge-verified blockchain-badge-record">Demo record</span>
       </div>
-      <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-        <div className="chain-tag"><span style={{color:'var(--foreground-subtle)',whiteSpace:'nowrap'}}>Demo hash</span><span className="tx">{anchor.txHash}</span></div>
-        <div style={{ display:'flex', gap:16, fontSize:12 }}>
-          <span style={{color:'var(--foreground-muted)'}}>Record <strong style={{color:'var(--foreground)'}}>#{anchor.blockNumber}</strong></span>
+      <div className="blockchain-badge-details">
+        <div className="chain-tag"><span className="chain-tag-label">Demo hash</span><span className="tx">{anchor.txHash}</span></div>
+        <div className="blockchain-badge-row blockchain-badge-row--record">
+          <span className="record-label">Record <strong className="record-number">#{anchor.blockNumber}</strong></span>
           {anchor.demo && <span className="badge badge-moderate">Simulated</span>}
         </div>
-        <a href={anchor.explorerUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm btn-full" style={{marginTop:4}}>
+        <a href={anchor.explorerUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm btn-full blockchain-explorer-link">
           <ExternalIcon /> View demo anchor details
         </a>
       </div>
@@ -52,30 +53,30 @@ export default function BlockchainBadge({ matchId, donorId, recipientId, signerR
 
   return (
     <div className="card">
-      <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:22 }}>
+      <div className="blockchain-badge-row">
         <div className="icon-badge icon-badge-lg icon-badge-navy"><ChainIcon /></div>
         <div>
-          <div style={{ fontWeight:700, fontSize:15 }}>E-Signature Consent Agreement</div>
-          <div style={{ fontSize:12, color:'var(--foreground-muted)', marginTop:2 }}>Both parties can add signatures for this prototype workflow; uploads are not identity verification.</div>
+          <div className="blockchain-badge-title">E-Signature Consent Agreement</div>
+          <div className="blockchain-badge-description">Both parties can add signatures for this prototype workflow; uploads are not identity verification.</div>
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 18 }}>
+      <div className="blockchain-badge-signatures">
         {[
           { role:'donor',     label:'Donor Signature Document',    signed:donorSigned,     onSign:() => setDonorSigned(true),     onClear:() => setDonorSigned(false)     },
           { role:'recipient', label:'Recipient Signature Document', signed:recipientSigned, onSign:() => setRecipientSigned(true), onClear:() => setRecipientSigned(false)  },
         ].map(({ role, label, signed, onSign, onClear }) => (
-          <div key={role} className={`sig-slot-flat${signed ? ' signed' : ''}`} style={{ border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: 14, background: signed ? 'rgba(5,150,105,0.01)' : 'white' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-              <div style={{ fontWeight: 700, fontSize: 13 }}>{label}</div>
-              {signed && <span className="badge badge-success" style={{ fontSize: 10 }}>✓ Signed</span>}
+          <div key={role} className={`blockchain-badge-signature-slot sig-slot-flat${signed ? ' signed' : ''}`} style={{background: signed ? 'rgba(5,150,105,0.01)' : 'white'}}>
+            <div className="blockchain-badge-row blockchain-badge-row--signature">
+              <div className="blockchain-badge-meta">{label}</div>
+              {signed && <span className="badge badge-success blockchain-badge-signed">✓ Signed</span>}
             </div>
             {signed ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 10, background: 'var(--background-alt)', borderRadius: 'var(--r-sm)', border: '1px solid var(--border)' }}>
-                <span style={{ fontSize: 18 }}>✍️</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--foreground)' }}>signature_consent_secured.png</span>
+              <div className="blockchain-badge-file">
+                <span className="blockchain-badge-file-icon">✍️</span>
+                <span className="blockchain-badge-file-name">signature_consent_secured.png</span>
                 {((role === 'donor' && signerRole === 'donor') || (role === 'recipient' && signerRole === 'recipient')) && (
-                  <button type="button" onClick={onClear} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--destructive)', fontSize: 11, cursor: 'pointer', fontWeight: 600 }}>Remove</button>
+                  <button className="blockchain-badge-remove" type="button" onClick={onClear}>Remove</button>
                 )}
               </div>
             ) : (
@@ -88,7 +89,7 @@ export default function BlockchainBadge({ matchId, donorId, recipientId, signerR
       <button className="btn btn-primary btn-full btn-lg" disabled={!donorSigned || !recipientSigned || status === 'anchoring'} onClick={anchorChain}>
         {status === 'anchoring' ? <><span className="spinner" /> Saving demo anchor…</> : <><ChainIcon /> {status === 'error' ? 'Retry demo anchor' : 'Save simulated anchor'}</>}
       </button>
-      {status === 'error' && <p role="status" aria-live="polite" style={{textAlign:'center',color:'var(--destructive)',fontSize:12,marginTop:10}}>The demo anchor could not be saved. Check your connection and try again.</p>}
+      {status === 'error' && <p className="blockchain-badge-error" role="status" aria-live="polite">The demo anchor could not be saved. Check your connection and try again.</p>}
     </div>
   );
 }

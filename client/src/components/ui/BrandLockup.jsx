@@ -12,37 +12,22 @@ export default function BrandLockup({ size = 'md', align = 'center', tagline = '
     <div
       className="brand-lockup"
       style={{
-        display: 'flex',
-        flexDirection: 'column',
         alignItems: align === 'center' ? 'center' : 'flex-start',
-        gap: 6,
         textAlign: align,
       }}
     >
       <div
         aria-hidden="true"
-        style={{
-          width: mark,
-          height: mark,
-          borderRadius: 12,
-          background: 'var(--primary)',
-          color: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: mark * 0.46,
-          fontWeight: 900,
-          fontFamily: 'var(--font-heading)',
-          boxShadow: 'var(--shadow-blue)',
-        }}
+        className="brand-lockup-mark"
+        style={{ width: mark, height: mark, fontSize: mark * 0.46 }}
       >
         e
       </div>
-      <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: titleSize, letterSpacing: '-0.03em', color: 'var(--foreground)' }}>
+      <div className="brand-lockup-title" style={{ fontSize: titleSize }}>
         eBuhay
       </div>
       {tagline && (
-        <div style={{ fontSize: subSize, color: 'var(--foreground-muted)' }}>
+        <div className="brand-lockup-tagline" style={{ fontSize: subSize }}>
           {tagline}
         </div>
       )}

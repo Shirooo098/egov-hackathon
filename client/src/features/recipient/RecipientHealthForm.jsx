@@ -1,3 +1,4 @@
+import './RecipientHealthForm.css';
 import React from 'react';
 import SignatureUploader from '../match/SignatureUploader';
 
@@ -9,9 +10,9 @@ export default function RecipientHealthForm({
 }) {
   return (
     <div className="anim-in">
-      <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, textAlign: 'center' }}>Recipient Health Details (Demo)</h3>
-      <p style={{ fontSize: 13, color: 'var(--foreground-muted)', textAlign: 'center', marginBottom: 18 }}>Enter sample details for this prototype journey. This is not a medical assessment or a live transplant request.</p>
-      <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <h3 className="migrated-1f2c3427">Recipient Health Details (Demo)</h3>
+      <p className="migrated-e3448519">Enter sample details for this prototype journey. This is not a medical assessment or a live transplant request.</p>
+      <form onSubmit={onSubmit} className="migrated-039dd51e">
         <div className="grid-2">
           <div className="field">
             <label className="label" htmlFor="recipient-request-type">Need Category</label>
@@ -92,25 +93,25 @@ export default function RecipientHealthForm({
           />
         </div>
 
-        <fieldset className="field" style={{ border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: 16, background: 'white' }}>
-          <legend className="label" style={{ marginBottom: 4 }}>1. Past Medical Record / Lab Documentation</legend>
-          <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginBottom: 12 }}>
+        <fieldset className="field migrated-935c9a35" >
+          <legend className="label migrated-6fd9c109" >1. Past Medical Record / Lab Documentation</legend>
+          <p className="migrated-b3fb5549">
             For this demo, upload a sample document or choose a sample consultation slot.
           </p>
-          <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+          <div className="migrated-ed02fd54">
             <button
               type="button"
-              className={`btn btn-sm ${recipientHealth.hasMedicalRecord === 'yes' ? 'btn-primary' : 'btn-outline'}`}
+              className={`btn btn-sm migrated-7e90f870 ${recipientHealth.hasMedicalRecord === 'yes' ? 'btn-primary' : 'btn-outline'}`}
               onClick={() => setRecipientHealth({ ...recipientHealth, hasMedicalRecord: 'yes', requiresDiagnosis: false })}
-              style={{ flex: 1 }}
+
             >
               Yes, Upload Record (PDF)
             </button>
             <button
               type="button"
-              className={`btn btn-sm ${recipientHealth.hasMedicalRecord === 'no' ? 'btn-primary' : 'btn-outline'}`}
+              className={`btn btn-sm migrated-7e90f870 ${recipientHealth.hasMedicalRecord === 'no' ? 'btn-primary' : 'btn-outline'}`}
               onClick={() => setRecipientHealth({ ...recipientHealth, hasMedicalRecord: 'no', requiresDiagnosis: true, medicalRecordFile: null })}
-              style={{ flex: 1 }}
+
             >
               No, Schedule Diagnosis
             </button>
@@ -127,16 +128,16 @@ export default function RecipientHealthForm({
               onClear={() => setRecipientHealth({ ...recipientHealth, medicalRecordFile: null })}
             />
           ) : (
-            <div style={{ padding: 14, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 'var(--r-md)', display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div style={{ fontWeight: 700, color: 'var(--sun)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div className="migrated-67214d76">
+              <div className="migrated-642b12a6">
                 <span>⚠️ Choose a Demo Consultation Slot</span>
               </div>
               <div className="grid-2">
                 <div className="field">
-                  <label className="label" htmlFor="recipient-specialty" style={{ fontSize: 11 }}>Attending Specialty</label>
+                  <label className="label migrated-000d1144" htmlFor="recipient-specialty" >Attending Specialty</label>
                   <select
-                    id="recipient-specialty" className="input"
-                    style={{ height: 34, fontSize: 12 }}
+                    id="recipient-specialty" className="input migrated-d8c077b1"
+
                     value={recipientHealth.hospitalSpecialty || recipientHealth.doctorSpecialty || "General Diagnostic Specialist"}
                     onChange={e => setRecipientHealth({ ...recipientHealth, hospitalSpecialty: e.target.value, doctorSpecialty: e.target.value })}
                   >
@@ -148,21 +149,21 @@ export default function RecipientHealthForm({
                   </select>
                 </div>
                 <div className="field">
-                <label className="label" htmlFor="recipient-appointment-date" style={{ fontSize: 11 }}>Consultation Date</label>
+                <label className="label migrated-000d1144" htmlFor="recipient-appointment-date" >Consultation Date</label>
                   <input
-                    id="recipient-appointment-date" className="input"
+                    id="recipient-appointment-date" className="input migrated-d8c077b1"
                     type="date"
-                    style={{ height: 34, fontSize: 12 }}
+
                     value={recipientHealth.appointmentDate}
                     onChange={e => setRecipientHealth({ ...recipientHealth, appointmentDate: e.target.value })}
                   />
                 </div>
               </div>
               <div className="field">
-                <label className="label" htmlFor="recipient-appointment-time" style={{ fontSize: 11 }}>Preferred Time Slot</label>
+                <label className="label migrated-000d1144" htmlFor="recipient-appointment-time" >Preferred Time Slot</label>
                 <select
-                  id="recipient-appointment-time" className="input"
-                  style={{ height: 34, fontSize: 12 }}
+                  id="recipient-appointment-time" className="input migrated-d8c077b1"
+
                   value={recipientHealth.appointmentTime}
                   onChange={e => setRecipientHealth({ ...recipientHealth, appointmentTime: e.target.value })}
                 >
@@ -172,17 +173,17 @@ export default function RecipientHealthForm({
                   <option value="03:30 PM - 04:30 PM">03:30 PM - 04:30 PM (Afternoon Slot)</option>
                 </select>
               </div>
-              <div style={{ padding: '8px 12px', background: 'white', borderRadius: 'var(--r-sm)', border: '1px solid var(--border)', fontSize: 11, color: 'var(--foreground-subtle)', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div className="migrated-78e40e53">
                 <span>📅 Demo slot:</span>
-                <strong style={{ color: 'var(--primary)' }}>{recipientHealth.appointmentDate} @ {recipientHealth.appointmentTime} ({recipientHealth.hospitalSpecialty || recipientHealth.doctorSpecialty})</strong>
+                <strong className="migrated-40acd791">{recipientHealth.appointmentDate} @ {recipientHealth.appointmentTime} ({recipientHealth.hospitalSpecialty || recipientHealth.doctorSpecialty})</strong>
               </div>
             </div>
           )}
         </fieldset>
 
-        <fieldset className="field" style={{ border: '1px solid var(--border)', borderRadius: 'var(--r-md)', padding: 16, background: 'white' }}>
-          <legend className="label" style={{ marginBottom: 4 }}>2. Mandatory Recipient Digital Signature Document (PDF or Image)</legend>
-          <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginBottom: 12 }}>
+        <fieldset className="field migrated-935c9a35" >
+          <legend className="label migrated-6fd9c109" >2. Mandatory Recipient Digital Signature Document (PDF or Image)</legend>
+          <p className="migrated-b3fb5549">
             Upload a sample signature document to complete this prototype step. It does not authorize a live medical request.
           </p>
           <SignatureUploader
@@ -196,9 +197,9 @@ export default function RecipientHealthForm({
           />
         </fieldset>
 
-        <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
-          <button className="btn btn-ghost" type="button" onClick={onBack} style={{ flex: 1 }}>Back</button>
-          <button className="btn btn-primary" type="submit" style={{ flex: 2 }} disabled={!recipientHealth.signatureFile}>
+        <div className="migrated-cac93c16">
+          <button className="btn btn-ghost migrated-7e90f870" type="button" onClick={onBack} >Back</button>
+          <button className="btn btn-primary migrated-b3730661" type="submit"  disabled={!recipientHealth.signatureFile}>
             {recipientHealth.hasMedicalRecord === 'no' ? 'Save Demo Slot & Enter Portal →' : 'Save Demo Details & Enter Portal'}
           </button>
         </div>

@@ -3,15 +3,15 @@ import ChatBox from '../features/match/ChatBox';
 import GovernmentAgreement from '../features/match/GovernmentAgreement';
 import ClinicalMatchCard from '../features/match/ClinicalMatchCard';
 import CalendarScheduleView from '../features/match/CalendarScheduleView';
-import LockedTabPanel from '../shared/ui/LockedTabPanel';
-import LockGlyph from '../shared/ui/LockGlyph';
-import LiveDot from '../shared/ui/LiveDot';
+import LockedTabPanel from '../components/ui/LockedTabPanel';
+import LockGlyph from '../components/ui/LockGlyph';
+import LiveDot from '../components/ui/LiveDot';
 import LifecycleStrip from '../features/match/LifecycleStrip';
 import { useToast } from '../context/ToastContext';
 import { useMatch } from '../context/MatchContext';
 import { ALL_ORGANS as ORGANS, BLOOD_TYPES } from '../services/domain';
 import { formatStatus } from '../utils/matchStatus';
-import { HeartIcon, MatchIcon, ChatIcon, ChainIcon, CalIcon } from '../shared/ui/Icons';
+import { HeartIcon, MatchIcon, ChatIcon, ChainIcon, CalIcon } from '../components/ui/Icons';
 
 export default function RecipientDashboard({ onboardingHealth }) {
   const { match, isApproved, hospitalApproved, consentSigned, updateMatchFromProfile } = useMatch();
@@ -20,15 +20,15 @@ export default function RecipientDashboard({ onboardingHealth }) {
   const [bloodTypeNeeded, setBloodTypeNeeded] = useState(() => match.recipient?.blood_type_needed || onboardingHealth?.blood_type_needed || 'B+');
   const [organNeeded, setOrganNeeded] = useState(() => match.recipient?.organ_needed || onboardingHealth?.organ_needed || 'Kidney');
   const [urgencyLevel, setUrgencyLevel] = useState(() => match.recipient?.urgency || match.urgencyLevel || 'urgent');
-  const { toast } = useToast();
+  const { success, warning } = useToast();
 
   const saveProfile = (e) => {
     e.preventDefault();
     const res = updateMatchFromProfile('recipient', { bloodTypeNeeded, organNeeded, urgencyLevel });
     if (res.success) {
-      toast.success('Recipient medical preferences updated in this demo.', { title: 'Preferences Saved', duration: 4000 });
+      success('Recipient medical preferences updated in this demo.', { title: 'Preferences Saved', duration: 4000 });
     } else {
-      toast.warning(res.error || 'Failed to update preferences', { title: 'Sync Warning', duration: 4000 });
+      warning(res.error || 'Failed to update preferences', { title: 'Sync Warning', duration: 4000 });
     }
   };
 
@@ -45,10 +45,10 @@ export default function RecipientDashboard({ onboardingHealth }) {
   ];
 
   return (
-    <main id="main-content" tabIndex={-1} className="min-h-screen" style={{ background: 'var(--background)' }}>
+    <main id="main-content" tabIndex={-1} className="min-h-screen dashboard-page">
       <section className="hero care-journey-hero">
         <div className="container">
-          <div className="hero-eyebrow anim-up" style={{ color: 'var(--primary)' }}>
+          <div className="hero-eyebrow anim-up dashboard-hero-eyebrow-recipient">
             <HeartIcon size={14} /> Recipient Portal · Demo profile
           </div>
           <h1 className="care-journey-title anim-up-d1">Recipient Care Journey</h1>
@@ -94,13 +94,13 @@ export default function RecipientDashboard({ onboardingHealth }) {
         </div>
       </div>
 
-      <div className="page-content" style={{ padding: '36px 0' }}>
+      <div className="page-content dashboard-content">
         <div className="container">
 
           {/* MY MATCH TAB (Automated Matchmaking & Interactive Handshake, Issue #006 & #008) */}
           {tab === 'mymatch' && (
-            <div style={{ maxWidth: 840, margin: '0 auto' }}>
-              <div style={{ marginBottom: 20 }}>
+            <div className="dashboard-narrow-840">
+              <div className="dashboard-section-gap">
                 <LifecycleStrip status={match.status} />
               </div>
               <ClinicalMatchCard role="recipient" onNavigateTab={setTab} />
@@ -109,33 +109,33 @@ export default function RecipientDashboard({ onboardingHealth }) {
 
           {/* PROFILE TAB */}
           {tab === 'profile' && (
-            <div style={{ maxWidth: 680, margin: '0 auto' }}>
-              <div className="card anim-up" style={{ padding: '32px', background: 'white', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-sm)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 24, borderBottom: '1px solid var(--border)', paddingBottom: 20 }}>
-                  <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), #0284C7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-heading)', fontWeight: 900, fontSize: 24, color: 'white', boxShadow: '0 8px 20px rgba(0,56,168,0.2)' }}>
+            <div className="dashboard-narrow-680">
+              <div className="card anim-up recipient-profile-card">
+                <div className="recipient-profile-header">
+                  <div className="recipient-profile-avatar">
                     C
                   </div>
                   <div>
-                    <div style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.02em' }}>Carlos Santos</div>
-                    <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+                    <div className="recipient-profile-name">Carlos Santos</div>
+                    <div className="recipient-profile-badges">
                       <span className="badge badge-verified">Demo identity profile</span>
                       <span className="badge badge-primary">Sample ID: 9284-1029-4810</span>
                     </div>
                   </div>
                 </div>
 
-                <form onSubmit={saveProfile} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+                <form onSubmit={saveProfile} className="recipient-profile-form">
+                  <div className="recipient-profile-grid">
                     <div>
-                      <label htmlFor="recipient-dashboard-request-type" style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Medical Need Type</label>
-                      <select id="recipient-dashboard-request-type" className="input" value={requestType} onChange={e => setRequestType(e.target.value)} style={{ width: '100%' }}>
+                      <label htmlFor="recipient-dashboard-request-type" className="recipient-field-label">Medical Need Type</label>
+                      <select id="recipient-dashboard-request-type" className="input recipient-field-control" value={requestType} onChange={e => setRequestType(e.target.value)}>
                         <option value="organ">Anatomical Organ Transplantation</option>
                         <option value="blood">Blood transfusion / compatibility</option>
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="recipient-dashboard-blood-type" style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Required Blood Group</label>
-                      <select id="recipient-dashboard-blood-type" className="input" value={bloodTypeNeeded} onChange={e => setBloodTypeNeeded(e.target.value)} style={{ width: '100%' }}>
+                      <label htmlFor="recipient-dashboard-blood-type" className="recipient-field-label">Required Blood Group</label>
+                      <select id="recipient-dashboard-blood-type" className="input recipient-field-control" value={bloodTypeNeeded} onChange={e => setBloodTypeNeeded(e.target.value)}>
                         {BLOOD_TYPES.map(t => <option key={t}>{t}</option>)}
                       </select>
                     </div>
@@ -143,27 +143,27 @@ export default function RecipientDashboard({ onboardingHealth }) {
 
                   {requestType === 'organ' && (
                     <div>
-                    <label htmlFor="recipient-dashboard-organ" style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Target Anatomical Organ</label>
-                    <select id="recipient-dashboard-organ" className="input" value={organNeeded} onChange={e => setOrganNeeded(e.target.value)} style={{ width: '100%' }}>
+                    <label htmlFor="recipient-dashboard-organ" className="recipient-field-label">Target Anatomical Organ</label>
+                    <select id="recipient-dashboard-organ" className="input recipient-field-control" value={organNeeded} onChange={e => setOrganNeeded(e.target.value)}>
                         {ORGANS.map(o => <option key={o} value={o}>{o} Transplantation</option>)}
                       </select>
                     </div>
                   )}
 
                   <div>
-                    <label htmlFor="recipient-dashboard-urgency" style={{ display: 'block', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Clinical Urgency &amp; Triage Level</label>
-                    <select id="recipient-dashboard-urgency" className="input" value={urgencyLevel} onChange={e => setUrgencyLevel(e.target.value)} style={{ width: '100%' }}>
+                    <label htmlFor="recipient-dashboard-urgency" className="recipient-field-label">Clinical Urgency &amp; Triage Level</label>
+                    <select id="recipient-dashboard-urgency" className="input recipient-field-control" value={urgencyLevel} onChange={e => setUrgencyLevel(e.target.value)}>
                       <option value="moderate">Moderate Priority - Outpatient Coordination</option>
                       <option value="urgent">Urgent Priority - Active Hospital Roster</option>
                       <option value="critical">Critical Priority - Immediate Surgical ICU Waitlist</option>
                     </select>
                   </div>
 
-                  <div style={{ padding: '14px 18px', background: 'rgba(0, 56, 168, 0.04)', borderRadius: 'var(--r-md)', border: '1px solid rgba(0, 56, 168, 0.15)', fontSize: '12px', color: 'var(--foreground)' }}>
+                  <div className="recipient-notice">
                     ℹ️ Changing your profile refreshes the compatibility estimate shown in this prototype. It does not query a live donor registry.
                   </div>
 
-                  <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ fontWeight: 800 }}>
+                  <button type="submit" className="btn btn-primary btn-lg btn-full recipient-submit">
                     Save demo medical preferences ✓
                   </button>
                 </form>
@@ -173,10 +173,10 @@ export default function RecipientDashboard({ onboardingHealth }) {
 
           {/* SCHEDULE TAB (Issue #008) */}
           {tab === 'schedule' && (
-            <div style={{ maxWidth: 780, margin: '0 auto' }}>
+            <div className="dashboard-narrow-780">
               {isScheduleUnlocked ? (
                 <>
-                  <div style={{ marginBottom: 20 }}>
+                  <div className="dashboard-section-gap">
                     <LifecycleStrip status={match.status} />
                   </div>
                   <CalendarScheduleView
@@ -201,10 +201,10 @@ export default function RecipientDashboard({ onboardingHealth }) {
 
           {/* AGREEMENT TAB (Issue #009) */}
           {tab === 'agreement' && (
-            <div style={{ maxWidth: 780, margin: '0 auto' }}>
+            <div className="dashboard-narrow-780">
               {isAgreementUnlocked ? (
                 <>
-                  <div style={{ marginBottom: 20 }}>
+                  <div className="dashboard-section-gap">
                     <LifecycleStrip status={match.status} />
                   </div>
                   <GovernmentAgreement role="recipient" />
@@ -222,7 +222,7 @@ export default function RecipientDashboard({ onboardingHealth }) {
 
           {/* CLINICAL CHAT TAB (Issue #010) */}
           {tab === 'chat' && (
-            <div style={{ maxWidth: 720, margin: '0 auto' }}>
+            <div className="dashboard-narrow-720">
               <ChatBox currentRole="recipient" consentSigned={isChatUnlocked} hospitalApproved={hospitalApproved} />
             </div>
           )}

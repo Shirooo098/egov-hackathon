@@ -7,15 +7,7 @@ export default function LiveDot({ size = 8, color = 'var(--emerald)' }) {
     <span
       className="live-dot"
       aria-hidden="true"
-      style={{
-        display: 'inline-block',
-        width: size,
-        height: size,
-        borderRadius: '50%',
-        background: color,
-        position: 'relative',
-        flexShrink: 0,
-      }}
+      style={{ width: size, height: size, background: color }}
     />
   );
 }

@@ -21,10 +21,10 @@ export default function Navbar({ currentRole, verified, tier, userProfile, onSig
         <Link
           to={isHospitalRoute ? '/hospital-dashboard' : '/'}
           aria-current={location.pathname === '/' || location.pathname === '/hospital-dashboard' ? 'page' : undefined}
-          style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: 10 }}
+          className="navbar-brand-link"
         >
-          <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-            <div className="brand-mark" style={{ background: isHospitalRoute ? 'var(--emerald)' : undefined }}>
+          <div className="brand navbar-brand">
+            <div className={`brand-mark${isHospitalRoute ? ' hospital-brand-mark' : ''}`}>
               {isHospitalRoute ? '🏥' : 'e'}
             </div>
             <div>
@@ -37,14 +37,14 @@ export default function Navbar({ currentRole, verified, tier, userProfile, onSig
         {/* Conditional Navigation / Actions */}
         {isHospitalRoute ? (
           /* Institutional Hospital Context */
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <span className="nav-context-label badge badge-success" style={{ background: 'var(--emerald)', color: 'white', fontWeight: 700, padding: '4px 10px' }}>
+          <div className="navbar-actions">
+            <span className="nav-context-label badge badge-success nav-context-hospital">
               Hospital Administrator Demo
             </span>
-            <span className="nav-facility-id" style={{ fontSize: 12, color: 'var(--foreground-muted)', fontWeight: 600 }}>
+            <span className="nav-facility-id">
               Sample facility: PGH-MNL-1000
             </span>
-            <Link to="/" className="btn btn-outline btn-sm" style={{ height: 34, padding: '0 14px', textDecoration: 'none', fontWeight: 600 }}>
+            <Link to="/" className="btn btn-outline btn-sm nav-back">
               ← Back to Citizen Portal
             </Link>
             <button type="button" className="btn btn-ghost btn-sm" aria-label="Sign out of hospital demo" onClick={onSignOut}>
@@ -53,10 +53,10 @@ export default function Navbar({ currentRole, verified, tier, userProfile, onSig
           </div>
         ) : (
           /* Citizen Portal Context */
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+          <div className="navbar-actions navbar-actions-citizen">
             {/* Single Hospital CTA when no role is active (avoid CTA collision) */}
             {!currentRole && showStaffEntry && (
-              <Link to="/staff-sign-in" className="btn btn-ghost btn-sm" style={{ height: 32, padding: '0 12px', fontSize: 12, color: 'var(--foreground-muted)', border: '1px solid var(--border)', textDecoration: 'none' }}>
+              <Link to="/staff-sign-in" className="btn btn-ghost btn-sm nav-staff-entry">
                 Staff sign in
               </Link>
             )}
@@ -77,16 +77,16 @@ export default function Navbar({ currentRole, verified, tier, userProfile, onSig
                   />
                 )}
                 {!verified && (
-                  <div className="ev-pill" style={{ padding: '6px 14px' }}>
+                  <div className="ev-pill nav-unverified">
                     <ShieldIcon />
                     <span>Unverified</span>
                   </div>
                 )}
 
                 {/* Exit Role control */}
-                <button className="btn btn-ghost btn-sm" onClick={onSignOut} style={{ height: 32, padding: '0 12px' }}>
+                <button className="btn btn-ghost btn-sm nav-exit" onClick={onSignOut}>
                   <span className="nav-exit-text">Exit Role</span>
-                  <span className="nav-exit-icon" style={{ display: 'none' }}>✕</span>
+                  <span className="nav-exit-icon">✕</span>
                 </button>
               </>
             )}

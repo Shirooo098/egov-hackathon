@@ -1,5 +1,6 @@
+import './CalendarScheduleView.css';
 import React, { useState, useMemo } from 'react';
-import { ChevronLeftIcon, ChevronRightIcon, CalIcon } from '../../shared/ui/Icons';
+import { ChevronLeftIcon, ChevronRightIcon, CalIcon } from '../../components/ui/Icons';
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -86,40 +87,29 @@ export default function CalendarScheduleView({
   };
 
   return (
-    <div className="anim-in" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="anim-in calendar-schedule-view">
       {/* -- Header card: one title, one month nav, no decoration -- */}
       <div
-        className="card"
-        style={{ padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}
+        className="card calendar-schedule-card calendar-schedule-header"
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 'var(--r-sm)',
-              background: 'var(--primary-10, rgba(0, 56, 168, 0.1))',
-              color: 'var(--primary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+        <div className="calendar-schedule-heading">
+          <span className="calendar-schedule-icon"
             aria-hidden
           >
             <CalIcon size={16} />
           </span>
           <div>
-            <h2 style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>
+            <h2 className="calendar-schedule-title">
               Pick a date for your consultation
             </h2>
-            <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 2 }}>
+            <p className="calendar-schedule-subtitle">
               {matchType === 'organ' ? 'Surgical consultation' : 'Blood donation'} ·
               {' '}{slots.length} {slots.length === 1 ? 'slot' : 'slots'} available over the next 3 months
             </p>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div className="calendar-schedule-nav">
           <button
             className="cal-nav-btn"
             onClick={goPrev}
@@ -140,9 +130,8 @@ export default function CalendarScheduleView({
             <ChevronRightIcon size={16} />
           </button>
           <button
-            className="btn btn-ghost btn-sm"
+            className="btn btn-ghost btn-sm calendar-schedule-today"
             onClick={goToday}
-            style={{ marginLeft: 6, fontSize: 12 }}
             type="button"
           >
             Today
@@ -151,7 +140,7 @@ export default function CalendarScheduleView({
       </div>
 
       {/* -- One month grid -- */}
-      <div className="card" style={{ padding: 20 }}>
+      <div className="card calendar-schedule-card calendar-schedule-grid-card">
         {/* Weekday row */}
         <div className="cal-weekdays">
           {WEEKDAYS.map((d) => (
@@ -209,25 +198,17 @@ export default function CalendarScheduleView({
       </div>
 
       {/* -- Selected-day slots -- */}
-      <div className="card" style={{ padding: 20 }}>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'baseline',
-            flexWrap: 'wrap',
-            gap: 8,
-            marginBottom: 14,
-          }}
+      <div className="card calendar-schedule-card calendar-schedule-slots-card">
+        <div className="calendar-schedule-slots-heading"
         >
-          <h3 style={{ fontSize: 16, fontWeight: 800, margin: 0 }}>
+          <h3 className="calendar-schedule-slots-title">
             {selectedDate.toLocaleDateString('en-PH', {
               weekday: 'long',
               month: 'long',
               day: 'numeric',
             })}
           </h3>
-          <span style={{ fontSize: 12, color: 'var(--foreground-muted)', fontWeight: 600 }}>
+          <span className="calendar-schedule-slots-count">
             {daySlots.length === 0
               ? 'No open slots'
               : `${daySlots.length} open ${daySlots.length === 1 ? 'slot' : 'slots'}`}
@@ -235,7 +216,7 @@ export default function CalendarScheduleView({
         </div>
 
         {daySlots.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className="calendar-schedule-slots">
             {daySlots.map((slot) => {
               const isBooked = selectedSlotId === slot.id;
               return (
@@ -243,53 +224,34 @@ export default function CalendarScheduleView({
                   key={slot.id}
                   className={`cal-slot${isBooked ? ' cal-slot-booked' : ''}`}
                 >
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        flexWrap: 'wrap',
-                      }}
+                  <div className="calendar-schedule-slot-info">
+                    <div className="calendar-schedule-slot-heading"
                     >
-                      <strong style={{ fontSize: 15 }}>
+                      <strong className="calendar-schedule-doctor">
                         {slot.doctor || 'Assigned Specialist'}
                       </strong>
                       {slot.status === 'recommended' && (
-                        <span className="badge badge-success" style={{ fontSize: 9 }}>
+                        <span className="badge badge-success calendar-schedule-recommended">
                           Recommended
                         </span>
                       )}
                     </div>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        color: 'var(--foreground-muted)',
-                        marginTop: 4,
-                        display: 'flex',
-                        gap: 10,
-                        flexWrap: 'wrap',
-                      }}
+                    <div className="calendar-schedule-slot-meta"
                     >
                       <span>⏰ {formatTime(slot.start)} – {formatTime(slot.end)}</span>
-                      <span style={{ color: 'var(--border)' }}>·</span>
+                      <span className="calendar-schedule-separator">·</span>
                       <span>🏥 {slot.location || slot.facility}</span>
                     </div>
                     {slot.notes && (
-                      <div
-                        style={{
-                          fontSize: 12,
-                          color: 'var(--foreground-muted)',
-                          marginTop: 6,
-                        }}
+                      <div className="calendar-schedule-notes"
                       >
                         {slot.notes}
                       </div>
                     )}
                   </div>
-                  <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                  <div className="calendar-schedule-slot-action">
                     {isBooked ? (
-                      <span className="badge badge-success" style={{ padding: '8px 14px', fontSize: 12 }}>
+                      <span className="badge badge-success calendar-schedule-booked">
                         ✓ Booked
                       </span>
                     ) : (
@@ -308,10 +270,10 @@ export default function CalendarScheduleView({
           </div>
         ) : (
           <div className="cal-empty">
-            <p style={{ fontWeight: 700, color: 'var(--foreground)', margin: 0 }}>
+            <p className="calendar-schedule-empty-title">
               No slots on this date
             </p>
-            <p style={{ fontSize: 12, margin: '4px 0 0' }}>
+            <p className="calendar-schedule-empty-copy">
               Pick a day with a green dot to see open times.
             </p>
           </div>

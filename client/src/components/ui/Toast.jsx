@@ -97,7 +97,6 @@ function Toast({ toast, onDismiss }) {
       className={`toast toast-${toast.type} ${exiting ? 'toast-exit' : ''}`}
       role="alert"
       aria-live="assertive"
-      style={{ position: 'relative' }}
     >
       <div className="toast-icon" aria-hidden="true">
         {icons[toast.type]}
@@ -119,13 +118,8 @@ function Toast({ toast, onDismiss }) {
       </button>
       {toast.duration > 0 && (
         <div
-          className="toast-progress"
-          style={{
-            animationDuration: `${toast.duration}ms`,
-            color: toast.type === 'success' ? 'var(--emerald)' :
-                   toast.type === 'error' ? 'var(--destructive)' :
-                   toast.type === 'warning' ? 'var(--sun)' : 'var(--primary)'
-          }}
+          className={`toast-progress toast-progress-${toast.type}`}
+          style={{ animationDuration: `${toast.duration}ms` }}
         />
       )}
     </div>

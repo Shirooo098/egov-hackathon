@@ -2,16 +2,16 @@ import React, { useState } from 'react';
 import ChatBox from '../features/match/ChatBox';
 import GovernmentAgreement from '../features/match/GovernmentAgreement';
 import ClinicalMatchCard from '../features/match/ClinicalMatchCard';
-import LockedTabPanel from '../shared/ui/LockedTabPanel';
-import LockGlyph from '../shared/ui/LockGlyph';
-import LiveDot from '../shared/ui/LiveDot';
+import LockedTabPanel from '../components/ui/LockedTabPanel';
+import LockGlyph from '../components/ui/LockGlyph';
+import LiveDot from '../components/ui/LiveDot';
 import LifecycleStrip from '../features/match/LifecycleStrip';
 import { useToast } from '../context/ToastContext';
 import { useMatch } from '../context/MatchContext';
 import { DonorProfileTab } from '../features/donor/DonorTabComponents';
 import { ALL_ORGANS, BLOOD_TYPES } from '../services/domain';
 import { formatStatus } from '../utils/matchStatus';
-import { UserIcon, MatchIcon, ChatIcon, ChainIcon, DropIcon } from '../shared/ui/Icons';
+import { UserIcon, MatchIcon, ChatIcon, ChainIcon, DropIcon } from '../components/ui/Icons';
 
 export default function DonorDashboard({ onboardingPledge }) {
   const { match, hospitalApproved, consentSigned, updateMatchFromProfile } = useMatch();
@@ -20,12 +20,12 @@ export default function DonorDashboard({ onboardingPledge }) {
   const [isBlood, setIsBlood] = useState(onboardingPledge?.isBlood !== undefined ? onboardingPledge.isBlood : true);
   const [organs, setOrgans] = useState(() => Array.isArray(match.donor?.organ_pledged) ? match.donor.organ_pledged : (onboardingPledge?.organs || ['kidney', 'cornea']));
   const [avail, setAvail] = useState(true);
-  const { toast } = useToast();
+  const { success, warning } = useToast();
 
   const handleAvailChange = (valOrFn) => {
     const nextAvail = typeof valOrFn === 'function' ? valOrFn(avail) : valOrFn;
     if (!nextAvail && !['rejected', 'ready_for_transplant'].includes(match.status)) {
-      toast.warning(
+      warning(
         'Cannot set availability to offline while clinical evaluation or procedure coordination is in-flight.',
         { title: 'Availability Protected', duration: 5000 }
       );
@@ -38,10 +38,10 @@ export default function DonorDashboard({ onboardingPledge }) {
   const saveProfile = () => {
     const res = updateMatchFromProfile('donor', { bloodType, organs, avail });
     if (!res.success) {
-      toast.warning(res.error, { title: 'Profile Sync Warning', duration: 5000 });
+      warning(res.error, { title: 'Profile Sync Warning', duration: 5000 });
       return;
     }
-    toast.success('Donor profile preferences updated in this demo.', { title: 'Profile Saved', duration: 4000 });
+    success('Donor profile preferences updated in this demo.', { title: 'Profile Saved', duration: 4000 });
   };
 
   const isAgreementUnlocked = ['scheduled', 'agreement_finalized', 'contract_signed', 'ready_for_transplant'].includes(match.status);
@@ -55,10 +55,10 @@ export default function DonorDashboard({ onboardingPledge }) {
   ];
 
   return (
-    <main id="main-content" tabIndex={-1} style={{ minHeight: '100vh', background: 'var(--background)' }}>
+    <main id="main-content" tabIndex={-1} className="dashboard-page">
       <section className="hero care-journey-hero donor-care-journey">
         <div className="container">
-          <div className="hero-eyebrow anim-up" style={{ color: 'var(--emerald)' }}>
+          <div className="hero-eyebrow anim-up dashboard-hero-eyebrow-donor">
             <DropIcon size={14} /> Donor Portal · Demo profile
           </div>
           <h1 className="care-journey-title anim-up-d1">Donor Care Journey</h1>
@@ -104,7 +104,7 @@ export default function DonorDashboard({ onboardingPledge }) {
         </div>
       </div>
 
-      <div className="page-content" style={{ padding: '36px 0' }}>
+      <div className="page-content dashboard-content">
         <div className="container">
           {/* PROFILE TAB */}
           {tab === 'profile' && (
@@ -125,8 +125,8 @@ export default function DonorDashboard({ onboardingPledge }) {
 
           {/* MY MATCH TAB (Automated & Interactive Handshake, Issue #006 & #008) */}
           {tab === 'mymatch' && (
-            <div style={{ maxWidth: 840, margin: '0 auto' }}>
-              <div style={{ marginBottom: 20 }}>
+            <div className="dashboard-narrow-840">
+              <div className="dashboard-section-gap">
                 <LifecycleStrip status={match.status} />
               </div>
               <ClinicalMatchCard role="donor" onNavigateTab={setTab} />
@@ -135,10 +135,10 @@ export default function DonorDashboard({ onboardingPledge }) {
 
           {/* AGREEMENT TAB (Issue #009) */}
           {tab === 'agreement' && (
-            <div style={{ maxWidth: 780, margin: '0 auto' }}>
+            <div className="dashboard-narrow-780">
               {isAgreementUnlocked ? (
                 <>
-                  <div style={{ marginBottom: 20 }}>
+                  <div className="dashboard-section-gap">
                     <LifecycleStrip status={match.status} />
                   </div>
                   <GovernmentAgreement role="donor" />
@@ -156,7 +156,7 @@ export default function DonorDashboard({ onboardingPledge }) {
 
           {/* CLINICAL CHAT TAB (Issue #010) */}
           {tab === 'chat' && (
-            <div style={{ maxWidth: 720, margin: '0 auto' }}>
+            <div className="dashboard-narrow-720">
               <ChatBox currentRole="donor" consentSigned={isChatUnlocked} hospitalApproved={hospitalApproved} />
             </div>
           )}

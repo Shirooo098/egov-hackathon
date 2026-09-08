@@ -64,26 +64,25 @@ export default function FloatingAIChat() {
   };
 
   return (
-    <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 12 }}>
+    <div className="floating-ai-root">
       {open && (
-        <div id="floating-ai-panel" className="floating-ai-panel card anim-in" role="dialog" aria-modal="false" aria-labelledby="floating-ai-chat-title" style={{ width: 360, maxWidth: '90vw', height: 'min(480px, calc(100vh - 110px))', maxHeight: 'calc(100vh - 110px)', display: 'flex', flexDirection: 'column', overflow: 'hidden', border: '1px solid var(--border)', borderRadius: 'var(--r-lg)', boxShadow: 'var(--shadow-md)', background: 'white' }}>
+        <div id="floating-ai-panel" className="floating-ai-panel card anim-in" role="dialog" aria-modal="false" aria-labelledby="floating-ai-chat-title">
           {/* Header */}
-          <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)', background: 'var(--background-alt)', display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), #0284C7)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 15 }}>
+          <div className="floating-ai-header">
+            <div className="floating-ai-avatar">
               e
             </div>
-            <div style={{ flex: 1 }}>
-              <h2 id="floating-ai-chat-title" style={{ fontWeight: 800, fontSize: 14, margin: 0 }}>Prototype assistant</h2>
-              <div style={{ fontSize: 11, color: 'var(--emerald)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--emerald)', display: 'inline-block' }} />
+            <div className="floating-ai-title-wrap">
+              <h2 id="floating-ai-chat-title" className="floating-ai-title">Prototype assistant</h2>
+              <div className="floating-ai-status">
+                <span className="floating-ai-status-dot" />
                 Demo service
               </div>
             </div>
             <button
               onClick={closeChat}
               aria-label="Close chat"
-              className="btn btn-ghost btn-icon"
-              style={{ width: 32, height: 32, borderRadius: 'var(--r-md)' }}
+              className="btn btn-ghost btn-icon floating-ai-close"
             >
               ✕
             </button>
@@ -94,23 +93,23 @@ export default function FloatingAIChat() {
             role="log"
             aria-live="polite"
             aria-label="AI chat messages"
-            style={{ flex: 1, overflow: 'auto', padding: '18px', display: 'flex', flexDirection: 'column', gap: 12, background: 'white' }}
+            className="floating-ai-messages"
           >
             {messages.map(m => {
               const self = m.sender === 'user';
               return (
-                <div key={m.id} style={{ display: 'flex', flexDirection: 'column', alignItems: self ? 'flex-end' : 'flex-start', gap: 4 }}>
-                  <div className={`bubble ${self ? 'bubble-sent' : 'bubble-recv'}`} style={{ maxWidth: '85%', minWidth: 0, padding: '10px 14px', fontSize: 13, lineHeight: 1.5, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+                <div key={m.id} className={`floating-ai-message ${self ? 'floating-ai-message-self' : ''}`}>
+                  <div className={`bubble ${self ? 'bubble-sent' : 'bubble-recv'} floating-ai-bubble`}>
                     {m.text}
                   </div>
-                  {m.time && <span style={{ fontSize: 10, color: 'var(--foreground-subtle)', paddingInline: 4 }}>{m.time}</span>}
+                  {m.time && <span className="floating-ai-time">{m.time}</span>}
                 </div>
               );
             })}
             {loading && (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                <div className="bubble bubble-recv" style={{ padding: '10px 14px', fontSize: 13 }}>
-                  <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2, display: 'inline-block', verticalAlign: 'middle', marginRight: 6 }} />
+              <div className="floating-ai-thinking">
+                <div className="bubble bubble-recv">
+                  <span className="spinner floating-ai-spinner" />
                   Thinking…
                 </div>
               </div>
@@ -119,24 +118,22 @@ export default function FloatingAIChat() {
           </div>
 
           {/* Input */}
-          <div style={{ padding: '12px 14px', borderTop: '1px solid var(--border)', background: 'var(--background-alt)', display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+          <div className="floating-ai-input">
             <textarea
               ref={inputRef}
-              className="input"
               value={text}
               onChange={e => setText(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
               placeholder="Ask about eGov services…"
               rows={1}
               disabled={loading}
-              style={{ resize: 'none', lineHeight: 1.5, minHeight: 40, flex: 1, fontSize: 13 }}
+              className="input floating-ai-textarea"
               aria-label="AI chat message input"
             />
             <button
               onClick={send}
               disabled={!text.trim() || loading}
-              className="btn btn-primary btn-icon"
-              style={{ height: 40, width: 44, flexShrink: 0, borderRadius: 'var(--r-md)' }}
+              className="btn btn-primary btn-icon floating-ai-send"
               aria-label="Send message"
             >
               <SendIcon />
@@ -154,14 +151,6 @@ export default function FloatingAIChat() {
         aria-controls="floating-ai-panel"
         aria-haspopup="dialog"
         className="floating-ai-launcher"
-        style={{
-          width: 58, height: 58, borderRadius: '50%',
-          background: 'linear-gradient(135deg, var(--primary), #0284C7)',
-          color: 'white', border: 'none', cursor: 'pointer',
-          boxShadow: '0 10px 24px rgba(0,56,168,0.3)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 24, transition: 'transform 0.15s ease',
-        }}
         onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92)'}
         onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
       >

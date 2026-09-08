@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import React from 'react';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -70,8 +70,9 @@ describe('top-level rendered routes', () => {
     const body = renderApp();
     act(() => body.querySelector('button[aria-label="Recipient"]').click());
     act(() => Array.from(body.querySelectorAll('button')).find(button => button.textContent.includes('Sign In with eGov')).click());
+    await vi.waitFor(() => expect(body.textContent).toContain('Quick Demo Sign-In'));
     act(() => Array.from(body.querySelectorAll('button')).find(button => button.textContent.includes('Quick Demo Sign-In')).click());
-    await act(async () => { await new Promise(resolve => setTimeout(resolve, 650)); });
+    await vi.waitFor(() => expect(body.textContent).toContain('Recipient Care Journey'), { timeout: 1000 });
 
     const rail = body.querySelector('ul[aria-label="Recipient current care facts"]');
     expect(body.textContent).toContain('Recipient Care Journey');
@@ -79,7 +80,7 @@ describe('top-level rendered routes', () => {
     expect(body.textContent).not.toContain('Hospital Console');
     expect(rail).not.toBeNull();
     expect(rail.textContent).toContain('Current Match');
-    expect(rail.textContent).toContain('Pending Hospital Approval');
+    expect(rail.textContent).toContain('Pending Hospital Demo Review');
     expect(rail.textContent).toContain('Blood requirement');
     expect(rail.textContent).toContain('Organ need');
     expect(rail.textContent).toContain('Urgency');
@@ -91,14 +92,15 @@ describe('top-level rendered routes', () => {
     const body = renderApp();
     act(() => body.querySelector('button[aria-label="Donor"]').click());
     act(() => Array.from(body.querySelectorAll('button')).find(button => button.textContent.includes('Sign In with eGov')).click());
+    await vi.waitFor(() => expect(body.textContent).toContain('Quick Demo Sign-In'));
     act(() => Array.from(body.querySelectorAll('button')).find(button => button.textContent.includes('Quick Demo Sign-In')).click());
-    await act(async () => { await new Promise(resolve => setTimeout(resolve, 650)); });
+    await vi.waitFor(() => expect(body.textContent).toContain('Donor Care Journey'), { timeout: 1000 });
 
     const rail = body.querySelector('ul[aria-label="Donor current care facts"]');
     expect(body.textContent).toContain('Donor Care Journey');
     expect(rail).not.toBeNull();
     expect(rail.textContent).toContain('Current Match');
-    expect(rail.textContent).toContain('Pending Hospital Approval');
+    expect(rail.textContent).toContain('Pending Hospital Demo Review');
     expect(rail.textContent).toContain('Blood type');
     expect(rail.textContent).toContain('Pledged organs');
     expect(rail.textContent).toContain('Availability');
@@ -106,33 +108,35 @@ describe('top-level rendered routes', () => {
     expect(rail.textContent).toContain('2');
   });
 
-  it('renders the Hospital Care Journey Rail with pending review as the dominant value', () => {
+  it('renders the Hospital Care Journey Rail with pending review as the dominant value', async () => {
     const body = renderApp(['/hospital-dashboard']);
     act(() => body.querySelector('button[aria-label="Continue as PGH demo staff"]').click());
+    await vi.waitFor(() => expect(body.textContent).toContain('Hospital Care Journey'));
 
     const rail = body.querySelector('ul[aria-label="Hospital current care facts"]');
     expect(body.textContent).toContain('Hospital Care Journey');
     expect(rail).not.toBeNull();
     expect(rail.textContent).toContain('Pending review');
     expect(rail.textContent).toContain('Approved Matches');
-    expect(rail.textContent).toContain('Active procedures');
+    expect(rail.textContent).toContain('Active demo workflows');
     expect(rail.textContent).toContain('Consultations');
     expect(Array.from(rail.querySelectorAll('strong')).map((value) => value.textContent)).toEqual(['2', '1', '0', '0']);
   });
 
-  it('gates the hospital route behind the namespaced session and supports sign out', () => {
+  it('gates the hospital route behind the namespaced session and supports sign out', async () => {
     const body = renderApp(['/hospital-dashboard']);
     expect(body.textContent).toContain('Staff Sign-In');
     expect(body.textContent).not.toContain('Clinical Triage & Review');
 
     act(() => body.querySelector('button[aria-label="Continue as PGH demo staff"]').click());
-    expect(body.textContent).toContain('Clinical Triage & Review');
+    await vi.waitFor(() => expect(body.textContent).toContain('Hospital Demo Review'));
+    expect(body.textContent).toContain('Hospital Demo Review');
     expect(sessionStorage.getItem('ebuhay:demo:hospital-session')).toBe('pgh-admin');
 
     act(() => root.unmount());
     root = undefined;
     const reloadedBody = renderApp(['/hospital-dashboard'], false);
-    expect(reloadedBody.textContent).toContain('Clinical Triage & Review');
+    await vi.waitFor(() => expect(reloadedBody.textContent).toContain('Hospital Demo Review'));
 
     act(() => reloadedBody.querySelector('button[aria-label="Sign out of hospital demo"]').click());
     expect(reloadedBody.textContent).toContain('Staff Sign-In');

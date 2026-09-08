@@ -1,7 +1,7 @@
 import React, { lazy, Suspense, useState, useEffect, useRef } from 'react';
-import FloatingAIChat from './shared/ui/FloatingAIChat';
+import FloatingAIChat from './components/ui/FloatingAIChat';
 import { Navigate, Routes, Route, useNavigate } from 'react-router-dom';
-import Navbar from './shared/ui/Navbar';
+import Navbar from './components/ui/Navbar';
 import { api } from './services/api';
 import { egovApi } from './services/egovApi';
 import { useToast } from './context/ToastContext';
@@ -10,6 +10,7 @@ import { RoleSelectCard, AuthChoiceCard } from './features/onboarding/Onboarding
 import StaffSignIn from './features/hospital/StaffSignIn';
 import { clearHospitalDemoSession, hasHospitalDemoSession } from './features/hospital/staffDemoSession';
 import './styles/global.css';
+import './components/ui/shared-ui.css';
 
 const RecipientDashboard = lazy(() => import('./pages/RecipientDashboard'));
 const DonorDashboard = lazy(() => import('./pages/DonorDashboard'));
@@ -328,15 +329,15 @@ export default function App() {
               onSignOut={handleSignOut}
               showStaffEntry={!role && step === STEPS.ROLE_SELECT}
             />
-              <main id="main-content" tabIndex={-1} className="page-content onboarding-shell" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 62px)', padding: '24px 0' }}>
-                <div className="container" style={{ maxWidth: 800, width: '100%' }}>
-                  <div className="card anim-up onboarding-card" style={{ padding: '40px', maxWidth: 640, margin: '0 auto' }}>
+              <main id="main-content" tabIndex={-1} className="page-content onboarding-shell">
+                <div className="container onboarding-container">
+                  <div className="card anim-up onboarding-card">
 
                     {step !== STEPS.LIVENESS && step !== STEPS.ROLE_SELECT && (
-                      <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                        <div style={{ width: 48, height: 48, borderRadius: 12, background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 900, margin: '0 auto 16px' }}>e</div>
-                        <h2 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>eBuhay Citizen Onboarding</h2>
-                        <p style={{ fontSize: 14, color: 'var(--foreground-muted)' }}>Prototype flow showing a sample eGov exchange and face-check step.</p>
+                      <div className="onboarding-heading">
+                        <div className="onboarding-mark">e</div>
+                        <h2>eBuhay Citizen Onboarding</h2>
+                        <p>Prototype flow showing a sample eGov exchange and face-check step.</p>
                       </div>
                     )}
 
