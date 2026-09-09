@@ -1,0 +1,429 @@
+.clinical-match-rejection-card {
+  padding: 40px;
+  text-align: center;
+}
+.clinical-match-rejection-title {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0 0 8px;
+}
+.clinical-match-rejection-copy {
+  font-size: 13px;
+  color: var(--foreground-muted);
+  line-height: 1.6;
+}
+.clinical-match-rejection-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+.clinical-match-rejection-reset {
+  margin-left: auto;
+  margin-right: auto;
+}
+.clinical-match-match-card-shell {
+  padding: 24px;
+}
+.clinical-match-match-header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 20px;
+}
+.clinical-match-match-eyebrow,
+.clinical-match-appointment-header,
+.clinical-match-schedule-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.clinical-match-score-wrap {
+  margin-left: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+.clinical-match-score-value {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--primary);
+}
+.clinical-match-score-label {
+  font-size: 11px;
+  color: var(--foreground-muted);
+  font-weight: 700;
+}
+.clinical-match-hospital-name {
+  margin-left: 4px;
+  font-weight: 700;
+}
+.clinical-match-match-header h2 {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 18px 0 8px;
+}
+.clinical-match-match-header p {
+  font-size: 13px;
+  color: var(--foreground-muted);
+  margin: 0;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.clinical-match-match-details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+.clinical-match-detail-organ,
+.clinical-match-detail-partner,
+.clinical-match-detail-priority {
+  min-width: 0;
+}
+.clinical-match-detail-label,
+.clinical-match-partner-label,
+.clinical-match-priority-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--foreground-muted);
+  text-transform: uppercase;
+}
+.clinical-match-detail-value,
+.clinical-match-partner-value {
+  font-size: 17px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+.clinical-match-detail-note,
+.clinical-match-partner-note,
+.clinical-match-priority-note {
+  font-size: 12px;
+  color: var(--foreground-muted);
+  margin-top: 4px;
+}
+.clinical-match-priority-value {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--destructive);
+  margin-top: 4px;
+}
+.clinical-match-review-pending {
+  background: rgba(245, 158, 11, 0.05);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--r-md);
+  padding: 20px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.clinical-match-review-title {
+  font-weight: 800;
+  font-size: 15px;
+  color: #b45309;
+}
+.clinical-match-review-copy {
+  font-size: 13px;
+  color: var(--foreground);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+.clinical-match-status-check,
+.clinical-match-appointment-check,
+.clinical-match-proposal-action-icon {
+  display: inline-flex;
+  vertical-align: middle;
+}
+.clinical-match-appointment-section,
+.clinical-match-schedule-section {
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+.clinical-match-appointment-icon,
+.clinical-match-schedule-icon {
+  display: inline-flex;
+  vertical-align: middle;
+}
+.clinical-match-appointment-title,
+.clinical-match-schedule-title {
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--foreground);
+}
+.clinical-match-appointment-status {
+  font-size: 13px;
+  color: var(--emerald);
+  font-weight: 700;
+}
+.clinical-match-appointment-copy {
+  flex: 1;
+}
+.clinical-match-appointment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+.clinical-match-appointment-card {
+  padding: 20px;
+  background: rgba(5, 150, 105, 0.04);
+  border-radius: var(--r-md);
+  border: 1px solid rgba(5, 150, 105, 0.3);
+}
+.clinical-match-appointment-card .clinical-match-appointment-label,
+.clinical-match-next-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--emerald);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+.clinical-match-appointment-date {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--foreground);
+}
+.clinical-match-appointment-time {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--emerald);
+  margin-top: 2px;
+}
+.clinical-match-appointment-location {
+  font-size: 13px;
+  color: var(--foreground-muted);
+  margin-top: 8px;
+}
+.clinical-match-next-card {
+  padding: 20px;
+  background: var(--background-alt);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.clinical-match-next-label {
+  color: var(--primary);
+  margin-bottom: 10px;
+}
+.clinical-match-next-title {
+  font-size: 15px;
+  font-weight: 800;
+}
+.clinical-match-next-copy {
+  font-size: 13px;
+  color: var(--foreground-muted);
+  margin-top: 6px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.clinical-match-schedule-section {
+  padding-top: 24px;
+}
+.clinical-match-schedule-description {
+  font-size: 13px;
+  color: var(--foreground-muted);
+  margin: 4px 0 0;
+}
+.clinical-match-proposal-card,
+.clinical-match-waiting-card,
+.clinical-match-schedule-form {
+  padding: 24px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+}
+.clinical-match-proposal-card {
+  background: rgba(0, 56, 168, 0.04);
+  border: 2px solid rgba(0, 56, 168, 0.25);
+}
+.clinical-match-proposal-confirm {
+  font-weight: 800;
+  padding: 14px;
+  background: var(--emerald);
+  border: 0;
+}
+.clinical-match-proposal-heading {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 14px;
+}
+.clinical-match-proposal-grid,
+.clinical-match-waiting-grid,
+.clinical-match-schedule-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  background: white;
+  padding: 16px;
+  border-radius: var(--r-md);
+  margin-bottom: 18px;
+}
+.clinical-match-proposal-label-date,
+.clinical-match-proposal-label-time,
+.clinical-match-proposal-label-location,
+.clinical-match-waiting-label-date,
+.clinical-match-waiting-label-time,
+.clinical-match-waiting-label-location {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--foreground-muted);
+  text-transform: uppercase;
+}
+.clinical-match-proposal-date,
+.clinical-match-proposal-time,
+.clinical-match-proposal-location,
+.clinical-match-waiting-date,
+.clinical-match-waiting-time,
+.clinical-match-waiting-location {
+  font-size: 17px;
+  font-weight: 900;
+  color: var(--foreground);
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+.clinical-match-proposal-time,
+.clinical-match-waiting-time {
+  color: var(--emerald);
+}
+.clinical-match-proposal-change,
+.clinical-match-waiting-change,
+.clinical-match-schedule-cancel {
+  background: none;
+  border: 0;
+  width: 100%;
+  margin-top: 12px;
+  padding: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--foreground-muted);
+  cursor: pointer;
+  text-decoration: underline;
+}
+.clinical-match-waiting-card {
+  background: rgba(245, 158, 11, 0.05);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+.clinical-match-waiting-heading {
+  font-size: 15px;
+  font-weight: 800;
+  color: #b45309;
+  margin-bottom: 14px;
+}
+.clinical-match-waiting-copy {
+  font-size: 12px;
+  color: var(--foreground-muted);
+  margin: 12px 0 0;
+  line-height: 1.5;
+}
+.clinical-match-schedule-copy {
+  min-width: 0;
+}
+.clinical-match-schedule-form {
+  background: var(--background-alt);
+}
+.clinical-match-schedule-form-title {
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0 0 16px;
+}
+.clinical-match-schedule-fields {
+  background: transparent;
+  padding: 0;
+  margin-bottom: 18px;
+}
+.clinical-match-schedule-location-field {
+  grid-column: 1/-1;
+}
+.clinical-match-schedule-label-date,
+.clinical-match-schedule-label-time,
+.clinical-match-schedule-label-location {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+.clinical-match-schedule-date-input,
+.clinical-match-schedule-time-input,
+.clinical-match-schedule-location-input {
+  width: 100%;
+  font-weight: 700;
+  font-size: 14px;
+}
+.clinical-match-schedule-location-input {
+  font-weight: 600;
+  font-size: 13px;
+}
+.clinical-match-schedule-submit {
+  font-weight: 800;
+  padding: 14px;
+}
+.clinical-match-schedule-submit-icon {
+  display: inline-flex;
+  vertical-align: middle;
+}
+@media (max-width: 640px) {
+  .clinical-match-match-details {
+    grid-template-columns: 1fr;
+  }
+  .clinical-match-match-header h2 {
+    font-size: 24px;
+  }
+  .clinical-match-match-card-shell {
+    padding: 18px;
+  }
+}
+
+/* DOM-level fallbacks keep the card layout stable when stage content changes. */
+.match-card > .clinical-match-hospital-name {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  background: var(--background-alt);
+  padding: 18px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  margin-bottom: 28px;
+}
+.match-card > .clinical-match-detail-priority {
+  background: rgba(245, 158, 11, 0.05);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--r-md);
+  padding: 20px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.match-card > .clinical-match-priority-note {
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+.match-card > .clinical-match-priority-note > .clinical-match-review-pending {
+  margin-bottom: 20px;
+}
+.match-card > .clinical-match-priority-note > .clinical-match-appointment-copy {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+.match-card > .clinical-match-next-card {
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  background: transparent;
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+}
+.match-card > .clinical-match-next-card > .clinical-match-next-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.match-card input[type="date"],
+.match-card select,
+.match-card input[type="text"] {
+  width: 100%;
+}

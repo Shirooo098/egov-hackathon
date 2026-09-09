@@ -6,11 +6,11 @@ function randomHex(len = 4) {
   return Math.floor(Math.random() * 0xffff)
     .toString(16)
     .toUpperCase()
-    .padStart(len, '0')
+    .padStart(len, "0")
     .slice(-len);
 }
 
-export function maskedName(role = 'donor') {
-  const r = role === 'donor' ? 'Donor' : 'Recipient';
+export function maskedName(role = "donor") {
+  const r = role === "donor" ? "Donor" : "Recipient";
   return `Anonymous ${r} #${randomHex(4)}`;
 }

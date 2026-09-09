@@ -1,5 +1,6 @@
+import '../../styles/components/hospital/HospitalTabComponents.css';
 import React from 'react';
-import { CheckIcon, ChainIcon, ChevronRightIcon } from '../../shared/ui/Icons';
+import { CheckIcon, ChainIcon, ChevronRightIcon } from '../../components/ui/Icons';
 import { formatStatus } from '../../utils/matchStatus';
 
 export function ClinicalTriageTab({
@@ -26,43 +27,29 @@ export function ClinicalTriageTab({
   const labels = URGENCY_LABELS || U_LABEL || {};
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+    <div className="hospital-triage__1-1">
       <div>
-        <div className="section-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div className="section-title hospital-triage__2-1">
           <span>Pending Hospital Demo Review ({pending.length})</span>
-          <span className="badge badge-warning" style={{ fontSize: 11 }}>Requires administrator review</span>
+          <span className="badge badge-warning hospital-triage__1-2">Requires administrator review</span>
         </div>
         {pending.length === 0 ? (
-          <div className="card empty-state" style={{ padding: '32px', textAlign: 'center' }}>
-            <p style={{ color: 'var(--foreground-muted)' }}>No pending demo match evaluations require review.</p>
+          <div className="card empty-state hospital-triage__3-1">
+            <p className="hospital-triage__2-2">No pending demo match evaluations require review.</p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="hospital-triage__4-1">
             {pending.map(c => (
               <div
                 key={c.id}
-                className="card anim-up"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 20,
-                  flexWrap: 'wrap',
-                  padding: '20px 24px',
-                  background: c.isLiveContext ? 'rgba(5, 150, 105, 0.02)' : 'white',
-                }}
+                className="card anim-up hospital-triage__1-3" style={{background: c.isLiveContext ? 'rgba(5, 150, 105, 0.02)' : 'white'}}
               >
-                <div style={{ flex: '1 1 240px', minWidth: 0 }}>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8, flexWrap: 'wrap' }}>
-                    {c.isLiveContext && <span className="badge badge-success" style={{ fontSize: 10 }}>ACTIVE DEMO MATCH</span>}
+                <div className="hospital-triage__3-2">
+                  <div className="hospital-triage__5-1">
+                    {c.isLiveContext && <span className="badge badge-success hospital-triage__4-2">ACTIVE DEMO MATCH</span>}
                     {c.isLiveContext && (
                       <span
-                        className="badge"
-                        style={{
-                          fontSize: 10,
-                          background: match.blockchainAnchor ? 'rgba(0, 56, 168, 0.08)' : 'var(--background-alt)',
-                          color: match.blockchainAnchor ? 'var(--primary)' : 'var(--foreground-muted)',
-                          border: `1px solid ${match.blockchainAnchor ? 'rgba(0, 56, 168, 0.3)' : 'var(--border)'}`,
-                        }}
+                        className="badge hospital-triage__2-3" style={{background: match.blockchainAnchor ? 'rgba(0, 56, 168, 0.08)' : 'var(--background-alt)', color: match.blockchainAnchor ? 'var(--primary)' : 'var(--foreground-muted)', border: `1px solid ${match.blockchainAnchor ? 'rgba(0, 56, 168, 0.3)' : 'var(--border)'}`}}
                         title={match.blockchainAnchor ? `Simulated anchor: ${match.blockchainAnchor.txHash}` : 'No simulated anchor saved'}
                       >
                         <ChainIcon size={9} /> {match.blockchainAnchor ? 'Simulated anchor saved' : 'No simulated anchor'}
@@ -71,45 +58,43 @@ export function ClinicalTriageTab({
                     <span className={`badge badge-${c.type === 'blood' ? 'primary' : 'success'}`}>{c.organ}</span>
                     <span className={`badge ${badges[c.urgency] || 'badge-moderate'}`}>{labels[c.urgency] || 'Moderate'}</span>
                   </div>
-                  <div style={{ fontWeight: 800, fontSize: 17 }}>
-                    {c.donor} <span className="sr-only">to</span><span aria-hidden="true" style={{ display: 'inline-flex', verticalAlign: 'middle' }}><ChevronRightIcon size={14} /></span> {c.recipient}
+                  <div className="hospital-triage__5-2">
+                    {c.donor} <span className="sr-only">to</span><span className="hospital-triage__6-1" aria-hidden="true"><ChevronRightIcon size={14} /></span> {c.recipient}
                   </div>
-                  <div style={{ fontSize: 13, color: 'var(--foreground-muted)', marginTop: 4, overflowWrap: 'anywhere' }}>
-                    ABO Match: <strong style={{ color: 'var(--foreground)' }}>{c.match}</strong> / Ref ID: <code>{c.id}</code>
+                  <div className="hospital-triage__7-1">
+                    ABO Match: <strong className="hospital-triage__6-2">{c.match}</strong> / Ref ID: <code>{c.id}</code>
                   </div>
                   {c.isLiveContext && (
-                      <div style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 4, fontStyle: 'italic' }}>
+                      <div className="hospital-triage__8-1">
                       "{match.recipient.description}"
                     </div>
                   )}
                 </div>
 
-                <div className="compat-wrap" style={{ minWidth: 170, flex: '1 1 170px' }} role="progressbar" aria-label={`Compatibility estimate for ${c.donor} and ${c.recipient}`} aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.min(Math.max(Number(c.score) || 0, 0), 100)}>
+                <div className="compat-wrap hospital-triage__9-1" role="progressbar" aria-label={`Compatibility estimate for ${c.donor} and ${c.recipient}`} aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.min(Math.max(Number(c.score) || 0, 0), 100)}>
                   <div className="compat-header">
                     <span className="compat-label">Compatibility estimate</span>
-                    <span className="compat-value" style={{ color: 'var(--emerald)', fontWeight: 800, fontSize: 18 }}>{c.score}%</span>
+                    <span className="compat-value hospital-triage__7-2">{c.score}%</span>
                   </div>
                   <div className="compat-track">
-                    <div className="compat-fill compat-high" style={{ width: `${Math.min(c.score, 100)}%`, background: 'var(--emerald)' }} />
+                    <div className="compat-fill compat-high hospital-triage__3-3" style={{width: `${Math.min(c.score, 100)}%`}} />
                   </div>
                 </div>
 
-                <div role="group" aria-label={`Actions for ${c.donor} and ${c.recipient}`} style={{ display: 'flex', gap: 8, flex: '1 1 180px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end' }}>
+                <div className="hospital-triage__10-1" role="group" aria-label={`Actions for ${c.donor} and ${c.recipient}`}>
                   <button
                     type="button"
-                    className="btn btn-ghost btn-sm"
-                    style={{ color: 'var(--destructive)', fontWeight: 600 }}
+                    className="btn btn-ghost btn-sm hospital-triage__8-2"
                     onClick={() => handleRejectMatch(c.id)}
                   >
                     Decline
                   </button>
                   <button
                     type="button"
-                    className="btn btn-success"
                     onClick={() => handleApproveMatch(c.id)}
-                    style={{ padding: '10px 22px', fontWeight: 800 }}
+                    className="btn btn-success hospital-triage__9-2"
                   >
-                    <span aria-hidden="true" style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon /></span> Approve
+                    <span className="hospital-triage__11-1" aria-hidden="true"><CheckIcon /></span> Approve
                   </button>
                 </div>
               </div>
@@ -120,58 +105,49 @@ export function ClinicalTriageTab({
 
       {active.length > 0 && (
         <div>
-          <div className="section-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div className="section-title hospital-triage__12-1">
             <span>Approved &amp; Active Demo Workflows ({active.length})</span>
-            <span className="badge badge-verified" style={{ fontSize: 11 }}>Demo review completed</span>
+            <span className="badge badge-verified hospital-triage__10-2">Demo review completed</span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="hospital-triage__13-1">
             {active.map(c => (
               <div
                 key={c.id}
-                className="card anim-up"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 20,
-                  flexWrap: 'wrap',
-                  padding: '18px 24px',
-                  border: '1px solid rgba(5,150,105,0.3)',
-                  background: 'rgba(5,150,105,0.015)',
-                }}
+                className="card anim-up hospital-triage__4-3"
               >
-                <div style={{ flex: '1 1 240px', minWidth: 0 }}>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6, flexWrap: 'wrap' }}>
-                    <span className="badge badge-verified"><span aria-hidden="true" style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={11} /></span> Hospital Administrator demo review completed</span>
-                    <span className="badge" style={{ background: 'var(--background-alt)', border: '1px solid var(--border)', fontSize: 10 }}>
+                <div className="hospital-triage__11-2">
+                  <div className="hospital-triage__14-1">
+                    <span className="badge badge-verified"><span className="hospital-triage__15-1" aria-hidden="true"><CheckIcon size={11} /></span> Hospital Administrator demo review completed</span>
+                    <span className="badge hospital-triage__16-1">
                       Status: <strong>{formatStatus(c.status || 'approved').toUpperCase()}</strong>
                     </span>
                     {c.isLiveContext && <span className="live-ribbon">Active Demo Match</span>}
                   </div>
-                  <div style={{ fontWeight: 700, fontSize: 16, overflowWrap: 'anywhere' }}>
-                    {c.donor} <span className="sr-only">to</span><span aria-hidden="true" style={{ display: 'inline-flex', verticalAlign: 'middle' }}><ChevronRightIcon size={14} /></span> {c.recipient} <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--foreground-muted)' }}>({c.organ})</span>
+                  <div className="hospital-triage__17-1">
+                    {c.donor} <span className="sr-only">to</span><span className="hospital-triage__18-1" aria-hidden="true"><ChevronRightIcon size={14} /></span> {c.recipient} <span className="hospital-triage__19-1">({c.organ})</span>
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 3, overflowWrap: 'anywhere' }}>
+                  <div className="hospital-triage__20-1">
                     ABO Pairing: <strong>{c.match}</strong> / Score: <strong>{c.score}%</strong>
                   </div>
 
                   {c.isLiveContext && (match.blockchainAnchor || (match.donorSigned && match.recipientSigned)) && (
-                    <div style={{ marginTop: 12, padding: 14, borderRadius: 'var(--r-md)', background: 'rgba(5, 150, 105, 0.05)', border: '1px solid rgba(5, 150, 105, 0.3)', fontSize: 12 }}>
-                      <div role="status" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, flexWrap: 'wrap', fontWeight: 800, color: 'var(--emerald)', marginBottom: 6 }}>
-                        <span><span aria-hidden="true" style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={12} /></span> Both demo signature actions recorded</span>
-                        <span className="badge badge-success" style={{ fontSize: 9 }}>Simulated chain 13371</span>
+                    <div className="hospital-triage__21-1">
+                      <div className="hospital-triage__22-1" role="status">
+                        <span><span className="hospital-triage__23-1" aria-hidden="true"><CheckIcon size={12} /></span> Both demo signature actions recorded</span>
+                        <span className="badge badge-success hospital-triage__12-2">Simulated chain 13371</span>
                       </div>
                       {match.blockchainAnchor ? (
-                        <div className="tx-hash" style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--foreground)', background: 'white', padding: 8, borderRadius: 'var(--r-sm)', border: '1px solid var(--border)', wordBreak: 'break-all' }}>
+                        <div className="tx-hash hospital-triage__24-1">
                           <div><strong>Simulated anchor hash:</strong> <code>{match.blockchainAnchor.txHash}</code></div>
                           <div><strong>Block Number:</strong> #{match.blockchainAnchor.blockNumber}</div>
-                          <div style={{ marginTop: 4 }}>
-                            <a href={match.blockchainAnchor.explorerUrl || "https://hackathon-blockchain.e.gov.ph"} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: 700 }}>
-                              View simulated anchor details <span aria-hidden="true" style={{ display: 'inline-flex', verticalAlign: 'middle' }}><ChevronRightIcon size={13} /></span>
+                          <div className="hospital-triage__13-2">
+                            <a href={match.blockchainAnchor.explorerUrl || "https://hackathon-blockchain.e.gov.ph"} target="_blank" rel="noopener noreferrer" className="hospital-triage__14-2">
+                              View simulated anchor details <span className="hospital-triage__25-1" aria-hidden="true"><ChevronRightIcon size={13} /></span>
                             </a>
                           </div>
                         </div>
                       ) : (
-                        <div style={{ fontSize: 11, color: 'var(--foreground-muted)' }}>
+                        <div className="hospital-triage__26-1">
                           Both citizens completed the demo signature step. The next action would simulate an anchor; it is not an immutable record.
                         </div>
                       )}
@@ -179,30 +155,29 @@ export function ClinicalTriageTab({
                   )}
                 </div>
 
-                <div role="group" aria-label={`Workflow actions for ${c.donor} and ${c.recipient}`} style={{ display: 'flex', gap: 10, flex: '1 1 220px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end' }}>
+                <div className="hospital-triage__27-1" role="group" aria-label={`Workflow actions for ${c.donor} and ${c.recipient}`}>
                   {c.isLiveContext ? (
                     ['agreement_finalized', 'contract_signed', 'ready_for_transplant'].includes(match.status) || (match.donorSigned && match.recipientSigned) ? (
                       match.blockchainAnchor ? (
-                        <span className="badge badge-success" style={{ padding: '8px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700 }}>
-                          <span aria-hidden="true" style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={12} /></span> Demo workflow ready for next review step
+                        <span className="badge badge-success hospital-triage__28-1">
+                          <span className="hospital-triage__29-1" aria-hidden="true"><CheckIcon size={12} /></span> Demo workflow ready for next review step
                         </span>
                       ) : (
                           <button
                             type="button"
-                          className="btn btn-primary"
                           onClick={handleAnchor}
-                          style={{ padding: '10px 22px', fontWeight: 800 }}
+                          className="btn btn-primary hospital-triage__15-2"
                         >
                           <ChainIcon /> Save simulated anchor
                         </button>
                       )
                     ) : (
-                      <span style={{ fontSize: 12, color: 'var(--foreground-muted)', fontStyle: 'italic' }}>
+                      <span className="hospital-triage__30-1">
                         Awaiting citizen e-signatures
                       </span>
                     )
                   ) : (
-                        <span className="badge badge-success"><span aria-hidden="true" style={{ display: 'inline-flex', verticalAlign: 'middle' }}><CheckIcon size={11} /></span> Demo workflow ready</span>
+                        <span className="badge badge-success"><span className="hospital-triage__31-1" aria-hidden="true"><CheckIcon size={11} /></span> Demo workflow ready</span>
                   )}
                 </div>
               </div>
@@ -213,13 +188,13 @@ export function ClinicalTriageTab({
 
       {rejected.length > 0 && (
         <div>
-          <div className="section-title" style={{ color: 'var(--foreground-muted)', fontSize: 14 }}>Declined Demo Matches ({rejected.length})</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className="section-title hospital-triage__16-2">Declined Demo Matches ({rejected.length})</div>
+          <div className="hospital-triage__32-1">
             {rejected.map(c => (
-              <div key={c.id} className="card" style={{ padding: '14px 20px', background: 'var(--background-alt)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-                <div style={{ minWidth: 0, overflowWrap: 'anywhere' }}>
-                  <strong style={{ textDecoration: 'line-through' }}>{c.donor} <span className="sr-only">to</span><span aria-hidden="true" style={{ display: 'inline-flex', verticalAlign: 'middle' }}><ChevronRightIcon size={13} /></span> {c.recipient}</strong>
-                  <span style={{ marginLeft: 12, fontSize: 12, color: 'var(--destructive)' }}>This demo match was marked declined. No new match search has started.</span>
+              <div key={c.id} className="card hospital-triage__33-1">
+                <div className="hospital-triage__34-1">
+                  <strong className="hospital-triage__17-2">{c.donor} <span className="sr-only">to</span><span className="hospital-triage__35-1" aria-hidden="true"><ChevronRightIcon size={13} /></span> {c.recipient}</strong>
+                  <span className="hospital-triage__36-1">This demo match was marked declined. No new match search has started.</span>
                 </div>
                 {c.isLiveContext && (
                   <button type="button" className="btn btn-outline btn-sm" onClick={() => advanceStatus('pending_hospital_approval')}>

@@ -1,0 +1,91 @@
+.migrated-2f55da8d {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--background-alt);
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  border-radius: var(--r-md);
+  margin-bottom: 24px;
+  font-size: 12px;
+  color: var(--foreground-muted);
+}
+.migrated-6dac5f26 {
+  margin-left: auto;
+}
+.migrated-1f2c3427 {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.migrated-78d8b799 {
+  font-size: 13px;
+  color: var(--foreground-muted);
+  text-align: center;
+  margin-bottom: 20px;
+}
+.migrated-039dd51e {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.migrated-13ec00a5 {
+  font-size: 12px;
+  color: var(--danger, #dc2626);
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+}
+.migrated-1d233a92 {
+  display: flex;
+  gap: 10px;
+}
+.migrated-7e90f870 {
+  flex: 1;
+}
+.migrated-b3730661 {
+  flex: 2;
+}
+.migrated-13ae4626 {
+  border-color: white;
+  border-top-color: transparent;
+}
+.migrated-07c4431b {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 20px 0 14px;
+  color: var(--foreground-subtle);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.migrated-0174a332 {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.migrated-0174a332 {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.migrated-9fe3f3ec {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--foreground-muted);
+}
+.egov-quick-signin {
+  border-color: var(--emerald);
+  color: var(--emerald);
+  font-weight: 800;
+  padding: 12px 18px;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}

@@ -1,0 +1,80 @@
+.blockchain-badge-card--anchored {
+  border: 1px solid rgba(5, 150, 105, 0.25);
+  background: rgba(5, 150, 105, 0.03);
+}
+.blockchain-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.blockchain-badge-row--record {
+  justify-content: space-between;
+  margin: 12px 0 0;
+}
+.blockchain-badge-row--signature {
+  gap: 8px;
+  margin: 0 0 10px;
+}
+.blockchain-badge-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--emerald);
+}
+.blockchain-badge-meta {
+  font-size: 12px;
+  color: var(--foreground-muted);
+  margin-top: 2px;
+}
+.blockchain-badge-description {
+  font-size: 13px;
+  color: var(--foreground-muted);
+  margin-top: 2px;
+  line-height: 1.5;
+}
+.blockchain-badge-record {
+  margin-left: auto;
+}
+.blockchain-badge-details {
+  margin-bottom: 20px;
+}
+.blockchain-badge-signatures {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.blockchain-badge-signature-slot {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+.blockchain-badge-signed {
+  font-size: 10px;
+}
+.blockchain-badge-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.blockchain-badge-file-icon {
+  font-size: 16px;
+}
+.blockchain-badge-file-name {
+  font-size: 13px;
+  color: var(--foreground-muted);
+  flex: 1;
+}
+.blockchain-badge-remove {
+  border: 0;
+  background: none;
+  color: var(--destructive);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+.blockchain-badge-error {
+  color: var(--destructive);
+  font-size: 13px;
+  margin: 10px 0 0;
+}

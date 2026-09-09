@@ -1,0 +1,272 @@
+.migrated-21b3263f {
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.migrated-d35325e3 {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+.migrated-f875b2f9 {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--emerald), #0284c7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 24px;
+  color: white;
+  box-shadow: 0 8px 20px rgba(5, 150, 105, 0.2);
+}
+.migrated-f7b61a15 {
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.03em;
+}
+.migrated-7d8107a4 {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+.migrated-6dac5f26 {
+  margin-left: auto;
+}
+.migrated-bd45f3c8 {
+  font-size: 12px;
+  color: var(--foreground-muted);
+}
+.migrated-86a9e904 {
+  display: flex;
+  align-items: center;
+  height: 42px;
+}
+.migrated-48613e4d {
+  font-size: 13px;
+  color: var(--foreground-muted);
+}
+.migrated-b822dd5d {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.migrated-8a78b4b0 {
+  padding: 12px 16px;
+  background: var(--primary-10);
+  border: 1px solid rgba(0, 56, 168, 0.12);
+  border-radius: var(--r-md);
+  border-left: 3px solid var(--primary);
+  font-size: 13px;
+  color: var(--primary);
+  line-height: 1.65;
+}
+.migrated-3bffa33f {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.migrated-488bdc30 {
+  margin-bottom: var(--s7);
+  padding: 16px 20px;
+}
+.migrated-a6c0ef47 {
+  display: flex;
+  gap: var(--s4);
+  flex-wrap: wrap;
+  align-items: center;
+}
+.migrated-000d1144 {
+  font-size: 11px;
+}
+.migrated-fd3b73e7 {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: var(--background-alt);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+.migrated-2ae3fe74 {
+  font-size: 14px;
+  padding: 6px 12px;
+}
+.migrated-7e90f870 {
+  flex: 1;
+}
+.migrated-39fc62a1 {
+  font-weight: 700;
+  font-size: 15px;
+}
+.migrated-51a835e5 {
+  font-size: 12px;
+  color: var(--foreground-muted);
+  margin-top: 2px;
+}
+.migrated-1117ac49 {
+  min-width: 130px;
+}
+.migrated-79c35e68 {
+  color: var(--emerald);
+}
+.migrated-c7ce2d69 {
+  width: 95%;
+}
+.migrated-47d18f40 {
+  font-size: 12px;
+  color: var(--foreground-muted);
+  margin-top: 12px;
+  text-align: center;
+}
+.migrated-5beafa4c {
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.02);
+}
+.migrated-1d83d2af {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.migrated-e489ec0a {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+.migrated-7e90f870 {
+  flex: 1;
+}
+.migrated-aaa56af6 {
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--sun);
+}
+.migrated-663c703d {
+  font-size: 13px;
+  color: var(--foreground-muted);
+  margin-top: 2px;
+}
+.migrated-000d1144 {
+  font-size: 11px;
+}
+.migrated-67b81f21 {
+  padding: 14px 18px;
+  background: rgba(5, 150, 105, 0.05);
+  border: 1px solid rgba(5, 150, 105, 0.25);
+  border-radius: var(--r-md);
+  border-left: 4px solid var(--emerald);
+  font-size: 13px;
+  color: var(--foreground);
+  line-height: 1.65;
+}
+.migrated-64098849 {
+  color: var(--emerald);
+  display: block;
+  margin-bottom: 4px;
+}
+.migrated-c909f22d {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.migrated-1bade796 {
+  margin-bottom: var(--s7);
+  border: 1px solid rgba(5, 150, 105, 0.3);
+  background: rgba(5, 150, 105, 0.02);
+}
+.migrated-1d83d2af {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.migrated-4452b347 {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(5, 150, 105, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+.migrated-7e90f870 {
+  flex: 1;
+}
+.migrated-0489cd60 {
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--emerald);
+}
+.migrated-663c703d {
+  font-size: 13px;
+  color: var(--foreground-muted);
+  margin-top: 2px;
+}
+.migrated-c3460274 {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.migrated-bf5bb6ee {
+  max-width: 760px;
+  margin: 0 auto;
+}
+.migrated-f7b33e46 {
+  border: 1px solid rgba(5, 150, 105, 0.3);
+  background: rgba(5, 150, 105, 0.02);
+  text-align: center;
+  padding: 40px;
+}
+.migrated-c185b1c4 {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(5, 150, 105, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  margin: 0 auto 20px;
+}
+.migrated-1d1678b7 {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.migrated-a3850396 {
+  font-size: 14px;
+  color: var(--foreground-muted);
+  margin-bottom: 20px;
+}
+.organ-pledge-button {
+  padding: 8px 16px;
+  border-radius: var(--r-full);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all var(--t-fast);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.donor-hero-stat {
+  transition: all 0.3s ease;
+  padding: var(--s3) var(--s4);
+  border-radius: var(--r-md);
+}
