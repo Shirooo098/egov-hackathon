@@ -64,10 +64,6 @@ export default function PublicLanding({ role }) {
           <Link to="/" className="landing-brand" aria-label="eBuhay home">
             eBuhay <span>Prototype</span>
           </Link>
-          <nav className="landing-reference-nav" aria-label="Landing page">
-            <a href="#process">Process</a>
-            <a href="#prototype-status">Prototype status</a>
-          </nav>
           <Link className="landing-staff-link" to="/staff-sign-in">
             <b>SIMULATED</b> Staff demo
             <span className="landing-sr-only">Simulated staff demo</span>
