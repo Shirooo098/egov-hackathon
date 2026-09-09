@@ -1,8 +1,26 @@
-import React, { useState, useMemo } from 'react';
-import { ChevronLeftIcon, ChevronRightIcon, CalIcon } from '../../shared/ui/Icons';
+import "../../styles/components/match/CalendarScheduleView.css";
+import React, { useState, useMemo } from "react";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CalIcon,
+} from "../../components/ui/Icons";
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 // Build a single month grid: 6 weeks × 7 days, including trailing/leading days from neighbors.
 const getMonthCells = (year, month) => {
@@ -12,14 +30,22 @@ const getMonthCells = (year, month) => {
   const cells = [];
 
   for (let i = firstDow - 1; i >= 0; i--) {
-    cells.push({ day: prevMonthDays - i, currentMonth: false, date: new Date(year, month - 1, prevMonthDays - i) });
+    cells.push({
+      day: prevMonthDays - i,
+      currentMonth: false,
+      date: new Date(year, month - 1, prevMonthDays - i),
+    });
   }
   for (let d = 1; d <= daysInMonth; d++) {
     cells.push({ day: d, currentMonth: true, date: new Date(year, month, d) });
   }
   const remaining = 42 - cells.length;
   for (let d = 1; d <= remaining; d++) {
-    cells.push({ day: d, currentMonth: false, date: new Date(year, month + 1, d) });
+    cells.push({
+      day: d,
+      currentMonth: false,
+      date: new Date(year, month + 1, d),
+    });
   }
   return cells;
 };
@@ -31,11 +57,14 @@ const startOfDay = (d) => {
 };
 
 const formatTime = (iso) =>
-  new Date(iso).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
+  new Date(iso).toLocaleTimeString("en-PH", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
 export default function CalendarScheduleView({
   slots = [],
-  matchType = 'blood',
+  matchType = "blood",
   onSelectSlot,
   onBookSlot,
   selectedSlotId = null,
@@ -43,7 +72,10 @@ export default function CalendarScheduleView({
   onBack,
 }) {
   const today = useMemo(() => startOfDay(new Date()), []);
-  const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() });
+  const [view, setView] = useState({
+    year: today.getFullYear(),
+    month: today.getMonth(),
+  });
   const [selectedDate, setSelectedDate] = useState(today);
 
   // Index of available-slot counts by yyyy-mm-dd for fast lookup
@@ -86,40 +118,28 @@ export default function CalendarScheduleView({
   };
 
   return (
-    <div className="anim-in" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="anim-in calendar-schedule-view">
       {/* -- Header card: one title, one month nav, no decoration -- */}
-      <div
-        className="card"
-        style={{ padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 'var(--r-sm)',
-              background: 'var(--primary-10, rgba(0, 56, 168, 0.1))',
-              color: 'var(--primary)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            aria-hidden
-          >
+      <div className="card calendar-schedule-card calendar-schedule-header">
+        <div className="calendar-schedule-heading">
+          <span className="calendar-schedule-icon" aria-hidden>
             <CalIcon size={16} />
           </span>
           <div>
-            <h2 style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', margin: 0 }}>
+            <h2 className="calendar-schedule-title">
               Pick a date for your consultation
             </h2>
-            <p style={{ fontSize: 12, color: 'var(--foreground-muted)', marginTop: 2 }}>
-              {matchType === 'organ' ? 'Surgical consultation' : 'Blood donation'} ·
-              {' '}{slots.length} {slots.length === 1 ? 'slot' : 'slots'} available over the next 3 months
+            <p className="calendar-schedule-subtitle">
+              {matchType === "organ"
+                ? "Surgical consultation"
+                : "Blood donation"}{" "}
+              · {slots.length} {slots.length === 1 ? "slot" : "slots"} available
+              over the next 3 months
             </p>
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div className="calendar-schedule-nav">
           <button
             className="cal-nav-btn"
             onClick={goPrev}
@@ -140,9 +160,8 @@ export default function CalendarScheduleView({
             <ChevronRightIcon size={16} />
           </button>
           <button
-            className="btn btn-ghost btn-sm"
+            className="btn btn-ghost btn-sm calendar-schedule-today"
             onClick={goToday}
-            style={{ marginLeft: 6, fontSize: 12 }}
             type="button"
           >
             Today
@@ -151,7 +170,7 @@ export default function CalendarScheduleView({
       </div>
 
       {/* -- One month grid -- */}
-      <div className="card" style={{ padding: 20 }}>
+      <div className="card calendar-schedule-card calendar-schedule-grid-card">
         {/* Weekday row */}
         <div className="cal-weekdays">
           {WEEKDAYS.map((d) => (
@@ -167,29 +186,32 @@ export default function CalendarScheduleView({
             const { day, currentMonth, date } = cell;
             const key = startOfDay(date).getTime();
             const count = slotCountByDate.get(key) || 0;
-            const isSelected = currentMonth && key === startOfDay(selectedDate).getTime();
+            const isSelected =
+              currentMonth && key === startOfDay(selectedDate).getTime();
             const isToday = key === today.getTime();
             const isPast = date < today;
             const hasSlots = count > 0 && currentMonth && !isPast;
 
-            const classes = ['cal-cell'];
-            if (!currentMonth) classes.push('cal-cell-out');
-            if (isPast) classes.push('cal-cell-past');
-            if (isToday) classes.push('cal-cell-today');
-            if (hasSlots) classes.push('cal-cell-has-slots');
-            if (isSelected) classes.push('cal-cell-selected');
+            const classes = ["cal-cell"];
+            if (!currentMonth) classes.push("cal-cell-out");
+            if (isPast) classes.push("cal-cell-past");
+            if (isToday) classes.push("cal-cell-today");
+            if (hasSlots) classes.push("cal-cell-has-slots");
+            if (isSelected) classes.push("cal-cell-selected");
 
             return (
               <button
                 key={`${view.year}-${view.month}-${idx}`}
                 type="button"
-                className={classes.join(' ')}
+                className={classes.join(" ")}
                 onClick={() => handleDayClick(date, currentMonth)}
                 disabled={!currentMonth || isPast}
                 aria-pressed={isSelected}
                 aria-label={`${MONTHS[date.getMonth()]} ${day}, ${date.getFullYear()}${
-                  hasSlots ? `, ${count} slot${count > 1 ? 's' : ''} available` : ''
-                }${isToday ? ', today' : ''}`}
+                  hasSlots
+                    ? `, ${count} slot${count > 1 ? "s" : ""} available`
+                    : ""
+                }${isToday ? ", today" : ""}`}
               >
                 <span className="cal-cell-day">{day}</span>
                 {hasSlots && <span className="cal-cell-dot" aria-hidden />}
@@ -200,96 +222,77 @@ export default function CalendarScheduleView({
 
         {showLegend && (
           <div className="cal-legend">
-            <span><span className="cal-legend-swatch cal-legend-selected" /> Selected</span>
-            <span><span className="cal-legend-swatch cal-legend-today" /> Today</span>
-            <span><span className="cal-legend-swatch cal-legend-has" /> Has open slots</span>
-            <span><span className="cal-legend-swatch cal-legend-past" /> Unavailable</span>
+            <span>
+              <span className="cal-legend-swatch cal-legend-selected" />{" "}
+              Selected
+            </span>
+            <span>
+              <span className="cal-legend-swatch cal-legend-today" /> Today
+            </span>
+            <span>
+              <span className="cal-legend-swatch cal-legend-has" /> Has open
+              slots
+            </span>
+            <span>
+              <span className="cal-legend-swatch cal-legend-past" /> Unavailable
+            </span>
           </div>
         )}
       </div>
 
       {/* -- Selected-day slots -- */}
-      <div className="card" style={{ padding: 20 }}>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'baseline',
-            flexWrap: 'wrap',
-            gap: 8,
-            marginBottom: 14,
-          }}
-        >
-          <h3 style={{ fontSize: 16, fontWeight: 800, margin: 0 }}>
-            {selectedDate.toLocaleDateString('en-PH', {
-              weekday: 'long',
-              month: 'long',
-              day: 'numeric',
+      <div className="card calendar-schedule-card calendar-schedule-slots-card">
+        <div className="calendar-schedule-slots-heading">
+          <h3 className="calendar-schedule-slots-title">
+            {selectedDate.toLocaleDateString("en-PH", {
+              weekday: "long",
+              month: "long",
+              day: "numeric",
             })}
           </h3>
-          <span style={{ fontSize: 12, color: 'var(--foreground-muted)', fontWeight: 600 }}>
+          <span className="calendar-schedule-slots-count">
             {daySlots.length === 0
-              ? 'No open slots'
-              : `${daySlots.length} open ${daySlots.length === 1 ? 'slot' : 'slots'}`}
+              ? "No open slots"
+              : `${daySlots.length} open ${daySlots.length === 1 ? "slot" : "slots"}`}
           </span>
         </div>
 
         {daySlots.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className="calendar-schedule-slots">
             {daySlots.map((slot) => {
               const isBooked = selectedSlotId === slot.id;
               return (
                 <div
                   key={slot.id}
-                  className={`cal-slot${isBooked ? ' cal-slot-booked' : ''}`}
+                  className={`cal-slot${isBooked ? " cal-slot-booked" : ""}`}
                 >
-                  <div style={{ minWidth: 0, flex: 1 }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        flexWrap: 'wrap',
-                      }}
-                    >
-                      <strong style={{ fontSize: 15 }}>
-                        {slot.doctor || 'Assigned Specialist'}
+                  <div className="calendar-schedule-slot-info">
+                    <div className="calendar-schedule-slot-heading">
+                      <strong className="calendar-schedule-doctor">
+                        {slot.doctor || "Assigned Specialist"}
                       </strong>
-                      {slot.status === 'recommended' && (
-                        <span className="badge badge-success" style={{ fontSize: 9 }}>
+                      {slot.status === "recommended" && (
+                        <span className="badge badge-success calendar-schedule-recommended">
                           Recommended
                         </span>
                       )}
                     </div>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        color: 'var(--foreground-muted)',
-                        marginTop: 4,
-                        display: 'flex',
-                        gap: 10,
-                        flexWrap: 'wrap',
-                      }}
-                    >
-                      <span>⏰ {formatTime(slot.start)} – {formatTime(slot.end)}</span>
-                      <span style={{ color: 'var(--border)' }}>·</span>
+                    <div className="calendar-schedule-slot-meta">
+                      <span>
+                        ⏰ {formatTime(slot.start)} – {formatTime(slot.end)}
+                      </span>
+                      <span className="calendar-schedule-separator">·</span>
                       <span>🏥 {slot.location || slot.facility}</span>
                     </div>
                     {slot.notes && (
-                      <div
-                        style={{
-                          fontSize: 12,
-                          color: 'var(--foreground-muted)',
-                          marginTop: 6,
-                        }}
-                      >
+                      <div className="calendar-schedule-notes">
                         {slot.notes}
                       </div>
                     )}
                   </div>
-                  <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                  <div className="calendar-schedule-slot-action">
                     {isBooked ? (
-                      <span className="badge badge-success" style={{ padding: '8px 14px', fontSize: 12 }}>
+                      <span className="badge badge-success calendar-schedule-booked">
                         ✓ Booked
                       </span>
                     ) : (
@@ -308,10 +311,10 @@ export default function CalendarScheduleView({
           </div>
         ) : (
           <div className="cal-empty">
-            <p style={{ fontWeight: 700, color: 'var(--foreground)', margin: 0 }}>
+            <p className="calendar-schedule-empty-title">
               No slots on this date
             </p>
-            <p style={{ fontSize: 12, margin: '4px 0 0' }}>
+            <p className="calendar-schedule-empty-copy">
               Pick a day with a green dot to see open times.
             </p>
           </div>

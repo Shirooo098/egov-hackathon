@@ -27,22 +27,18 @@ function LocationProbe() {
 }
 
 describe('accessibility hardening', () => {
-  it('exposes landing landmarks, named controls, fragment targets, and one h1', () => {
+  it('exposes landing landmarks, named controls, and one h1', () => {
     const { host, root } = mount(<ThemeProvider><ToastProvider><MemoryRouter><MatchProvider><App /></MatchProvider></MemoryRouter></ToastProvider></ThemeProvider>);
     expect(host.querySelector('header nav')).toBeTruthy();
     expect(host.querySelector('main')).toBeTruthy();
     expect(host.querySelector('footer')).toBeTruthy();
     expect(host.querySelectorAll('h1')).toHaveLength(1);
-    for (const link of host.querySelectorAll('header nav a[href^="#"]')) expect(host.querySelector(link.getAttribute('href'))).toBeTruthy();
     expect(host.querySelector('a[href="/onboarding/recipient"]')).toBeTruthy();
     act(() => root.unmount());
   });
 
-  it('retains focus for fragments and moves focus across landing/onboarding boundaries', async () => {
+  it('moves focus across landing/onboarding boundaries', async () => {
     const { host, root } = mount(<ThemeProvider><ToastProvider><MemoryRouter><MatchProvider><App /><LocationProbe /></MatchProvider></MemoryRouter></ToastProvider></ThemeProvider>);
-    const fragment = host.querySelector('a[href="#how-it-works"]');
-    act(() => fragment.click());
-    expect(document.activeElement).toBe(fragment);
     act(() => host.querySelector('a[href="/onboarding/recipient"]').click());
     await vi.waitFor(() => expect(document.activeElement?.id).toBe('onboarding-heading'));
     act(() => [...host.querySelectorAll('button')].find((button) => button.textContent.trim() === 'Change').click());

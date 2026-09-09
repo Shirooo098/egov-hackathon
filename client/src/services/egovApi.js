@@ -18,12 +18,12 @@
  * the network tab.
  */
 
-const BASE = '/api/egov';
+const BASE = "/api/egov";
 
 async function postJSON(url, body) {
   const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body || {}),
   });
   const data = await res.json().catch(() => ({}));
@@ -73,7 +73,7 @@ export const egovApi = {
    */
   async createLivenessSession({ callbackUrl, delay = 3000 }) {
     return postJSON(`${BASE}/liveness/session`, {
-      action: 'redirect',
+      action: "redirect",
       callback_url: callbackUrl,
       delay,
     });
@@ -94,12 +94,15 @@ export const egovApi = {
    * Convenience: poll getLivenessResult until it resolves to a terminal
    * state (SUCCEEDED / FAILED) or the timeout elapses.
    */
-  async pollLivenessResult(sessionToken, { intervalMs = 2000, timeoutMs = 90000 } = {}) {
+  async pollLivenessResult(
+    sessionToken,
+    { intervalMs = 2000, timeoutMs = 90000 } = {},
+  ) {
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
       try {
         const result = await this.getLivenessResult(sessionToken);
-        if (result.status === 'SUCCEEDED' || result.status === 'FAILED') {
+        if (result.status === "SUCCEEDED" || result.status === "FAILED") {
           return result;
         }
       } catch (e) {
@@ -107,7 +110,7 @@ export const egovApi = {
       }
       await new Promise((r) => setTimeout(r, intervalMs));
     }
-    throw new Error('Liveness verification timed out. Please try again.');
+    throw new Error("Liveness verification timed out. Please try again.");
   },
 
   /**
@@ -117,7 +120,7 @@ export const egovApi = {
    * POST {{base}}/api/v1/egov/integration/ai_assistant/generate.
    * Returns { data: "<answer text>", session_id: "..." }
    */
-  async askAI(prompt, category = 'PH') {
+  async askAI(prompt, category = "PH") {
     return postJSON(`${BASE}/ai/chat`, { prompt, category });
   },
 };

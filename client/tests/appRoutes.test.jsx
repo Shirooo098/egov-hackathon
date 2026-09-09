@@ -38,12 +38,17 @@ describe('top-level rendered routes', () => {
   it('presents the public Civic Care landing page', () => {
     const body = renderApp();
 
-    expect(body.textContent).toContain('Connecting people, Donors, and care teams through one guided journey.');
-    expect(body.textContent).toContain('eBuhay demo / prototype');
+    expect(body.textContent).toContain('Connecting recipients, donors, and coordination teams through one guided journey.');
+    expect(body.textContent).toContain('This intended-pilot prototype is for invited testers and uses synthetic records and simulated hospital steps.');
     expect(body.textContent).not.toContain('National platform secured with eGov Single Sign-On and Face Liveness verification.');
-    expect(body.querySelector('a[href="/onboarding/recipient"]')).not.toBeNull();
-    expect(body.querySelector('a[href="/onboarding/donor"]')).not.toBeNull();
-    expect(body.textContent).toContain('Staff demo');
+    expect(body.querySelectorAll('a[href="/onboarding/recipient"]')).toHaveLength(2);
+    expect(body.querySelectorAll('a[href="/onboarding/donor"]')).toHaveLength(2);
+    expect(body.textContent).toContain('Simulated staff demo');
+    expect(body.querySelector('.landing-preview[aria-hidden="true"]')).not.toBeNull();
+    const closingActions = body.querySelector('nav.landing-closing-actions');
+    expect(closingActions).not.toBeNull();
+    expect(closingActions.querySelectorAll('a[href="/onboarding/recipient"]')).toHaveLength(1);
+    expect(closingActions.querySelectorAll('a[href="/onboarding/donor"]')).toHaveLength(1);
     expect(body.textContent).toContain('synthetic or simulated');
   });
 
@@ -53,7 +58,7 @@ describe('top-level rendered routes', () => {
 
     expect(body.textContent).toContain('Step 2 — Sign In or Sign Up');
     expect(body.textContent).not.toContain('Staff demo');
-    expect(body.textContent).not.toContain('Connecting people, Donors, and care teams through one guided journey.');
+    expect(body.textContent).not.toContain('Connecting recipients, donors, and coordination teams through one guided journey.');
   });
 
   it('enters the existing focused onboarding flow for Donors too', () => {
@@ -62,7 +67,7 @@ describe('top-level rendered routes', () => {
 
     expect(body.textContent).toContain('Step 2 — Sign In or Sign Up');
     expect(body.textContent).not.toContain('Staff demo');
-    expect(body.textContent).not.toContain('Connecting people, Donors, and care teams through one guided journey.');
+    expect(body.textContent).not.toContain('Connecting recipients, donors, and coordination teams through one guided journey.');
   });
 
   it('returns invalid onboarding roles and the first-screen Back action to landing', () => {
@@ -74,14 +79,19 @@ describe('top-level rendered routes', () => {
     expect(invalid.textContent).not.toContain('Step 2 — Sign In or Sign Up');
   });
 
-  it('renders the five compact landing blocks and illustrative status labels', () => {
+  it('renders the distilled landing journey without repeated blocks', () => {
     const body = renderApp();
     expect(body.querySelector('main')).not.toBeNull();
-    expect(body.querySelector('#how-it-works')).not.toBeNull();
-    expect(body.querySelector('#who-does-what')).not.toBeNull();
+    expect(body.querySelector('#what-happens-next')).not.toBeNull();
+    expect(body.querySelectorAll('#what-happens-next .landing-steps > li')).toHaveLength(3);
     expect(body.querySelector('#prototype-status')).not.toBeNull();
-    expect(body.textContent).toContain('Illustrative prototype');
-    expect(body.textContent).toContain('Ready when you are');
+    expect(body.textContent).toContain('What happens next');
+    expect(body.textContent).not.toContain('How it works');
+    expect(body.textContent).not.toContain('Who does what');
+    expect(body.textContent).not.toContain('Ready when you are');
+    expect(body.querySelector('.landing-status-cards')).toBeNull();
+    expect(body.querySelector('.landing-role-grid')).toBeNull();
+    expect(body.querySelector('.landing-repeat')).toBeNull();
   });
 
   it('keeps the public landing available for an active citizen role', async () => {
@@ -93,7 +103,7 @@ describe('top-level rendered routes', () => {
     act(() => [...body.querySelectorAll('button')].find((button) => button.textContent.includes('Quick Demo Sign-In')).click());
     await vi.waitFor(() => expect(body.textContent).toContain('Recipient Care Journey'));
     act(() => body.querySelector('.navbar-brand-link').click());
-    await vi.waitFor(() => expect(body.textContent).toContain('Continue your journey'));
+    await vi.waitFor(() => expect(body.textContent).toContain('Returning to your recipient journey?'));
     expect(body.querySelector('a[href="/recipient"]')).not.toBeNull();
     expect(body.querySelector('a[href="/onboarding/recipient"]')).not.toBeNull();
     expect(body.querySelector('a[href="/onboarding/donor"]')).not.toBeNull();

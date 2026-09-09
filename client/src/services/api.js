@@ -1,43 +1,65 @@
-const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
+const API_BASE =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD ? "/api" : "http://localhost:5000/api");
 
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
-    ...options
+    headers: { "Content-Type": "application/json", ...options.headers },
+    ...options,
   });
   const data = await res.json();
-  if (!data.success) throw new Error(data.message || 'API Error');
+  if (!data.success) throw new Error(data.message || "API Error");
   return data;
 }
 
 export const api = {
   // Health
-  health: () => request('/health'),
+  health: () => request("/health"),
 
   // eVerify
-  verify: (body) => request('/auth/verify', { method: 'POST', body: JSON.stringify(body) }),
-  verifyQR: (qr_value) => request('/auth/verify/qr', { method: 'POST', body: JSON.stringify({ qr_value }) }),
+  verify: (body) =>
+    request("/auth/verify", { method: "POST", body: JSON.stringify(body) }),
+  verifyQR: (qr_value) =>
+    request("/auth/verify/qr", {
+      method: "POST",
+      body: JSON.stringify({ qr_value }),
+    }),
 
   // Matchmaking
-  findMatches: (params) => request('/matches/find?' + new URLSearchParams(params)),
-  getCompatibility: (blood_type) => request(`/matches/compatibility/${blood_type}`),
-  getMatrix: () => request('/matches/matrix'),
+  findMatches: (params) =>
+    request("/matches/find?" + new URLSearchParams(params)),
+  getCompatibility: (blood_type) =>
+    request(`/matches/compatibility/${blood_type}`),
+  getMatrix: () => request("/matches/matrix"),
 
   // AI Scheduler
-  optimizeSchedule: (body) => request('/schedule/ai-optimize', { method: 'POST', body: JSON.stringify(body) }),
+  optimizeSchedule: (body) =>
+    request("/schedule/ai-optimize", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 
   // Blockchain
-  anchorConsent: (body) => request('/blockchain/anchor', { method: 'POST', body: JSON.stringify(body) }),
+  anchorConsent: (body) =>
+    request("/blockchain/anchor", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
   getReceipt: (txHash) => request(`/blockchain/receipt/${txHash}`),
-  getChainInfo: () => request('/blockchain/chain-info'),
+  getChainInfo: () => request("/blockchain/chain-info"),
 
   // eGovAI Laws
-  askLaws: (prompt, category = 'PH') => request('/egovai/laws', { method: 'POST', body: JSON.stringify({ prompt, category }) }),
+  askLaws: (prompt, category = "PH") =>
+    request("/egovai/laws", {
+      method: "POST",
+      body: JSON.stringify({ prompt, category }),
+    }),
 
   // eMessage SMS
   // number must be E.164 format, e.g. "+639090000000"
-  sendSms: (number, message) => request('/emessage/sms/push', {
-    method: 'POST',
-    body: JSON.stringify({ number, message }),
-  }),
+  sendSms: (number, message) =>
+    request("/emessage/sms/push", {
+      method: "POST",
+      body: JSON.stringify({ number, message }),
+    }),
 };

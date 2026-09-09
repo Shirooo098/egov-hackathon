@@ -1,36 +1,58 @@
-import React, { useState } from 'react';
-import { useMatch } from '../context/MatchContext';
-import EGovAIWidget from '../features/hospital/EGovAIWidget';
-import OrganAnalytics from '../features/hospital/OrganAnalytics';
-import { useToast } from '../context/ToastContext';
-import { ClinicalTriageTab } from '../features/hospital/HospitalTabComponents';
-import { STATIC_MATCHES, URGENCY_BADGES, URGENCY_LABELS, getLiveMatchAsItem, filterMatches } from '../services/domain';
-import { usePersistedStaticMatches } from '../context/usePersistedStaticMatches';
-import { ClipIcon, ScaleIcon, AnalyticsIcon, HospitalIcon } from '../shared/ui/Icons';
-import LifecycleStrip from '../features/match/LifecycleStrip';
+import React, { useState } from "react";
+import { useMatch } from "../context/MatchContext";
+import EGovAIWidget from "../features/hospital/EGovAIWidget";
+import OrganAnalytics from "../features/hospital/OrganAnalytics";
+import { useToast } from "../context/ToastContext";
+import { ClinicalTriageTab } from "../features/hospital/HospitalTabComponents";
+import {
+  STATIC_MATCHES,
+  URGENCY_BADGES,
+  URGENCY_LABELS,
+  getLiveMatchAsItem,
+  filterMatches,
+} from "../services/domain";
+import { usePersistedStaticMatches } from "../context/usePersistedStaticMatches";
+import {
+  ClipIcon,
+  ScaleIcon,
+  AnalyticsIcon,
+  HospitalIcon,
+} from "../components/ui/Icons";
+import LifecycleStrip from "../features/match/LifecycleStrip";
 
 export default function HospitalDashboard() {
   const { match, advanceStatus, anchorToBlockchain, resetMatch } = useMatch();
-  const { toast } = useToast();
-  
-  const [tab, setTab] = useState('matches');
-  const [staticState, setStaticState] = usePersistedStaticMatches(STATIC_MATCHES);
+  const { success, warning } = useToast();
+
+  const [tab, setTab] = useState("matches");
+  const [staticState, setStaticState] =
+    usePersistedStaticMatches(STATIC_MATCHES);
 
   const handleApproveMatch = (matchId) => {
     if (matchId === match.id) {
-      advanceStatus('approved');
+      advanceStatus("approved");
     } else {
-      setStaticState(prev => prev.map(c => c.id === matchId ? { ...c, status: 'approved' } : c));
-      toast.success(`Demo match ${matchId} approved for the hospital review workflow.`, { title: 'Demo Review Approved' });
+      setStaticState((prev) =>
+        prev.map((c) => (c.id === matchId ? { ...c, status: "approved" } : c)),
+      );
+      success(
+        `Demo match ${matchId} approved for the hospital review workflow.`,
+        { title: "Demo Review Approved" },
+      );
     }
   };
 
   const handleRejectMatch = (matchId) => {
     if (matchId === match.id) {
-      advanceStatus('rejected');
+      advanceStatus("rejected");
     } else {
-      setStaticState(prev => prev.map(c => c.id === matchId ? { ...c, status: 'rejected' } : c));
-      toast.warning(`This demo match was marked declined. No new match search has started.`, { title: 'Demo Match Declined' });
+      setStaticState((prev) =>
+        prev.map((c) => (c.id === matchId ? { ...c, status: "rejected" } : c)),
+      );
+      warning(
+        `This demo match was marked declined. No new match search has started.`,
+        { title: "Demo Match Declined" },
+      );
     }
   };
 
@@ -39,21 +61,43 @@ export default function HospitalDashboard() {
   };
 
   const TABS = [
-    { id: 'matches', label: 'Hospital Demo Review', icon: <ClipIcon /> },
-    { id: 'laws', label: 'PH Health Laws AI', icon: <ScaleIcon /> },
-    { id: 'analytics', label: 'Demo Workflow Analytics', icon: <AnalyticsIcon /> },
+    { id: "matches", label: "Hospital Demo Review", icon: <ClipIcon /> },
+    { id: "laws", label: "PH Health Laws AI", icon: <ScaleIcon /> },
+    {
+      id: "analytics",
+      label: "Demo Workflow Analytics",
+      icon: <AnalyticsIcon />,
+    },
   ];
 
   // Combine shared live match with static demo items for rich UI table
   const liveMatchAsItem = getLiveMatchAsItem(match);
   const allMatches = [liveMatchAsItem, ...staticState];
-  const { pendingMatches, activeMatches, rejectedMatches } = filterMatches(allMatches);
+  const { pendingMatches, activeMatches, rejectedMatches } =
+    filterMatches(allMatches);
 
   // Active workflow items = matches already in scheduling or beyond
-  const activeProcedureCount = allMatches.filter(
-    (m) => m.isLiveContext &&
-      ['scheduled', 'agreement_finalized', 'contract_signed', 'ready_for_transplant'].includes(m.status)
-  ).length + activeMatches.filter((m) => !m.isLiveContext && ['scheduled', 'agreement_finalized', 'contract_signed', 'ready_for_transplant'].includes(m.status)).length;
+  const activeProcedureCount =
+    allMatches.filter(
+      (m) =>
+        m.isLiveContext &&
+        [
+          "scheduled",
+          "agreement_finalized",
+          "contract_signed",
+          "ready_for_transplant",
+        ].includes(m.status),
+    ).length +
+    activeMatches.filter(
+      (m) =>
+        !m.isLiveContext &&
+        [
+          "scheduled",
+          "agreement_finalized",
+          "contract_signed",
+          "ready_for_transplant",
+        ].includes(m.status),
+    ).length;
 
   // Today's scheduled consultations (rough: count items with date today)
   const today = new Date();
@@ -67,28 +111,59 @@ export default function HospitalDashboard() {
   }).length;
 
   return (
-    <main id="main-content" tabIndex={-1} className="min-h-screen" style={{ background: 'var(--background)' }}>
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="min-h-screen dashboard-page"
+    >
       <section className="hero care-journey-hero hospital-care-journey">
         <div className="container">
-          <div className="hero-eyebrow anim-up" style={{ color: 'var(--emerald)' }}>
+          <div className="hero-eyebrow anim-up dashboard-hero-eyebrow-hospital">
             <HospitalIcon size={14} /> Hospital Console
           </div>
-          <h1 className="care-journey-title anim-up-d1">Hospital Care Journey</h1>
-          <ul className="care-journey-rail hospital-care-rail anim-up-d3" aria-label="Hospital current care facts">
-            <li className="care-journey-primary" role="status"><span>Pending review</span><strong>{pendingMatches.length}</strong></li>
-            <li><span>Approved Matches</span><strong>{activeMatches.length}</strong></li>
-            <li><span>Active demo workflows</span><strong>{activeProcedureCount}</strong></li>
-            <li><span>Consultations</span><strong>{consultationsToday}</strong></li>
+          <h1 className="care-journey-title anim-up-d1">
+            Hospital Care Journey
+          </h1>
+          <ul
+            className="care-journey-rail hospital-care-rail anim-up-d3"
+            aria-label="Hospital current care facts"
+          >
+            <li className="care-journey-primary" role="status">
+              <span>Pending review</span>
+              <strong>{pendingMatches.length}</strong>
+            </li>
+            <li>
+              <span>Approved Matches</span>
+              <strong>{activeMatches.length}</strong>
+            </li>
+            <li>
+              <span>Active demo workflows</span>
+              <strong>{activeProcedureCount}</strong>
+            </li>
+            <li>
+              <span>Consultations</span>
+              <strong>{consultationsToday}</strong>
+            </li>
           </ul>
-          </div>
+        </div>
       </section>
 
       {/* Hospital Network Marquee */}
       <div className="dashboard-network-band">
         <div className="marquee-outer">
           <div className="marquee-track dashboard-marquee-track">
-            {['NATIONAL KIDNEY INSTITUTE (NKI) · DEMO', 'PHILIPPINE GENERAL HOSPITAL (PGH) · DEMO', 'DOH ORGAN DONATION PROGRAM · SAMPLE DATA', 'Simulated trust registry', 'Simulated chain 13371', 'PHILIPPINE HEART CENTER (PHC) · DEMO', 'LUNG CENTER OF THE PHILIPPINES · DEMO'].map((a, i) => (
-              <span key={i} className="marquee-item">🏥 {a}</span>
+            {[
+              "NATIONAL KIDNEY INSTITUTE (NKI) · DEMO",
+              "PHILIPPINE GENERAL HOSPITAL (PGH) · DEMO",
+              "DOH ORGAN DONATION PROGRAM · SAMPLE DATA",
+              "Simulated trust registry",
+              "Simulated chain 13371",
+              "PHILIPPINE HEART CENTER (PHC) · DEMO",
+              "LUNG CENTER OF THE PHILIPPINES · DEMO",
+            ].map((a, i) => (
+              <span key={i} className="marquee-item">
+                🏥 {a}
+              </span>
             ))}
           </div>
         </div>
@@ -97,10 +172,10 @@ export default function HospitalDashboard() {
       {/* Tab Navigation (pill nav) */}
       <div className="tab-bar tab-bar-pill">
         <div className="container tab-bar-inner hospital-tab-bar-inner">
-          {TABS.map(t => (
+          {TABS.map((t) => (
             <button
               key={t.id}
-              className={`tab-btn${tab === t.id ? ' active' : ''}`}
+              className={`tab-btn${tab === t.id ? " active" : ""}`}
               onClick={() => setTab(t.id)}
               aria-label={t.label}
               aria-pressed={tab === t.id}
@@ -119,15 +194,14 @@ export default function HospitalDashboard() {
         </div>
       </div>
 
-      <div className="page-content" style={{ padding: '32px 0' }}>
+      <div className="page-content dashboard-content-hospital">
         <div className="container">
-
           {/* TAB 1: HOSPITAL DEMO REVIEW */}
-          {tab === 'matches' && (
+          {tab === "matches" && (
             <>
               {/* Live lifecycle indicator — only show when a citizen-portal match is active */}
-              {(match && match.id) && (
-                <div style={{ marginBottom: 24 }}>
+              {match && match.id && (
+                <div className="dashboard-section-gap">
                   <LifecycleStrip status={match.status} compact />
                 </div>
               )}
@@ -147,21 +221,18 @@ export default function HospitalDashboard() {
           )}
 
           {/* TAB 2: LAWS AI */}
-          {tab === 'laws' && (
-            <div style={{ maxWidth: 800, margin: '0 auto' }}>
+          {tab === "laws" && (
+            <div className="dashboard-narrow-800">
               <EGovAIWidget />
             </div>
           )}
 
           {/* TAB 3: ANALYTICS */}
-          {tab === 'analytics' && <OrganAnalytics role="hospital" />}
-
+          {tab === "analytics" && <OrganAnalytics role="hospital" />}
         </div>
       </div>
 
-      <footer className="footer-mini">
-        eBuhay prototype · Demo Build
-      </footer>
+      <footer className="footer-mini">eBuhay prototype · Demo Build</footer>
     </main>
   );
 }

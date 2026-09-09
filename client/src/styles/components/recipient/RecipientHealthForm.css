@@ -1,0 +1,119 @@
+.migrated-1f2c3427 {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.migrated-e3448519 {
+  font-size: 13px;
+  color: var(--foreground-muted);
+  text-align: center;
+  margin-bottom: 18px;
+}
+.migrated-039dd51e {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.migrated-935c9a35 {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 16px;
+  background: white;
+}
+.migrated-6fd9c109 {
+  margin-bottom: 4px;
+}
+.migrated-b3fb5549 {
+  font-size: 12px;
+  color: var(--foreground-muted);
+  margin-bottom: 12px;
+}
+.migrated-ed02fd54 {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.migrated-7e90f870 {
+  flex: 1;
+}
+.migrated-7e90f870 {
+  flex: 1;
+}
+.migrated-67214d76 {
+  padding: 14px;
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--r-md);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.migrated-642b12a6 {
+  font-weight: 700;
+  color: var(--sun);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.migrated-000d1144 {
+  font-size: 11px;
+}
+.migrated-d8c077b1 {
+  height: 34px;
+  font-size: 12px;
+}
+.migrated-000d1144 {
+  font-size: 11px;
+}
+.migrated-d8c077b1 {
+  height: 34px;
+  font-size: 12px;
+}
+.migrated-000d1144 {
+  font-size: 11px;
+}
+.migrated-d8c077b1 {
+  height: 34px;
+  font-size: 12px;
+}
+.migrated-78e40e53 {
+  padding: 8px 12px;
+  background: white;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--foreground-subtle);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.migrated-40acd791 {
+  color: var(--primary);
+}
+.migrated-935c9a35 {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 16px;
+  background: white;
+}
+.migrated-6fd9c109 {
+  margin-bottom: 4px;
+}
+.migrated-b3fb5549 {
+  font-size: 12px;
+  color: var(--foreground-muted);
+  margin-bottom: 12px;
+}
+.migrated-cac93c16 {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.migrated-7e90f870 {
+  flex: 1;
+}
+.migrated-b3730661 {
+  flex: 2;
+}
