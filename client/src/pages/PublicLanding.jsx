@@ -52,8 +52,6 @@ const roleCards = [
 ];
 
 export default function PublicLanding({ role }) {
-  const headingRef = useRef(null);
-  useEffect(() => headingRef.current?.focus(), []);
   return (
     <>
       <a href="#landing-main" className="skip-link">
@@ -74,7 +72,7 @@ export default function PublicLanding({ role }) {
         <section className="landing-hero" aria-labelledby="landing-heading">
           <div className="landing-hero-copy">
             <p className="landing-eyebrow">A coordinated care journey</p>
-            <h1 id="landing-heading" ref={headingRef} tabIndex={-1}>
+            <h1 id="landing-heading">
               A clearer path through transplant coordination
             </h1>
             <p className="landing-lede">
