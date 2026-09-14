@@ -1,149 +1,59 @@
-# eBuhay - DICT eGov Organ & Blood Matching Platform
+# eBuhay
 
-> LifeSync: A prototype government platform for the Philippines that matches blood and organ donors with recipients, enables direct citizen communication, and automates tri-party (Doctor + Donor + Recipient) scheduling.
+eBuhay is a project-owned synthetic prototype and public showcase for blood-donation and hospital-coordinated donation journeys. It is not a partner-hospital deployment, clinical system, or live healthcare service.
 
-## 🚨 Demo Mode Notice
+## Approved/planned release profile
 
-**This project is configured for demo mode by default.** All external API integrations (eVerify, eMessage, eGovAI, Besu Blockchain) are fully mocked and require no real credentials to run.
+- **Public Showcase** — planned public presentation.
+- **Private Synthetic Demo** — planned invitation-only walkthrough.
+- **Synthetic Pilot Rehearsal** — planned isolated rehearsal of server-authorized flows.
 
----
+These are release profiles, not three currently deployed surfaces. Current local data is project-owned synthetic data. Only DICT-provided fixtures may be used for real staging calls. No partner hospital, real patient record, clinical clearance, automatic matching, production approval, or government endorsement is claimed. Kidney workflows remain live-disabled.
 
-## Project Structure
+## Project structure
 
-```
-egov-hackathon/
-├── client/                    # React.js Frontend (Vite)
-│   ├── src/
-│   │   ├── components/      # Reusable UI components
-│   │   ├── pages/           # Page-level components
-│   │   ├── services/        # API service layer
-│   │   └── styles/          # CSS design tokens
-│   ├── .env                 # Frontend environment (demo mode)
-│   └── package.json
-│
-├── server/                   # Node.js/Express Backend
-│   ├── src/
-│   │   ├── controllers/     # Route handlers
-│   │   ├── routes/          # API route definitions
-│   │   ├── services/        # External API integrations
-│   │   └── app.js           # Express app configuration
-│   ├── .env                 # Backend environment (demo mode)
-│   ├── tests/               # Test suite
-│   └── package.json
-│
-├── supabase/
-│   └── schema.sql           # Database schema
-│
-├── .gitignore               # Git ignore rules
-├── spec.md                  # Technical specification
-└── tasks/                   # Planning documents
-```
+- client/ — React + Vite frontend; pages, features, shared UI, services, and tests
+- server/ — Express/TypeScript API, routes, services, database, workers, and tests
+- docs/ — showcase, integration, and persistence notes
+- tasks/ — canonical PRD and issue planning
+- .scratch/production-capable-mvp/ — active implementation specification
 
----
+## Prerequisites and local start
 
-## Quick Start (Demo Mode)
+Use Node.js 20.19+ or 22.13+ with npm 9+; Node.js 22.13+ is recommended because the installed Vite/jsdom toolchain requires a current Node runtime.
 
-### Prerequisites
-- Node.js 18+ 
-- npm 9+
+From a fresh checkout, create server/.env from server/.env.example using your platform's file-copy facility. Configure an isolated synthetic PostgreSQL/Neon URL (the placeholders in the example are not usable), and keep it separate from every other environment. Run the migration before starting the server:
 
-### 1. Start the Backend Server
+    cd server
+    npm install
+    npm run migrate
+    npm start
 
-```bash
-cd server
-npm install
-npm start
-# Server runs on http://localhost:5000
-```
+In another terminal:
 
-### 2. Start the Frontend
+    cd client
+    npm install
+    npm run dev
 
-```bash
-cd client
-npm install
-npm run dev
-# Frontend runs on http://localhost:5173
-```
+## Current checks
 
-### 3. Run Verification Tests
+    cd client
+    npm test
+    npm run build
+    npm run typecheck
+    npm run lint
 
-```bash
-cd server
-npm run test:demo
-```
+    cd server
+    npm test
+    npm run typecheck
+    npm run lint
 
----
+The recorded evidence is: 68 client tests passed and client build passed; 31 server contract tests passed; server typecheck and lint passed. PostgreSQL HTTP acceptance remains unresolved after a 503 response and missing appointment_request_history.
 
-## Environment Configuration
+## Configuration and links
 
-### Demo Mode (Default)
-The project comes pre-configured for demo mode with no external API calls:
+Local configuration uses server/.env.example: EBUHAY_MODE=synthetic, PORT=5000, provider doubles, and isolated DATABASE_URL/TEST_DATABASE_URL values. Keep secrets out of source control. Planned Vercel partner-sandbox use of an operator-pasted official eGovPH test exchange code, server-only credentials, isolated Neon branches, routes, environment variables, eGov/hospital adapters, and provider integrations must be labelled planned until access and contract evidence exist. See [EGOV_INTEGRATIONS.md](docs/EGOV_INTEGRATIONS.md) for the bounded plan.
 
-**Server (.env):**
-```bash
-DEMO_MODE=true
-EVERIFY_CLIENT_ID=dict_everify_demo_client_id
-EMESSAGE_API_TOKEN=dict_emessage_demo_token
-EGOVAI_ACCESS_CODE=dict_egovai_demo_access_code
-```
+See [SHOWCASE_RELEASE.md](docs/SHOWCASE_RELEASE.md), [EGOV_INTEGRATIONS.md](docs/EGOV_INTEGRATIONS.md), [NEON_DRIZZLE.md](docs/NEON_DRIZZLE.md), the [canonical PRD](tasks/prd-hospital-integrated-donation-platform.md), and the [active production specification](.scratch/production-capable-mvp/spec.md).
 
-**Client (.env):**
-```bash
-VITE_API_URL=http://localhost:5000/api
-VITE_DEMO_MODE=true
-```
-
-### Production Mode
-To enable real API integrations, set:
-
-```bash
-DEMO_MODE=false
-EVERIFY_CLIENT_ID=your_real_client_id
-EVERIFY_CLIENT_SECRET=your_real_client_secret
-EMESSAGE_API_TOKEN=your_real_token
-EGOVAI_ACCESS_CODE=your_real_access_code
-SUPABASE_URL=your_supabase_url
-SUPABASE_ANON_KEY=your_supabase_key
-```
-
----
-
-## API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/health` | GET | Health check |
-| `/api/auth/verify` | POST | eVerify identity verification |
-| `/api/auth/verify/qr` | POST | QR code verification |
-| `/api/matches/find` | GET | Find compatible donors |
-| `/api/matches/compatibility/:blood_type` | GET | Blood type compatibility |
-| `/api/matches/matrix` | GET | Full compatibility matrix |
-| `/api/schedule/ai-optimize` | POST | AI-generated appointment slots |
-| `/api/blockchain/anchor` | POST | Anchor consent on Besu blockchain |
-| `/api/blockchain/chain-info` | GET | Get chain information |
-| `/api/egovai/laws` | POST | Laws & regulations Q&A |
-
----
-
-## Demo Features
-
-- ✅ **eVerify**: PhilSys identity verification (mocked)
-- ✅ **eMessage**: SMS notifications (mocked)  
-- ✅ **eGovAI**: Legal Q&A & scheduling (mocked)
-- ✅ **Besu**: Blockchain anchoring (mocked)
-- ✅ **Matchmaking**: ABO/Rh compatibility matrix
-- ✅ **Scheduling**: AI tri-party slot optimization
-
----
-
-## Security Notes
-
-- `.env` files are excluded from version control
-- No real API credentials are stored in the repository
-- All external integrations are mocked in demo mode
-
----
-
-## License
-
-This is a DICT eGov prototype project for demonstration purposes only.
+eGov portal qualification requires a running demo and actual staging traffic. Official references: [DICT eGov Hackathon 2026 criteria](https://platforms.e.gov.ph/egov-hackathon-2026-criteria) and [DICT eGov SSO API catalog](https://platforms.e.gov.ph/api-catalogs/egov-sso).

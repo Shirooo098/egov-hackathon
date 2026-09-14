@@ -1,0 +1,65 @@
+{
+  "releaseId": "5c589fb2-17c7-4bed-b32b-22070d4e35df",
+  "timestamp": "2026-09-14T04:06:41.391Z",
+  "sourceControl": {
+    "commitSha": "b6931b3b2dd5f820e0787f94547ffd820b1164bb",
+    "branch": "ui/client-feature-routing",
+    "isClean": false,
+    "repository": "https://github.com/Shirooo098/egov-hackathon"
+  },
+  "environment": {
+    "mode": "synthetic",
+    "isLive": false,
+    "nodeVersion": "v22.14.0",
+    "platform": "win32"
+  },
+  "database": {
+    "latestMigration": "028_backup_continuity_evidence",
+    "totalMigrations": 29,
+    "forwardOnlyEnforced": true,
+    "blankBoundaryVerified": true,
+    "syntheticSeedSeparated": true
+  },
+  "securityAndAuthority": {
+    "legacyAuthorityRemoved": true,
+    "browserHeldAuthorityRejected": true,
+    "kidneyWorkflowsDisabledInLiveMode": true,
+    "zeroCredentialsInArtifacts": true
+  },
+  "concurrencyTest": {
+    "concurrentRequests": 100,
+    "successfulRequests": 100,
+    "failedRequests": 0,
+    "duplicateStateViolations": 0,
+    "poolExhaustions": 0,
+    "durationMs": 5692,
+    "passed": true
+  },
+  "accessibilityWcag22Aa": {
+    "evaluatedScreens": [
+      "PublicLanding",
+      "DonorDashboard",
+      "RecipientDashboard",
+      "HospitalDashboard",
+      "StaffSignIn",
+      "PairCoordinationPanel",
+      "CalendarScheduleView"
+    ],
+    "contrastRatioMinChecked": "4.5:1 (normal text), 3.0:1 (large text/controls)",
+    "keyboardTrapPrevention": true,
+    "focusOrderPreserved": true,
+    "screenReaderAriaAttributes": true,
+    "touchTargetMinSize": "24x24px (standard), 44x44px (touch)",
+    "overallAccepted": true
+  },
+  "buildArtifacts": {
+    "clientDistSha256": "ee58493ecaec07fec14d6281066dfd4f14be7520b89c4b6d9bd5e4255583d496",
+    "migrationsSha256": "5f62d18f059b92c52d3e4e11425eb6ae6b8ea677a25911b911d7f4c8292e6a25"
+  },
+  "accountableSignoff": {
+    "operator": "Lead Release Auditor",
+    "reviewStatus": "VERIFIED_RELEASE_CANDIDATE",
+    "retainedArtifactPath": ".scratch/production-capable-mvp/evidence/release-evidence-v1.json"
+  },
+  "immutableEvidenceHash": "115937f2000b0968dcada5256d6f4c4b89fd357afe3b6b48cef5ef36e45a3cf4"
+}

@@ -55,3 +55,5 @@ server/tests/*.log
 
 # Optional: Demo mode configuration (uncomment to exclude demo credentials)
 # server/.env.example
+
+.impeccable/
