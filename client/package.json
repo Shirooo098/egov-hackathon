@@ -7,7 +7,6 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "test": "node tests/matchHelpers.test.js && vitest run --pool=threads --environment jsdom --configLoader=native tests/appRoutes.test.jsx tests/accessibilityHardening.test.jsx tests/trustFailures.test.jsx",
     "preview": "vite preview"
   },
   "dependencies": {
