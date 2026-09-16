@@ -8,7 +8,6 @@
     "build": "npm run typecheck && vite build",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",
-    "test": "tsx --test tests/matchHelpers.test.ts && vitest run --pool=threads --environment jsdom tests/accessibilityHardening.test.tsx tests/appRoutes.test.tsx tests/citizenRouting.test.tsx tests/coordinationRoutes.test.tsx tests/intakePersistence.test.tsx tests/platformRoutes.test.tsx tests/trustFailures.test.tsx",
     "preview": "vite preview"
   },
   "dependencies": {

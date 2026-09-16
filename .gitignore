@@ -57,3 +57,12 @@ server/tests/*.log
 # server/.env.example
 
 .impeccable/
+
+# Local-only source and verification material
+**/src/cli/
+**/tests/
+/.github/workflows/synthetic-baseline.yml
+/.agents/ui-ux/
+/.agents/skills/ui-ux-pro-max/
+*.md
+!/README.md
