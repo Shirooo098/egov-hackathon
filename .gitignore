@@ -55,3 +55,16 @@ server/tests/*.log
 
 # Optional: Demo mode configuration (uncomment to exclude demo credentials)
 # server/.env.example
+
+# Local-only project material
+/server/src/cli/
+/client/tests/
+/server/tests/
+/server/src/db/migrate-test.ts
+/.github/workflows/synthetic-baseline.yml
+/.agents/ui-ux/
+/.agents/skills/ui-ux-pro-max/
+/.impeccable/
+/client/.impeccable/
+*.md
+!/README.md

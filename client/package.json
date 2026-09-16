@@ -7,7 +7,6 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "test": "node --test tests/*.test.js && vitest run --environment jsdom --configLoader=native tests/appRoutes.test.jsx",
     "preview": "vite preview"
   },
   "dependencies": {
