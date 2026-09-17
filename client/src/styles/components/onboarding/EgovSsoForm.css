@@ -1,0 +1,143 @@
+.migrated-2f55da8d {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--background-alt);
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  border-radius: var(--r-md);
+  margin-bottom: 24px;
+  font-size: 12px;
+  color: var(--foreground-muted);
+}
+.migrated-6dac5f26 {
+  margin-left: auto;
+}
+.migrated-1f2c3427 {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.migrated-78d8b799 {
+  font-size: 13px;
+  color: var(--foreground-muted);
+  text-align: center;
+  margin-bottom: 20px;
+}
+.migrated-039dd51e {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.migrated-13ec00a5 {
+  font-size: 12px;
+  color: var(--danger, #dc2626);
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+}
+.migrated-1d233a92 {
+  display: flex;
+  gap: 10px;
+}
+.migrated-7e90f870 {
+  flex: 1;
+}
+.migrated-b3730661 {
+  flex: 2;
+}
+.migrated-13ae4626 {
+  border-color: white;
+  border-top-color: transparent;
+}
+.migrated-07c4431b {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 20px 0 14px;
+  color: var(--foreground-subtle);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.migrated-0174a332 {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.migrated-0174a332 {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.migrated-9fe3f3ec {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--foreground-muted);
+}
+.egov-quick-signin {
+  border-color: var(--emerald);
+  color: var(--emerald);
+  font-weight: 800;
+  padding: 12px 18px;
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.token-input-wrapper {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.token-input {
+  flex: 1;
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+.token-paste-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+  height: 38px;
+  padding: 0 12px;
+}
+.token-help-text {
+  font-size: 12px;
+  color: var(--foreground-subtle);
+  margin-top: 6px;
+}
+.token-help-text code {
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-subtle, rgba(20, 82, 240, 0.08));
+  padding: 2px 4px;
+  border-radius: var(--r-sm);
+}
+.sso-mode-selector {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.token-fill-sample-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: underline;
+  cursor: pointer;
+  margin-left: 4px;
+}
+.token-fill-sample-btn:hover {
+  color: var(--primary-hover, #0f3fc0);
+}
+
+
