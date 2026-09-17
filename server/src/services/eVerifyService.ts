@@ -7,9 +7,10 @@
  */
 
 import { createHash } from 'crypto';
+import { isLegacyIntegrationDisabled } from '../runtime/config.js';
 
 // Demo mode detection - force demo mode if DEMO_MODE env var is set
-const DEMO_MODE = process.env.DEMO_MODE === 'true';
+const DEMO_MODE = process.env.DEMO_MODE === 'true' || isLegacyIntegrationDisabled();
 
 // In-memory token cache (server-side only — never expose to client)
 type VerifyInput = { first_name: string; last_name: string; birth_date: string; middle_name?: string; suffix?: string; face_liveness_session_id?: string };

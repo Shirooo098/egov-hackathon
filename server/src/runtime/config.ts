@@ -100,6 +100,11 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
 
 export const isLiveMode = (mode: RuntimeMode): boolean => mode === 'controlled-live' || mode === 'production';
 
+/** Legacy adapters are synthetic doubles in demo mode and disabled in live modes. */
+export function isLegacyIntegrationDisabled(mode = process.env.EBUHAY_MODE as RuntimeMode | undefined): boolean {
+  return mode !== 'partner-sandbox';
+}
+
 export function isServiceAllowed(mode: RuntimeMode, service: ServiceCode): boolean {
   return SERVICE_CODES.includes(service) && (!isLiveMode(mode) || service === 'blood');
 }

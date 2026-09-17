@@ -7,10 +7,11 @@
  */
 
 import { createHash } from 'crypto';
+import { isLegacyIntegrationDisabled } from '../runtime/config.js';
 
 const BESU_RPC = process.env.BESU_RPC_URL || 'https://hackathon-blockchain.e.gov.ph';
 const CHAIN_ID = parseInt(process.env.BESU_CHAIN_ID || '13371', 10);
-const DEMO_MODE = process.env.DEMO_MODE === 'true' || !process.env.PRIVATE_KEY;
+const DEMO_MODE = process.env.DEMO_MODE === 'true' || isLegacyIntegrationDisabled() || !process.env.PRIVATE_KEY;
 
 // Simulated block number for demo mode
 let DEMO_BLOCK_NUMBER = 4821;

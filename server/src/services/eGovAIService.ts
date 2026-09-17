@@ -7,13 +7,14 @@
  */
 
 import { createHash } from 'crypto';
+import { isLegacyIntegrationDisabled } from '../runtime/config.js';
 
 type Availability = Array<{ start: string; end: string }>;
 type ScheduleInput = { hospitalAvailability?: Availability; doctorAvailability?: Availability; donorAvailability?: Availability; recipientAvailability?: Availability; urgencyLevel?: 'critical' | 'urgent' | 'moderate' };
 type AiResponse = { access_token?: string; expires_in_seconds?: number; credits_remaining?: number; data?: string; session_id?: string };
 type ScheduleResult = { success: true; slots: Array<Record<string, unknown>>; session_id?: string; [key: string]: unknown };
 let aiTokenCache: { token: string | null; expiresAt: number | null; creditsRemaining: number | null } = { token: null, expiresAt: null, creditsRemaining: null };
-const DEMO_MODE = process.env.DEMO_MODE === 'true';
+const DEMO_MODE = process.env.DEMO_MODE === 'true' || isLegacyIntegrationDisabled();
 
 /**
  * Simulate AI processing delay (1.5s - 2.5s for realistic AI response time)

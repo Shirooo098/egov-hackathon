@@ -1,5 +1,7 @@
 import express from 'express';
 import axios from 'axios';
+import { sendSMS } from '../services/eMessageService.js';
+import { isLegacyIntegrationDisabled } from '../runtime/config.js';
 
 const router = express.Router();
 
@@ -14,6 +16,11 @@ router.post('/sms/push', async (req, res) => {
 
     if (!number || !message) {
       return res.status(400).json({ success: false, message: 'number and message are required' });
+    }
+
+    if (isLegacyIntegrationDisabled()) {
+      const result = await sendSMS(number, message);
+      return res.status(result.success ? 201 : 502).json({ success: result.success, data: result });
     }
 
     const response = await axios.post(

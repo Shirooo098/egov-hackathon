@@ -6,8 +6,9 @@
  * Privacy & Redaction: Logs and return values never contain unmasked mobile numbers,
  * unredacted credentials, or raw upstream errors.
  */
+import { isLegacyIntegrationDisabled } from '../runtime/config.js';
 
-const DEMO_MODE = process.env.DEMO_MODE === 'true';
+const DEMO_MODE = process.env.DEMO_MODE === 'true' || isLegacyIntegrationDisabled();
 
 export type DemoMessage = {
   id: string;

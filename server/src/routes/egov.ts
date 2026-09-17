@@ -2,6 +2,8 @@ console.log("✅ egov.ts loaded");
 
 import express from 'express';
 import axios from 'axios';
+import { isLegacyIntegrationDisabled } from '../runtime/config.js';
+import { askLawsAndRegulations } from '../services/eGovAIService.js';
 
 const router = express.Router();
 
@@ -17,6 +19,9 @@ const FACE_LIVENESS_API_KEY = process.env.FACE_LIVENESS_API_KEY;
 const EGOV_AI_BASE_URL = process.env.EGOV_AI_BASE_URL; // set this from your Postman "base" env var
 const EGOV_ACCESS_CODE = process.env.EGOV_ACCESS_CODE;
 
+const unavailable = (res: express.Response) =>
+  res.status(404).json({ success: false, error: 'service_disabled', message: 'eGov integration is disabled' });
+
 // In-memory token cache. Fine for a single-instance hackathon server;
 // if you ever run multiple instances, move this to redis/shared store.
 let cachedAiToken: string | null = null;
@@ -25,6 +30,7 @@ let aiTokenExpiresAt = 0;
 // POST /api/egov/token
 router.post("/token", async (req, res) => {
   try {
+    if (isLegacyIntegrationDisabled()) return unavailable(res);
     const { exchange_code } = req.body;
 
     const response = await axios.post(`${BASE}/api/token`, {
@@ -51,6 +57,7 @@ router.post("/token", async (req, res) => {
 // POST /api/egov/sso-authenticate
 router.post("/sso-authenticate", async (req, res) => {
   try {
+    if (isLegacyIntegrationDisabled()) return unavailable(res);
     const { access_token } = req.body;
 
     const response = await axios.post(
@@ -83,6 +90,14 @@ console.log("API Key Present:", !!FACE_LIVENESS_API_KEY);
 // POST /api/egov/liveness/session
 router.post("/liveness/session", async (req, res) => {
   try {
+    if (process.env.EBUHAY_MODE === 'synthetic') {
+      return res.json({
+        token: `synthetic-liveness-${Date.now()}`,
+        url: req.body.callback_url || 'about:blank',
+        _demo: true,
+      });
+    }
+    if (isLegacyIntegrationDisabled()) return unavailable(res);
     const { action, callback_url, delay } = req.body;
 
     const response = await axios.post(
@@ -120,6 +135,10 @@ router.post("/liveness/session", async (req, res) => {
 router.get("/liveness/result/:sessionToken", async (req, res) => {
 
   try {
+    if (process.env.EBUHAY_MODE === 'synthetic' && req.params.sessionToken.startsWith('synthetic-liveness-')) {
+      return res.json({ status: 'SUCCEEDED', confidence_score: 99.9, reference_image_url: null, _demo: true });
+    }
+    if (isLegacyIntegrationDisabled()) return unavailable(res);
 
     const { sessionToken } = req.params;
 
@@ -156,6 +175,12 @@ router.get("/liveness/result/:sessionToken", async (req, res) => {
 async function getAiAccessToken() {
   const now = Date.now();
   if (cachedAiToken && now < aiTokenExpiresAt) {
+    return cachedAiToken;
+  }
+
+  if (isLegacyIntegrationDisabled()) {
+    cachedAiToken = 'egovai_demo';
+    aiTokenExpiresAt = now + 3600 * 1000;
     return cachedAiToken;
   }
 
@@ -204,6 +229,11 @@ router.post('/ai/chat', async (req, res) => {
     const { prompt, category = 'PH' } = req.body;
     if (!prompt || !prompt.trim()) {
       return res.status(400).json({ message: 'prompt is required' });
+    }
+
+    if (isLegacyIntegrationDisabled()) {
+      const result = await askLawsAndRegulations(prompt.trim(), category);
+      return res.json(result);
     }
 
     const token = await getAiAccessToken();
