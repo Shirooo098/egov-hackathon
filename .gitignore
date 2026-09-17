@@ -61,6 +61,7 @@ server/tests/*.log
 # Local-only source and verification material
 **/src/cli/
 **/tests/
+/server/src/db/migrate-test.ts
 /.github/workflows/synthetic-baseline.yml
 /.agents/ui-ux/
 /.agents/skills/ui-ux-pro-max/
