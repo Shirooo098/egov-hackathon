@@ -1,5 +1,5 @@
 import "../../styles/components/match/ChatBox.css";
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useToast } from "../../context/ToastContext";
 import { maskedName } from "../../utils/maskedName";
 import { eMessageToast } from "../../utils/eMessageToast";

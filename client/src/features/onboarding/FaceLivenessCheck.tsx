@@ -1,14 +1,5 @@
 import "../../styles/components/onboarding/FaceLivenessCheck.css";
-import React from "react";
 import Stepper from "./Stepper";
-
-const STEPS = [
-  { key: "role", label: "Role" },
-  { key: "auth", label: "Access" },
-  { key: "sso", label: "Demo code" },
-  { key: "face", label: "Face check" },
-  { key: "profile", label: "Profile" },
-];
 
 // Stage chip helpers
 const STAGE_CHIPS = [
@@ -33,7 +24,7 @@ export default function FaceLivenessCheck({
   return (
     <div className="anim-in migrated-7f597a40">
       <div className="migrated-05a2dd68">
-        <Stepper steps={STEPS} active={4} />
+        <Stepper active={4} />
       </div>
       <h3 className="migrated-9f19d7d0">Face Liveness Check (Demo)</h3>
       <p className="migrated-dd39b1f9">
@@ -79,7 +70,7 @@ export default function FaceLivenessCheck({
           height="90"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="rgba(255,255,255,0.25)"
+          stroke="var(--foreground-subtle)"
           strokeWidth="1.5"
           className="migrated-f73aaf90"
         >
@@ -106,6 +97,8 @@ export default function FaceLivenessCheck({
 
       <div
         className="face-liveness-status"
+        role="status"
+        aria-live="polite"
         style={{
           color:
             livenessStage === 3

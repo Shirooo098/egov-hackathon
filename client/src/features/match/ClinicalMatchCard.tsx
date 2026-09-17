@@ -10,12 +10,7 @@ export default function ClinicalMatchCard({
   role?: string;
   onNavigateTab?: (tab: string) => void;
 }) {
-  const {
-    match,
-    proposeSchedule,
-    setScheduledDate,
-    resetMatch,
-  } = useMatch()!;
+  const { match, proposeSchedule, setScheduledDate, resetMatch } = useMatch()!;
   const [dateInput, setDateInput] = useState("2026-08-10");
   const [timeInput, setTimeInput] = useState("10:00 AM");
   const [locationInput, setLocationInput] = useState(

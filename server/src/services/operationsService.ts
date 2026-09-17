@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { sql } from "drizzle-orm";
 
 export interface WorkflowPauseCheck {
   paused: boolean;
@@ -11,23 +11,23 @@ export interface WorkflowPauseCheck {
 }
 
 export const VALID_WORKFLOW_SCOPES = [
-  'all',
-  'intake',
-  'appointments',
-  'notifications',
-  'hospital_events',
-  'messaging',
-  'reconciliation',
-  'matching',
-  'privacy_requests',
+  "all",
+  "intake",
+  "appointments",
+  "notifications",
+  "hospital_events",
+  "messaging",
+  "reconciliation",
+  "matching",
+  "privacy_requests",
 ] as const;
 
-export type WorkflowScope = typeof VALID_WORKFLOW_SCOPES[number];
+export type WorkflowScope = (typeof VALID_WORKFLOW_SCOPES)[number];
 
 export async function isWorkflowPaused(
   db: any,
   scope: string,
-  hospitalId?: string | null
+  hospitalId?: string | null,
 ): Promise<WorkflowPauseCheck> {
   const query = hospitalId
     ? sql`
@@ -73,16 +73,18 @@ export async function pauseWorkflow(
     hospitalId?: string | null;
     reason: string;
     actorAccountId: string;
-  }
+  },
 ) {
   const { scope, hospitalId = null, reason, actorAccountId } = params;
 
   if (!VALID_WORKFLOW_SCOPES.includes(scope as any)) {
-    throw new Error(`Invalid workflow scope: ${scope}. Must be one of: ${VALID_WORKFLOW_SCOPES.join(', ')}`);
+    throw new Error(
+      `Invalid workflow scope: ${scope}. Must be one of: ${VALID_WORKFLOW_SCOPES.join(", ")}`,
+    );
   }
 
   if (!reason || !reason.trim()) {
-    throw new Error('Kill switch reason is required');
+    throw new Error("Kill switch reason is required");
   }
 
   // Check if an active kill switch already exists for this scope & hospital
@@ -118,12 +120,12 @@ export async function resumeWorkflow(
     id: string;
     reason: string;
     actorAccountId: string;
-  }
+  },
 ) {
   const { id, reason, actorAccountId } = params;
 
   if (!reason || !reason.trim()) {
-    throw new Error('Resume reason is required');
+    throw new Error("Resume reason is required");
   }
 
   const check = await db.execute(sql`
@@ -131,11 +133,11 @@ export async function resumeWorkflow(
   `);
 
   if (!check.rowCount) {
-    throw new Error('Kill switch not found');
+    throw new Error("Kill switch not found");
   }
 
-  if ((check.rows[0] as any).status !== 'active') {
-    throw new Error('Kill switch is not currently active');
+  if ((check.rows[0] as any).status !== "active") {
+    throw new Error("Kill switch is not currently active");
   }
 
   const updated = await db.execute(sql`
@@ -161,7 +163,10 @@ export async function resumeWorkflow(
   return updated.rows[0];
 }
 
-export async function getOperationalMetrics(db: any, hospitalId?: string | null) {
+export async function getOperationalMetrics(
+  db: any,
+  hospitalId?: string | null,
+) {
   // 1. Backlog metrics
   const outboxRes = await db.execute(sql`
     SELECT count(*)::int AS "pendingCount" FROM appointment_outbox WHERE status = 'pending'
@@ -200,11 +205,11 @@ export async function getOperationalMetrics(db: any, hospitalId?: string | null)
   const failureCount = (notificationRes.rows[0] as any).failureCount || 0;
   const activeSwitches = activeSwitchesRes.rows || [];
 
-  let healthStatus: 'healthy' | 'degraded' | 'paused' = 'healthy';
+  let healthStatus: "healthy" | "degraded" | "paused" = "healthy";
   if (activeSwitches.length > 0) {
-    healthStatus = 'paused';
+    healthStatus = "paused";
   } else if (outboxPending > 50 || failureCount > 20) {
-    healthStatus = 'degraded';
+    healthStatus = "degraded";
   }
 
   // REDACTED / ZERO-DISCLOSURE: Only aggregate counts, rates, and operational states are returned.
@@ -218,8 +223,10 @@ export async function getOperationalMetrics(db: any, hospitalId?: string | null)
       appointmentOutboxPending: outboxPending,
       notificationBacklog: (notificationRes.rows[0] as any).backlogCount || 0,
       notificationDeliveryFailures: failureCount,
-      notificationDelivered: (notificationRes.rows[0] as any).deliveredCount || 0,
-      reconciliationPendingTasks: (reconciliationRes.rows[0] as any).pendingTasks || 0,
+      notificationDelivered:
+        (notificationRes.rows[0] as any).deliveredCount || 0,
+      reconciliationPendingTasks:
+        (reconciliationRes.rows[0] as any).pendingTasks || 0,
     },
     activeWorkflows: {
       activeCases: (casesRes.rows[0] as any).activeCases || 0,

@@ -52,11 +52,6 @@ export const platformApi = {
       method: "PUT",
       body: JSON.stringify(body),
     }),
-  createEpisode: (caseId: string) =>
-    api.request("/platform/episodes", {
-      method: "POST",
-      body: JSON.stringify({ caseId }),
-    }),
   episode: (id: string) => api.request(`/platform/episodes/${id}`),
   episodeAction: (id: string, action: string, version: number) =>
     api.request(`/platform/episodes/${id}/${action}`, {
@@ -83,11 +78,6 @@ export const platformApi = {
     }),
   appointmentRequestsList: () => api.request("/appointments/requests"),
   bookings: () => api.request("/bookings"),
-  hospitalEvent: (body: Payload) =>
-    api.request("/simulated-hospital/events", {
-      method: "POST",
-      body: JSON.stringify(body),
-    }),
   candidates: (params: Query = {}) =>
     api.request(
       `/hospital/candidates${
@@ -100,6 +90,11 @@ export const platformApi = {
           : ""
       }`,
     ),
+  reviewers: (serviceId?: string) =>
+    api.request(
+      `/hospital/reviewers${serviceId ? `?serviceId=${encodeURIComponent(serviceId)}` : ""}`,
+    ),
+  deceasedOffers: () => api.request("/hospital/deceased-offers"),
   selectCandidate: (id: string, body: Payload) =>
     api.request(`/hospital/candidates/${id}/select`, {
       method: "POST",
@@ -146,4 +141,6 @@ export const platformApi = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+  resetSyntheticFixtures: (confirmation = "RESET_SYNTHETIC_DATA") =>
+    api.operations.reset(confirmation),
 };

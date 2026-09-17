@@ -1,5 +1,6 @@
 import "../../styles/components/recipient/RecipientHealthForm.css";
 import React from "react";
+import Stepper from "../onboarding/Stepper";
 import { INTAKE_ORGANS } from "../../services/platformApi";
 
 type RecipientHealth = {
@@ -24,6 +25,7 @@ export default function RecipientHealthForm({
 }: RecipientHealthFormProps) {
   return (
     <div className="anim-in">
+      <Stepper active={5} />
       <h3 className="migrated-1f2c3427">Recipient Health Details (Demo)</h3>
       <p className="migrated-e3448519">
         Enter the minimum coordination details for this prototype journey. This
@@ -120,6 +122,17 @@ export default function RecipientHealthForm({
             <option value="critical">Critical (ICU / Active Support)</option>
           </select>
         </div>
+
+        {(recipientHealth.urgency_level === "critical" ||
+          recipientHealth.urgency_level === "urgent") && (
+          <div className="emergency-care-alert" role="alert">
+            <strong>Emergency Care Notice:</strong> If you or the recipient are
+            experiencing an acute medical crisis, please call emergency services
+            (911) or proceed immediately to the nearest hospital emergency room.
+            eBuhay is a care coordination scheduling platform and does not
+            provide urgent emergency medical response.
+          </div>
+        )}
 
         <div className="migrated-cac93c16">
           <button

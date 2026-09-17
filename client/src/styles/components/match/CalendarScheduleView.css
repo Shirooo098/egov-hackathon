@@ -25,7 +25,7 @@
   width: 32px;
   height: 32px;
   border-radius: var(--r-sm);
-  background: var(--primary-10, rgba(0, 56, 168, 0.1));
+  background: var(--primary-10, rgba(20, 82, 240, 0.1));
   color: var(--primary);
   display: flex;
   align-items: center;

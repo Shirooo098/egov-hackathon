@@ -45,8 +45,8 @@
 }
 .government-agreement__callout--pending {
   padding: 16px 20px;
-  background: rgba(0, 56, 168, 0.05);
-  border: 1px solid rgba(0, 56, 168, 0.2);
+  background: rgba(20, 82, 240, 0.05);
+  border: 1px solid rgba(20, 82, 240, 0.2);
   border-radius: var(--r-md);
   gap: 14px;
 }

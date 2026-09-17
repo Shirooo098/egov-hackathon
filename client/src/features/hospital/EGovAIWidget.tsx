@@ -1,5 +1,5 @@
 import "../../styles/components/hospital/EGovAIWidget.css";
-import React, { useState } from "react";
+import { useState } from "react";
 import { api } from "../../services/api";
 
 const QUICK = [

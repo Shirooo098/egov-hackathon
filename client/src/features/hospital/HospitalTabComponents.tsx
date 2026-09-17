@@ -1,5 +1,4 @@
 import "../../styles/components/hospital/HospitalTabComponents.css";
-import React from "react";
 import {
   CheckIcon,
   ChainIcon,
@@ -106,12 +105,12 @@ export function ClinicalTriageTab({
                         className="badge hospital-triage__2-3"
                         style={{
                           background: match.blockchainAnchor
-                            ? "rgba(0, 56, 168, 0.08)"
+                            ? "var(--primary-10)"
                             : "var(--background-alt)",
                           color: match.blockchainAnchor
                             ? "var(--primary)"
                             : "var(--foreground-muted)",
-                          border: `1px solid ${match.blockchainAnchor ? "rgba(0, 56, 168, 0.3)" : "var(--border)"}`,
+                          border: `1px solid ${match.blockchainAnchor ? "rgba(20, 82, 240, 0.3)" : "var(--border)"}`,
                         }}
                         title={
                           match.blockchainAnchor

@@ -1,5 +1,5 @@
 import "../../styles/components/match/BlockchainBadge.css";
-import React, { useState } from "react";
+import { useState } from "react";
 import { api } from "../../services/api";
 import SignatureUploader from "./SignatureUploader";
 type Props = {

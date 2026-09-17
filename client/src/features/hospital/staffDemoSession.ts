@@ -11,7 +11,7 @@ export function hasHospitalDemoSession(): boolean {
 
 export function startHospitalDemoSession(): void {
   throw new Error(
-    "Browser sessionStorage cannot authorize hospital workflows; staff must use server-authoritative /api/v1/auth/staff login."
+    "Browser sessionStorage cannot authorize hospital workflows; staff must use server-authoritative /api/v1/auth/staff login.",
   );
 }
 

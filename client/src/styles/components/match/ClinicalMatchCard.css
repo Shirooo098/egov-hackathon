@@ -233,8 +233,8 @@
   border: 1px solid var(--border);
 }
 .clinical-match-proposal-card {
-  background: rgba(0, 56, 168, 0.04);
-  border: 2px solid rgba(0, 56, 168, 0.25);
+  background: rgba(20, 82, 240, 0.04);
+  border: 2px solid rgba(20, 82, 240, 0.25);
 }
 .clinical-match-proposal-confirm {
   font-weight: 800;

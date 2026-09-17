@@ -24,9 +24,28 @@ function CheckMini({ color = "white" }) {
   );
 }
 
+export const ONBOARDING_SIGNUP_STEPS = [
+  { key: "role", label: "Role" },
+  { key: "auth", label: "Access" },
+  { key: "sso", label: "Invitation" },
+  { key: "face", label: "Face check" },
+  { key: "profile", label: "Profile" },
+];
+
+export const ONBOARDING_SIGNIN_STEPS = [
+  { key: "role", label: "Role" },
+  { key: "auth", label: "Access" },
+  { key: "sso", label: "Invitation" },
+];
+
+export const ONBOARDING_STEPS = ONBOARDING_SIGNUP_STEPS;
+
 type Step = string | { key: string; label: string };
 type Props = { steps?: Step[]; active?: number };
-export default function Stepper({ steps = [], active = 1 }: Props) {
+export default function Stepper({
+  steps = ONBOARDING_STEPS,
+  active = 1,
+}: Props) {
   return (
     <div className="stepper" role="list" aria-label="Onboarding progress">
       {steps.map((s, i) => {

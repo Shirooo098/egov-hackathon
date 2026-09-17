@@ -23,6 +23,14 @@ export function isMixedWorkflowEnabled(mode: EffectiveRuntimeMode): boolean {
   return mode === "synthetic" || mode === "partner-sandbox";
 }
 
-export function isLegacyDemoWorkflowEnabled(mode: EffectiveRuntimeMode): boolean {
+export function isLegacyDemoWorkflowEnabled(
+  mode: EffectiveRuntimeMode,
+): boolean {
   return mode === "synthetic";
+}
+
+export function isAuthoritativePlatform(platform: {
+  authoritative?: boolean;
+}): boolean {
+  return platform.authoritative === true;
 }

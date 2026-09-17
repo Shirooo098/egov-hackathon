@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useMatch } from "../context/MatchContext";
 import EGovAIWidget from "../features/hospital/EGovAIWidget";
 import OrganAnalytics from "../features/hospital/OrganAnalytics";
@@ -25,6 +25,8 @@ import CandidateQueue, {
   ReviewerSchedulePanel,
 } from "../features/hospital/CandidateQueue";
 import PairCoordinationPanel from "../features/match/PairCoordinationPanel";
+import DeceasedOfferPanel from "../features/hospital/DeceasedOfferPanel";
+import { getRuntimeMode } from "../services/runtimeMode";
 
 type AppointmentRequest = {
   id: string;
@@ -48,7 +50,8 @@ type ScheduleProposal = { id: string; state?: string; [key: string]: unknown };
 type HospitalMatch = import("../services/domain").MatchItem;
 
 export default function HospitalDashboard() {
-  const { match, advanceStatus, anchorToBlockchain, resetMatch } = useMatch();
+  const { match, advanceStatus, anchorToBlockchain, resetMatch, platform } =
+    useMatch();
   const auth = useAuth(true);
   const { success, warning } = useToast();
 
@@ -59,7 +62,31 @@ export default function HospitalDashboard() {
   const [currentPair, setCurrentPair] = useState<Pair | null>(null);
   const [activeScheduleProposal, setActiveScheduleProposal] =
     useState<ScheduleProposal | null>(null);
-  const [staticState, setStaticState] = usePersistedStaticMatches(STATIC_MATCHES);
+  const [staticState, setStaticState] =
+    usePersistedStaticMatches(STATIC_MATCHES);
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
+
+  const handleConsoleReset = async () => {
+    setResetting(true);
+    try {
+      await platformApi.resetSyntheticFixtures();
+      success("Synthetic fixtures reset successfully to baseline.", {
+        title: "Console Reset Complete",
+      });
+      setResetMessage(
+        "Synthetic fixtures reset successfully. Reloading authoritative hospital data.",
+      );
+      setResetModalOpen(false);
+      window.location.reload();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Reset failed";
+      warning(msg, { title: "Reset Failed" });
+    } finally {
+      setResetting(false);
+    }
+  };
   useEffect(() => {
     let active = true;
     platformApi
@@ -158,13 +185,10 @@ export default function HospitalDashboard() {
   ];
 
   // Combine shared live match with static demo items for rich UI table
-  const liveMatchAsItem = getLiveMatchAsItem(
-    match,
-  );
-  const allMatches: HospitalMatch[] = [
-    liveMatchAsItem,
-    ...staticState,
-  ] as HospitalMatch[];
+  const liveMatchAsItem = getLiveMatchAsItem(match);
+  const allMatches: HospitalMatch[] = platform.authoritative
+    ? []
+    : ([liveMatchAsItem, ...staticState] as HospitalMatch[]);
   const { pendingMatches, activeMatches, rejectedMatches } =
     filterMatches(allMatches);
 
@@ -276,27 +300,53 @@ export default function HospitalDashboard() {
               <span className="tab-btn-label">{t.label}</span>
             </button>
           ))}
-          <button
-            onClick={resetMatch}
-            className="btn btn-ghost btn-sm hospital-reset-btn"
-            title="Reset live demonstration state"
-          >
-            ↺ Reset Demo State
-          </button>
+          {!platform.authoritative && (
+            <button
+              onClick={resetMatch}
+              className="btn btn-ghost btn-sm hospital-reset-btn"
+              title="Reset live demonstration state"
+            >
+              ↺ Reset Demo State
+            </button>
+          )}
+          {getRuntimeMode() === "synthetic" &&
+            auth?.session?.account?.role === "hospital_admin" && (
+              <button
+                onClick={() => setResetModalOpen(true)}
+                className="btn btn-outline btn-sm hospital-admin-reset-btn"
+                title="Reset synthetic hospital fixtures (hospital_admin only)"
+                style={{
+                  color: "var(--color-danger, #e53e3e)",
+                  borderColor: "var(--color-danger, #e53e3e)",
+                }}
+              >
+                ⚠ Console Reset (Admin)
+              </button>
+            )}
         </div>
       </div>
 
       <div className="page-content dashboard-content-hospital">
+        {resetMessage && (
+          <p role="status" aria-live="polite" className="container">
+            {resetMessage}
+          </p>
+        )}
         <div className="container">
           {/* TAB 1: HOSPITAL DEMO REVIEW */}
           {tab === "matches" && (
             <>
               <CandidateQueue
-                reviewerAccountId={auth?.session?.account?.id}
+                serviceId={
+                  (platform.services || []).find(
+                    (service) => service.code === "kidney",
+                  )?.id
+                }
                 onSelected={(selectedPair) =>
                   setCurrentPair(selectedPair as Pair)
                 }
               />
+              <DeceasedOfferPanel />
               <PairCoordinationPanel
                 reviewer={Boolean(currentPair?.id)}
                 pairId={currentPair?.id}
@@ -323,8 +373,9 @@ export default function HospitalDashboard() {
                       (request) => request.status === "request_pending",
                     ).length
                   }{" "}
-                  pending appointment request(s). Delivery retries automatically;
-                  only signed Hospital evidence can confirm a booking.
+                  pending appointment request(s). Delivery retries
+                  automatically; only signed Hospital evidence can confirm a
+                  booking.
                 </p>
                 {appointmentRequests.map((request) => (
                   <div key={request.id} className="dashboard-section-gap">
@@ -352,23 +403,25 @@ export default function HospitalDashboard() {
                 ))}
               </div>
               {/* Live lifecycle indicator — only show when a citizen-portal match is active */}
-              {match && match.id && (
+              {!platform.authoritative && match && match.id && (
                 <div className="dashboard-section-gap">
                   <LifecycleStrip status={match.status} compact />
                 </div>
               )}
-              <ClinicalTriageTab
-                pendingMatches={pendingMatches}
-                activeMatches={activeMatches}
-                rejectedMatches={rejectedMatches}
-                match={liveMatchAsItem}
-                handleRejectMatch={handleRejectMatch}
-                handleApproveMatch={handleApproveMatch}
-                handleAnchor={handleAnchor}
-                advanceStatus={advanceStatus}
-                URGENCY_BADGES={URGENCY_BADGES}
-                URGENCY_LABELS={URGENCY_LABELS}
-              />
+              {!platform.authoritative && (
+                <ClinicalTriageTab
+                  pendingMatches={pendingMatches}
+                  activeMatches={activeMatches}
+                  rejectedMatches={rejectedMatches}
+                  match={liveMatchAsItem}
+                  handleRejectMatch={handleRejectMatch}
+                  handleApproveMatch={handleApproveMatch}
+                  handleAnchor={handleAnchor}
+                  advanceStatus={advanceStatus}
+                  URGENCY_BADGES={URGENCY_BADGES}
+                  URGENCY_LABELS={URGENCY_LABELS}
+                />
+              )}
             </>
           )}
 
@@ -383,6 +436,62 @@ export default function HospitalDashboard() {
           {tab === "analytics" && <OrganAnalytics role="hospital" />}
         </div>
       </div>
+
+      {resetModalOpen && (
+        <div
+          className="modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reset-modal-title"
+        >
+          <div
+            className="modal-content card"
+            style={{ maxWidth: "480px", margin: "auto" }}
+          >
+            <h3
+              id="reset-modal-title"
+              style={{ color: "var(--color-danger, #e53e3e)" }}
+            >
+              ⚠ Confirm Synthetic Fixture Reset
+            </h3>
+            <p>
+              This operational mutation resets all simulated hospital fixtures
+              and returns the synthetic environment to the known baseline.
+            </p>
+            <p>
+              <strong>Safeguards:</strong> Server-authorized for{" "}
+              <code>hospital_admin</code> with CSRF protection and audit
+              logging. Strictly disabled outside synthetic mode; there is no
+              reset CLI.
+            </p>
+            <div
+              style={{
+                display: "flex",
+                gap: "12px",
+                justifyContent: "flex-end",
+                marginTop: "20px",
+              }}
+            >
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => setResetModalOpen(false)}
+                disabled={resetting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={handleConsoleReset}
+                disabled={resetting}
+              >
+                {resetting ? "Resetting..." : "Confirm & Reset Fixtures"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <footer className="footer-mini">eBuhay prototype · Demo Build</footer>
     </main>

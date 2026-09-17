@@ -254,9 +254,15 @@ export default function RecipientDashboard({
           {tab === "mymatch" && (
             <div className="dashboard-narrow-840">
               <div className="dashboard-section-gap">
-                <LifecycleStrip status={match.status} />
+                {!platform.authoritative && (
+                  <LifecycleStrip status={match.status} />
+                )}
               </div>
-              <PairCoordinationPanel role="recipient" pairId={match.id} episodeId={recipientEpisodeId} />
+              <PairCoordinationPanel
+                role="recipient"
+                pairId={match.id}
+                episodeId={recipientEpisodeId}
+              />
             </div>
           )}
 
@@ -421,9 +427,13 @@ export default function RecipientDashboard({
               {isAgreementUnlocked ? (
                 <>
                   <div className="dashboard-section-gap">
-                    <LifecycleStrip status={match.status} />
+                    {!platform.authoritative && (
+                      <LifecycleStrip status={match.status} />
+                    )}
                   </div>
-                  <GovernmentAgreement role="recipient" />
+                  {!platform.authoritative && (
+                    <GovernmentAgreement role="recipient" />
+                  )}
                 </>
               ) : (
                 <LockedTabPanel

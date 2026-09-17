@@ -1,5 +1,6 @@
 import "../../styles/components/donor/DonorPledgeForm.css";
 import React from "react";
+import Stepper from "../onboarding/Stepper";
 import { INTAKE_ORGANS } from "../../services/platformApi";
 
 type Pledge = { bloodType: string; organs: string[]; ageConsent: boolean };
@@ -21,6 +22,7 @@ export default function DonorPledgeForm({
 }: Props) {
   return (
     <div className="anim-in">
+      <Stepper active={5} />
       <h3 className="migrated-1f2c3427">Donor Pledge (Demo)</h3>
       <p className="migrated-78d8b799">
         Review a sample pledge for this prototype journey. It is not a legal
@@ -54,13 +56,18 @@ export default function DonorPledgeForm({
               </select>
             </div>
           </div>
-          <div className="migrated-5f18923c">
+          <div
+            className="migrated-5f18923c"
+            role="group"
+            aria-label="Pledged organs"
+          >
             {INTAKE_ORGANS.map((organ) => {
               const active = donorPledge.organs.includes(organ);
               return (
                 <button
                   key={organ}
                   type="button"
+                  aria-pressed={active}
                   onClick={() => {
                     const organs = active
                       ? donorPledge.organs.filter((value) => value !== organ)

@@ -1,5 +1,4 @@
 import "../../styles/components/recipient/RecipientStepComponents.css";
-import React from "react";
 import { SearchIcon } from "../../components/ui/Icons";
 type Params = {
   request_type: string;

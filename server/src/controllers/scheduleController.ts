@@ -1,26 +1,45 @@
-import { generateScheduleSlots } from '../services/eGovAIService.js';
-import type { Request, Response, NextFunction } from 'express';
+import { generateScheduleSlots } from "../services/eGovAIService.js";
+import type { Request, Response, NextFunction } from "express";
 
-async function optimizeSchedule(req: Request, res: Response, next: NextFunction): Promise<void> {
+async function optimizeSchedule(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
   try {
-    const { hospitalAvailability, doctorAvailability, donorAvailability, recipientAvailability, urgencyLevel } = req.body;
+    const {
+      hospitalAvailability,
+      doctorAvailability,
+      donorAvailability,
+      recipientAvailability,
+      urgencyLevel,
+    } = req.body;
 
     // Default demo availability windows if not provided
     const now = new Date();
     const defaultAvail = [
-      { start: new Date(now.getTime() + 1 * 3600 * 1000).toISOString(), end: new Date(now.getTime() + 8 * 3600 * 1000).toISOString() },
-      { start: new Date(now.getTime() + 25 * 3600 * 1000).toISOString(), end: new Date(now.getTime() + 32 * 3600 * 1000).toISOString() }
+      {
+        start: new Date(now.getTime() + 1 * 3600 * 1000).toISOString(),
+        end: new Date(now.getTime() + 8 * 3600 * 1000).toISOString(),
+      },
+      {
+        start: new Date(now.getTime() + 25 * 3600 * 1000).toISOString(),
+        end: new Date(now.getTime() + 32 * 3600 * 1000).toISOString(),
+      },
     ];
 
     const result = await generateScheduleSlots({
-      hospitalAvailability: hospitalAvailability || doctorAvailability || defaultAvail,
+      hospitalAvailability:
+        hospitalAvailability || doctorAvailability || defaultAvail,
       donorAvailability: donorAvailability || defaultAvail,
       recipientAvailability: recipientAvailability || defaultAvail,
-      urgencyLevel: urgencyLevel || 'moderate'
+      urgencyLevel: urgencyLevel || "moderate",
     });
 
     res.json({ success: true, data: result });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 }
 
 export { optimizeSchedule };

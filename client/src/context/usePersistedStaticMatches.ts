@@ -20,16 +20,13 @@ export function usePersistedStaticMatches(
     getInitialStaticMatches(initialFallback),
   );
 
-  const setStaticState = useCallback(
-    (update: StaticMatchUpdate) => {
-      setStaticStateInternal((prev) => {
-        const next = typeof update === "function" ? update(prev) : update;
-        saveStaticMatchesToStorage(next);
-        return next;
-      });
-    },
-    [],
-  );
+  const setStaticState = useCallback((update: StaticMatchUpdate) => {
+    setStaticStateInternal((prev) => {
+      const next = typeof update === "function" ? update(prev) : update;
+      saveStaticMatchesToStorage(next);
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {

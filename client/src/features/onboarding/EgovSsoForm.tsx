@@ -1,14 +1,9 @@
 import "../../styles/components/onboarding/EgovSsoForm.css";
 import React from "react";
-import Stepper from "./Stepper";
-
-const STEPS = [
-  { key: "role", label: "Role" },
-  { key: "auth", label: "Access" },
-  { key: "sso", label: "Invitation" },
-  { key: "face", label: "Face check" },
-  { key: "profile", label: "Profile" },
-];
+import Stepper, {
+  ONBOARDING_SIGNIN_STEPS,
+  ONBOARDING_SIGNUP_STEPS,
+} from "./Stepper";
 
 type Props = {
   pendingRole: string | null;
@@ -18,6 +13,8 @@ type Props = {
   ssoLoading: boolean;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onBack: () => void;
+  authMode?: "signin" | "signup";
+  setAuthMode?: (mode: "signin" | "signup") => void;
 };
 export default function EgovSsoForm({
   pendingRole,
@@ -27,23 +24,54 @@ export default function EgovSsoForm({
   ssoLoading,
   onSubmit,
   onBack,
+  authMode = "signin",
+  setAuthMode,
 }: Props) {
+  const steps =
+    authMode === "signin" ? ONBOARDING_SIGNIN_STEPS : ONBOARDING_SIGNUP_STEPS;
+
   return (
     <div className="anim-in">
-      <Stepper steps={STEPS} active={3} />
-      <div className="migrated-2f55da8d">
+      <Stepper steps={steps} active={3} />
+      <div className="portal-status-bar migrated-2f55da8d">
         <span>
           {pendingRole === "recipient" ? "Recipient" : "Donor"} portal —{" "}
           Invitation access
         </span>
         <button
           type="button"
-          className="btn btn-ghost btn-sm migrated-6dac5f26"
+          className="btn btn-ghost btn-sm portal-change-btn migrated-6dac5f26"
           onClick={onBack}
+          aria-label="Change portal"
         >
-          Back
+          Change
         </button>
       </div>
+
+      {setAuthMode && (
+        <div
+          className="sso-mode-selector"
+          role="group"
+          aria-label="Onboarding mode"
+        >
+          <button
+            type="button"
+            className={`btn btn-xs ${authMode === "signin" ? "btn-primary" : "btn-outline"}`}
+            onClick={() => setAuthMode("signin")}
+            aria-pressed={authMode === "signin"}
+          >
+            Sign In (3-step access)
+          </button>
+          <button
+            type="button"
+            className={`btn btn-xs ${authMode === "signup" ? "btn-primary" : "btn-outline"}`}
+            onClick={() => setAuthMode("signup")}
+            aria-pressed={authMode === "signup"}
+          >
+            Sign Up (5-step walkthrough)
+          </button>
+        </div>
+      )}
 
       <h3 className="migrated-1f2c3427">Invitation access</h3>
       <p className="migrated-78d8b799">
@@ -57,20 +85,60 @@ export default function EgovSsoForm({
           <label className="label" htmlFor="invitation-token">
             Invitation or login token
           </label>
-          <input
-            id="invitation-token"
-            className="input"
-            type="password"
-            autoComplete="one-time-code"
-            autoCapitalize="none"
-            spellCheck={false}
-            placeholder="Paste the token supplied to you"
-            value={invitationToken}
-            onChange={(e) => setInvitationToken(e.target.value)}
-          />
+          <div className="token-input-wrapper">
+            <input
+              id="invitation-token"
+              className="input token-input"
+              type="text"
+              autoComplete="one-time-code"
+              autoCapitalize="none"
+              spellCheck={false}
+              placeholder="Paste the token supplied to you"
+              value={invitationToken}
+              onChange={(e) => setInvitationToken(e.target.value)}
+            />
+            {typeof navigator !== "undefined" && navigator.clipboard && (
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm token-paste-btn"
+                onClick={async () => {
+                  try {
+                    const text = await navigator.clipboard.readText();
+                    if (text) setInvitationToken(text.trim());
+                  } catch {
+                    /* clipboard not accessible */
+                  }
+                }}
+                aria-label="Paste token from clipboard"
+              >
+                Paste
+              </button>
+            )}
+          </div>
+          <p className="token-help-text">
+            Demo tokens typically begin with <code>donor-</code> or{" "}
+            <code>recipient-</code>.{" "}
+            <button
+              type="button"
+              className="token-fill-sample-btn"
+              onClick={() =>
+                setInvitationToken(
+                  pendingRole === "donor"
+                    ? "donor-invitation"
+                    : "recipient-invitation",
+                )
+              }
+            >
+              Fill demo sample
+            </button>
+          </p>
         </div>
 
-        {ssoError && <div className="migrated-13ec00a5">{ssoError}</div>}
+        {ssoError && (
+          <div className="migrated-13ec00a5" role="alert" aria-live="assertive">
+            {ssoError}
+          </div>
+        )}
 
         <div className="migrated-1d233a92">
           <button

@@ -16,7 +16,11 @@ export interface AuthContextValue {
   error: unknown;
   restoreSession: () => Promise<Session | null>;
   redeemInvitation: (token: string, audience?: string) => Promise<Session>;
-  signInStaff: (username: string, password: string, mfaCode: string) => Promise<Session>;
+  signInStaff: (
+    username: string,
+    password: string,
+    mfaCode: string,
+  ) => Promise<Session>;
   signOut: () => Promise<void>;
 }
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -108,7 +112,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setStatus("loading");
       setError(null);
       try {
-        const response = await api.auth.staffSignIn(username, password, mfaCode);
+        const response = await api.auth.staffSignIn(
+          username,
+          password,
+          mfaCode,
+        );
         const nextSession = sessionFromResponse(response);
         if (
           !nextSession ||

@@ -76,13 +76,15 @@ async function signIn(username: unknown, password: unknown, mfaCode?: unknown, n
   finally { client.release(); }
 }
 
-async function provisionMfa(accountId: string, username: string, password: string, executor: PoolClient | ReturnType<typeof getPool> = getPool()) {
+async function provisionMfa(accountId: string, username: string, password: string, executor: PoolClient | ReturnType<typeof getPool> = getPool(), suppliedSecret?: string) {
   if (!validUsername(username)) throw new Error('Username must be 1-320 characters');
   if (!validPassword(password)) throw new Error('Password must be 14-128 characters');
   const target = (await executor.query('SELECT id,role,status,hospital_id,service_scope FROM accounts WHERE id=$1 FOR UPDATE', [accountId])).rows[0] as { id: string; role: string; status: string; hospital_id: string | null; service_scope: string[] } | undefined;
   const allowed = ['coordinator', 'doctor', 'clinical_lead', 'hospital_admin', 'scheduler', 'supervisor', 'blood_approver'];
-  if (!target || target.status !== 'active' || target.role === 'citizen' || !allowed.includes(target.role) || !target.hospital_id || !Array.isArray(target.service_scope) || target.service_scope.length === 0 || target.service_scope.some((s) => !['blood', 'living-kidney', 'deceased-kidney'].includes(s))) throw new Error('Invalid staff account assignment');
-  const secret = createEnrollmentSecret(); const encrypted = encryptSecret(secret); const codes = createRecoveryCodes();
+  if (!target || target.status !== 'active' || target.role === 'citizen' || !allowed.includes(target.role) || !target.hospital_id || !Array.isArray(target.service_scope) || target.service_scope.length === 0 || target.service_scope.some((s) => !['blood', 'kidney'].includes(s))) throw new Error('Invalid staff account assignment');
+  const secret = suppliedSecret || createEnrollmentSecret();
+  if (!/^[A-Z2-7]{16,64}$/.test(secret)) throw new Error('Invalid TOTP seed');
+  const encrypted = encryptSecret(secret); const codes = createRecoveryCodes();
   const h = await hashPassword(password);
   await executor.query('INSERT INTO staff_credentials(account_id,username,username_normalized,password_salt,password_hash,mfa_secret_ciphertext,mfa_secret_iv,mfa_secret_auth_tag,mfa_key_version) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)', [accountId, username, normalize(username), h.salt, h.hash, encrypted.ciphertext, encrypted.iv, encrypted.authTag, encrypted.keyVersion]);
   for (const code of codes) await executor.query('INSERT INTO staff_recovery_codes(account_id,code_hash) VALUES($1,$2)', [accountId, hashRecoveryCode(code)]);

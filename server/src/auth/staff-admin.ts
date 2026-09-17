@@ -4,7 +4,7 @@ import { hashPassword, validPassword, revokeStaff } from './staff.js';
 
 type Db = { query: (sql: string, params?: unknown[]) => Promise<any>; connect?: () => Promise<any> };
 const roles = ['coordinator', 'doctor', 'clinical_lead', 'hospital_admin', 'scheduler', 'supervisor', 'blood_approver'];
-const services = ['blood', 'living-kidney', 'deceased-kidney'];
+const services = ['blood', 'kidney'];
 const live = () => process.env.EBUHAY_MODE === 'controlled-live' || process.env.EBUHAY_MODE === 'production';
 function sanitize(value: unknown): unknown { if (Array.isArray(value)) return value.map(sanitize); if (!value || typeof value !== 'object') return value; return Object.fromEntries(Object.entries(value as Record<string, unknown>).filter(([key]) => !/(password|secret|recovery|token|code)/i.test(key)).map(([key, item]) => [key, sanitize(item)])); }
 async function tx<T>(db: Db, work: (c: Db) => Promise<T>): Promise<T> {
@@ -73,11 +73,3 @@ export async function reassignStaffWork(fromStaffId: string, replacementStaffId:
   });
 }
 export async function staffAuditHistory(accountId: string, actorId: string, db: Db = getPool()) { return tx(db, async (c) => { await authorize(c, actorId, accountId); const r = await c.query('SELECT action,target_account_id,created_at,details FROM security_events WHERE target_account_id=$1 ORDER BY created_at DESC', [accountId]); return r.rows.map((x: any) => ({ action: x.action, targetAccountId: x.target_account_id, createdAt: x.created_at, details: sanitize(x.details) })); }); }
-
-export const resetPassword = resetStaffPassword;
-export const resetRecovery = resetStaffMfa;
-export const recoverAccount = recoverStaffAccount;
-export const disableAccount = disableStaffAccount;
-export const changeAccess = changeStaffAccess;
-export const reassignWork = reassignStaffWork;
-export const listAuditHistory = staffAuditHistory;

@@ -23,7 +23,8 @@
   font-size: 15px;
 }
 .migrated-a607aaa0 {
-  font-size: 9px;
+  font-size: 11px;
+  font-weight: 600;
 }
 .migrated-79418d27 {
   font-size: 12px;
@@ -70,3 +71,11 @@
   text-align: center;
   margin-top: 16px;
 }
+
+@media (max-width: 640px) {
+  .migrated-918d2990,
+  .role-pick-grid {
+    grid-template-columns: 1fr;
+  }
+}
+

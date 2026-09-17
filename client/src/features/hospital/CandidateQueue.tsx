@@ -12,7 +12,15 @@ type Candidate = {
   serviceId?: string;
   coordinationStatus?: string;
 };
+type Reviewer = {
+  id: string;
+  displayName?: string;
+  name?: string;
+  role?: string;
+};
 type Props = {
+  serviceId?: string;
+  /** @deprecated Reviewer IDs are now selected from the scoped reviewer list. */
   reviewerAccountId?: string;
   onSelected?: (value: unknown) => void;
 };
@@ -22,14 +30,15 @@ const field = (value: unknown, key: string): unknown =>
     : undefined;
 
 export default function CandidateQueue({
+  serviceId,
   reviewerAccountId,
   onSelected,
 }: Props) {
   const [rows, setRows] = useState<Candidate[]>([]);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState("");
-  const [reviewerInput, setReviewerInput] = useState(reviewerAccountId || "");
-  const activeReviewer = reviewerInput.trim();
+  const [reviewers, setReviewers] = useState<Reviewer[]>([]);
+  const [activeReviewer, setActiveReviewer] = useState(reviewerAccountId || "");
   const load = () => {
     if (typeof platformApi.candidates !== "function") return;
     platformApi
@@ -49,7 +58,16 @@ export default function CandidateQueue({
   };
   useEffect(() => {
     load();
-  }, []);
+    if (typeof platformApi.reviewers !== "function") return;
+    platformApi
+      .reviewers(serviceId)
+      .then((r) => {
+        const data = field(r, "data");
+        const items = field(data, "items");
+        setReviewers(Array.isArray(items) ? (items as Reviewer[]) : []);
+      })
+      .catch(() => setReviewers([]));
+  }, [serviceId]);
   const select = async (row: Candidate) => {
     setSelected(row.candidateId);
     setError("");
@@ -87,17 +105,24 @@ export default function CandidateQueue({
       </p>
       {error && <p role="alert">{error}</p>}
       <label htmlFor="candidate-reviewer-account">
-        Assigned reviewer account ID
+        Assigned hospital reviewer
       </label>
-      <input
+      <select
         id="candidate-reviewer-account"
-        value={reviewerInput}
-        onChange={(e) => setReviewerInput(e.target.value)}
-        placeholder="Account ID"
-      />
+        value={activeReviewer}
+        onChange={(e) => setActiveReviewer(e.target.value)}
+      >
+        <option value="">Select an eligible reviewer</option>
+        {reviewers.map((reviewer) => (
+          <option key={reviewer.id} value={reviewer.id}>
+            {reviewer.displayName || reviewer.name || reviewer.id}
+            {reviewer.role ? ` · ${reviewer.role}` : ""}
+          </option>
+        ))}
+      </select>
       {!activeReviewer && (
         <p role="status">
-          Enter the assigned reviewer account ID before selecting a candidate.
+          Select an eligible reviewer before selecting a candidate.
         </p>
       )}
       {rows.length === 0 ? (
@@ -106,9 +131,7 @@ export default function CandidateQueue({
         <div>
           {rows.map((row) => (
             <article key={row.candidateId} className="candidate-row">
-              <h3>
-                Recipient episode · Donor episode
-              </h3>
+              <h3>Recipient episode · Donor episode</h3>
               <p>
                 {row.hospitalId} / {row.serviceId}
               </p>

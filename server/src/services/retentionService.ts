@@ -1,5 +1,5 @@
-import crypto from 'node:crypto';
-import { sql } from 'drizzle-orm';
+import crypto from "node:crypto";
+import { sql } from "drizzle-orm";
 
 export interface ActiveHoldCheckResult {
   active: boolean;
@@ -19,7 +19,7 @@ export async function checkActiveLegalHold(
   db: any,
   targetType: string,
   targetId: string,
-  recordClass?: string | null
+  recordClass?: string | null,
 ): Promise<ActiveHoldCheckResult> {
   // 1. Check for global active holds
   const globalHolds = await db.execute(sql`
@@ -64,7 +64,7 @@ export async function checkActiveLegalHold(
   }
 
   // 4. Hierarchical checks: If target is citizen_profile, check if account has a hold
-  if (targetType === 'citizen_profile') {
+  if (targetType === "citizen_profile") {
     const accountHolds = await db.execute(sql`
       SELECT id, reference, target_type AS "targetType", target_id AS "targetId",
              record_class AS "recordClass", reason, placed_by AS "placedBy", placed_at AS "placedAt"
@@ -80,7 +80,7 @@ export async function checkActiveLegalHold(
   }
 
   // 5. If target is episode, check case and account holds
-  if (targetType === 'episode') {
+  if (targetType === "episode") {
     const epResult = await db.execute(sql`
       SELECT e.id, c.id AS "caseId", c.account_id AS "accountId"
       FROM episodes e
@@ -107,7 +107,7 @@ export async function checkActiveLegalHold(
   }
 
   // 6. If target is case, check account holds
-  if (targetType === 'case') {
+  if (targetType === "case") {
     const caseResult = await db.execute(sql`
       SELECT account_id AS "accountId"
       FROM citizen_cases
@@ -134,7 +134,7 @@ export async function checkActiveLegalHold(
 }
 
 function canonicalize(val: any): any {
-  if (val === null || typeof val !== 'object') {
+  if (val === null || typeof val !== "object") {
     return val;
   }
   if (val instanceof Date) {
@@ -170,35 +170,43 @@ export function computeDeletionVerificationHash(receipt: {
     targetId: receipt.targetId,
     proposerAccountId: receipt.proposerAccountId,
     approverAccountId: receipt.approverAccountId,
-    deletedAt: typeof receipt.deletedAt === 'string' ? new Date(receipt.deletedAt).toISOString() : receipt.deletedAt.toISOString(),
+    deletedAt:
+      typeof receipt.deletedAt === "string"
+        ? new Date(receipt.deletedAt).toISOString()
+        : receipt.deletedAt.toISOString(),
     manifest: receipt.manifest,
   });
-  return crypto.createHash('sha256').update(JSON.stringify(canonical), 'utf8').digest('hex');
+  return crypto
+    .createHash("sha256")
+    .update(JSON.stringify(canonical), "utf8")
+    .digest("hex");
 }
 
 export async function executeDefensibleDeletion(
   db: any,
   targetType: string,
   targetId: string,
-  recordClass: string
+  recordClass: string,
 ): Promise<{ manifest: any }> {
   const timestamp = new Date().toISOString();
   let affectedRecords = 0;
   const actionsTaken: string[] = [];
 
-  if (targetType === 'citizen_profile') {
+  if (targetType === "citizen_profile") {
     const delResult = await db.execute(sql`
       DELETE FROM citizen_profiles WHERE account_id = ${targetId}
     `);
     affectedRecords = delResult.rowCount || 0;
-    actionsTaken.push(`Purged encrypted citizen_profile record for account ${targetId}`);
-  } else if (targetType === 'notification') {
+    actionsTaken.push(
+      `Purged encrypted citizen_profile record for account ${targetId}`,
+    );
+  } else if (targetType === "notification") {
     const delResult = await db.execute(sql`
       DELETE FROM notifications WHERE id = ${targetId}
     `);
     affectedRecords = delResult.rowCount || 0;
     actionsTaken.push(`Purged notification record ${targetId}`);
-  } else if (targetType === 'episode') {
+  } else if (targetType === "episode") {
     const updateResult = await db.execute(sql`
       UPDATE episodes
       SET lifecycle = 'withdrawn',
@@ -208,8 +216,10 @@ export async function executeDefensibleDeletion(
       WHERE id = ${targetId}
     `);
     affectedRecords = updateResult.rowCount || 0;
-    actionsTaken.push(`Archived and withdrew episode ${targetId} under defensible deletion schedule`);
-  } else if (targetType === 'account') {
+    actionsTaken.push(
+      `Archived and withdrew episode ${targetId} under defensible deletion schedule`,
+    );
+  } else if (targetType === "account") {
     const updateResult = await db.execute(sql`
       UPDATE accounts
       SET status = 'deleted',
@@ -217,9 +227,13 @@ export async function executeDefensibleDeletion(
       WHERE id = ${targetId}
     `);
     affectedRecords = updateResult.rowCount || 0;
-    actionsTaken.push(`Deactivated account ${targetId} and scrubbed identifying display name`);
+    actionsTaken.push(
+      `Deactivated account ${targetId} and scrubbed identifying display name`,
+    );
   } else {
-    actionsTaken.push(`Executed retention purge on target ${targetType}:${targetId}`);
+    actionsTaken.push(
+      `Executed retention purge on target ${targetType}:${targetId}`,
+    );
   }
 
   const manifest = {
@@ -229,7 +243,7 @@ export async function executeDefensibleDeletion(
     executedAt: timestamp,
     affectedRecords,
     actionsTaken,
-    status: 'completed',
+    status: "completed",
   };
 
   return { manifest };

@@ -117,3 +117,19 @@
 .migrated-b3730661 {
   flex: 2;
 }
+
+.emergency-care-alert {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--danger, #dc2626);
+  background: rgba(220, 38, 38, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+}
+.emergency-care-alert strong {
+  display: block;
+  margin-bottom: 2px;
+  font-weight: 700;
+}
+

@@ -178,9 +178,11 @@ export function MatchProvider({ children }: { children: React.ReactNode }) {
             typeof currentPairResult.value.data === "object"
               ? (currentPairResult.value.data as Record<string, unknown>)
               : null;
-          setPlatform({
-            loading: false,
-            authoritative: true,
+            setPlatform({
+              loading: false,
+              authoritative:
+                servicesResult.status === "fulfilled" &&
+                casesResult.status === "fulfilled",
             services: services as PlatformService[],
             cases: cases as PlatformCase[],
             intakes: Object.fromEntries(
@@ -321,7 +323,7 @@ export function MatchProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      if (!legacyDemoWorkflowEnabled) return;
+      if (!legacyDemoWorkflowEnabled || platform.authoritative) return;
       if (e.key === MATCH_STORAGE_KEY) {
         const updated = parseStorageEventValue(e.newValue);
         setMatch(updated);
@@ -329,11 +331,11 @@ export function MatchProvider({ children }: { children: React.ReactNode }) {
     };
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
-  }, [legacyDemoWorkflowEnabled]);
+  }, [legacyDemoWorkflowEnabled, platform.authoritative]);
 
   const advanceStatus = useCallback(
     (newStatus: string) => {
-      if (!legacyDemoWorkflowEnabled) return;
+      if (!legacyDemoWorkflowEnabled || platform.authoritative) return;
       setMatch((prev) => {
         const updated = { ...prev, status: newStatus };
         if (!platform.authoritative) saveMatchToStorage(updated);
@@ -391,7 +393,7 @@ export function MatchProvider({ children }: { children: React.ReactNode }) {
       location?: string;
       proposedBy: string;
     }) => {
-      if (!legacyDemoWorkflowEnabled) return;
+      if (!legacyDemoWorkflowEnabled || platform.authoritative) return;
       setMatch((prev) => {
         const isDonor = proposedBy === "donor" || proposedBy === "Donor";
         const nextStatus = isDonor
@@ -417,7 +419,7 @@ export function MatchProvider({ children }: { children: React.ReactNode }) {
       time = "10:00 AM",
       location = "Philippine General Hospital (PGH)",
     ) => {
-      if (!legacyDemoWorkflowEnabled) return;
+      if (!legacyDemoWorkflowEnabled || platform.authoritative) return;
       setMatch((prev) => {
         const updated = {
           ...prev,
@@ -437,7 +439,7 @@ export function MatchProvider({ children }: { children: React.ReactNode }) {
 
   const anchorToBlockchain = useCallback(
     async (customAnchorData: unknown = null) => {
-      if (!legacyDemoWorkflowEnabled) return null;
+      if (!legacyDemoWorkflowEnabled || platform.authoritative) return null;
       if (customAnchorData) {
         setMatch((prev) => {
           const updated = { ...prev, blockchainAnchor: customAnchorData };
@@ -486,7 +488,7 @@ export function MatchProvider({ children }: { children: React.ReactNode }) {
 
   const signAgreement = useCallback(
     (role: "donor" | "recipient") => {
-      if (!legacyDemoWorkflowEnabled) return;
+      if (!legacyDemoWorkflowEnabled || platform.authoritative) return;
       setMatch((prev) => {
         const donorSigned = role === "donor" ? true : prev.donorSigned;
         const recipientSigned =
@@ -518,7 +520,7 @@ export function MatchProvider({ children }: { children: React.ReactNode }) {
   // Backward compatibility setter for legacy setConsentSigned(true) calls from existing forms
   const setConsentSigned = useCallback(
     (val: boolean) => {
-      if (!legacyDemoWorkflowEnabled) return;
+      if (!legacyDemoWorkflowEnabled || platform.authoritative) return;
       if (val) {
         signAgreement("donor");
         signAgreement("recipient");
@@ -538,7 +540,7 @@ export function MatchProvider({ children }: { children: React.ReactNode }) {
   );
 
   const resetMatch = useCallback(() => {
-    if (!legacyDemoWorkflowEnabled) return;
+    if (!legacyDemoWorkflowEnabled || platform.authoritative) return;
     setMatch(INITIAL_DEMO_MATCH);
     clearMatchFromStorage();
     clearStaticMatchesFromStorage();
@@ -550,7 +552,7 @@ export function MatchProvider({ children }: { children: React.ReactNode }) {
 
   const updateMatchFromProfile = useCallback(
     (role: "donor" | "recipient", profileFields: ProfileFields) => {
-      if (!legacyDemoWorkflowEnabled) return { success: false };
+      if (!legacyDemoWorkflowEnabled || platform.authoritative) return { success: false };
       const result = calculateUpdatedMatchFromProfile(
         match,
         role,

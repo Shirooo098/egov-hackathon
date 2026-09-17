@@ -14,9 +14,11 @@ export default function StaffSignIn() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!username.trim() || !password || !mfaCode.trim()) {
-      setError(!mfaCode.trim()
-        ? "Enter your one-time code or recovery code."
-        : "Enter your staff username and password.");
+      setError(
+        !mfaCode.trim()
+          ? "Enter your one-time code or recovery code."
+          : "Enter your staff username and password.",
+      );
       return;
     }
     setError("");
@@ -28,7 +30,9 @@ export default function StaffSignIn() {
     } catch {
       setPassword("");
       setMfaCode("");
-      setError("We could not sign you in. Check your credentials and try again.");
+      setError(
+        "We could not sign you in. Check your credentials and try again.",
+      );
     }
   };
 
@@ -85,7 +89,9 @@ export default function StaffSignIn() {
                 autoComplete="current-password"
                 required
               />
-              <label htmlFor="staff-mfa-code">One-time code or recovery code</label>
+              <label htmlFor="staff-mfa-code">
+                One-time code or recovery code
+              </label>
               <input
                 id="staff-mfa-code"
                 value={mfaCode}

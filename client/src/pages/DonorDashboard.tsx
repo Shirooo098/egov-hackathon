@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import ChatBox from "../features/match/ChatBox";
 import GovernmentAgreement from "../features/match/GovernmentAgreement";
 import LockedTabPanel from "../components/ui/LockedTabPanel";
@@ -252,9 +252,15 @@ export default function DonorDashboard({
           {/* MY MATCH TAB (Automated & Interactive Handshake, Issue #006 & #008) */}
           {tab === "mymatch" && (
             <div className="dashboard-narrow-840">
-              <PairCoordinationPanel role="donor" pairId={match.id} episodeId={donorEpisodeId} />
+              <PairCoordinationPanel
+                role="donor"
+                pairId={match.id}
+                episodeId={donorEpisodeId}
+              />
               <div className="dashboard-section-gap">
-                <LifecycleStrip status={match.status} />
+                {!platform.authoritative && (
+                  <LifecycleStrip status={match.status} />
+                )}
               </div>
             </div>
           )}
@@ -265,9 +271,13 @@ export default function DonorDashboard({
               {isAgreementUnlocked ? (
                 <>
                   <div className="dashboard-section-gap">
-                    <LifecycleStrip status={match.status} />
+                    {!platform.authoritative && (
+                      <LifecycleStrip status={match.status} />
+                    )}
                   </div>
-                  <GovernmentAgreement role="donor" />
+                  {!platform.authoritative && (
+                    <GovernmentAgreement role="donor" />
+                  )}
                 </>
               ) : (
                 <LockedTabPanel

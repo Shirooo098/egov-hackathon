@@ -1,5 +1,3 @@
-import React from 'react';
-
 // Small SVG lock icon. Replaces the 🔒 emoji used in tab labels.
 // Default size 13 — keeps the same visual weight as the previous emoji.
 export default function LockGlyph({ size = 13, color = 'currentColor', title = 'Locked' }) {

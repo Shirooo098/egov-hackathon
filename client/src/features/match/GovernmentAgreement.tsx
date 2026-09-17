@@ -1,5 +1,5 @@
 import "../../styles/components/match/GovernmentAgreement.css";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useMatch } from "../../context/MatchContext";
 import SignatureUploader from "./SignatureUploader";
 

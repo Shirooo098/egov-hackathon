@@ -22,7 +22,12 @@ type Pair = {
   milestones?: Array<{ label?: string; status?: string; nextStep?: string }>;
   nextStep?: string;
 };
-type Episode = { id?: string; participation?: string; version?: number; lifecycle?: string };
+type Episode = {
+  id?: string;
+  participation?: string;
+  version?: number;
+  lifecycle?: string;
+};
 type PairMessage = {
   id?: string;
   senderRole?: string;
@@ -35,7 +40,13 @@ const alias = (role: string | undefined) =>
   ] || "Anonymous participant";
 const actionKey = (kind: string, id: string) => `${kind}:${id}`;
 const safeCoordinationText = (value?: string) => {
-  if (!value || /clinical|medical|diagnos|clearance|blood|organ|phone|email|name|contact|reason/i.test(value)) return "";
+  if (
+    !value ||
+    /clinical|medical|diagnos|clearance|blood|organ|phone|email|name|contact|reason/i.test(
+      value,
+    )
+  )
+    return "";
   return value;
 };
 type PairProps = {
@@ -63,7 +74,9 @@ export default function PairCoordinationPanel({
   const [error, setError] = useState("");
   const [body, setBody] = useState("");
   const [messages, setMessages] = useState<PairMessage[]>([]);
-  const [teamConversation, setTeamConversation] = useState<{ id?: string } | null>(null);
+  const [teamConversation, setTeamConversation] = useState<{
+    id?: string;
+  } | null>(null);
   const [teamMessages, setTeamMessages] = useState<PairMessage[]>([]);
   const [teamBody, setTeamBody] = useState("");
   const [authoritativePair, setAuthoritativePair] = useState<Pair | null>(
@@ -72,11 +85,24 @@ export default function PairCoordinationPanel({
   const activePairId: string = String(
     reviewer ? pairId || "" : authoritativePair?.id || "",
   );
-  const episodeId = episodeIdProp || authoritativePair?.episodeId || pair?.episodeId;
-  const participation = episode?.participation || pair?.participationState || pair?.participation || "active";
+  const episodeId =
+    episodeIdProp || authoritativePair?.episodeId || pair?.episodeId;
+  const participation =
+    episode?.participation ||
+    pair?.participationState ||
+    pair?.participation ||
+    "active";
   useEffect(() => {
     if (!episodeId || typeof platformApi.episode !== "function") return;
-    platformApi.episode(episodeId).then((r) => setEpisode((r as { data?: Episode }).data || (r as Episode))).catch((e) => setError((e as { message?: string }).message || "Case status is unavailable. You can retry."));
+    platformApi
+      .episode(episodeId)
+      .then((r) => setEpisode((r as { data?: Episode }).data || (r as Episode)))
+      .catch((e) =>
+        setError(
+          (e as { message?: string }).message ||
+            "Case status is unavailable. You can retry.",
+        ),
+      );
   }, [episodeId]);
   useEffect(() => {
     if (reviewer || typeof platformApi.currentPair !== "function") return;
@@ -128,18 +154,58 @@ export default function PairCoordinationPanel({
   }, [activePairId, pair?.state]);
   useEffect(() => {
     if (reviewer || typeof platformApi.conversations !== "function") return;
-    platformApi.conversations().then((r) => {
-      const raw = r as { data?: unknown };
-      const items = (Array.isArray(raw.data) ? raw.data : (raw.data as { items?: unknown[] } | undefined)?.items || []) as Array<{ id?: string; episodeId?: string; type?: string; kind?: string }>;
-      setTeamConversation(items.find((item) => item.episodeId === episodeId && /team|coordination/i.test(`${item.type || ""} ${item.kind || ""}`)) || items.find((item) => item.episodeId === episodeId) || null);
-    }).catch((e) => setError((e as { message?: string }).message || "Assigned team conversation is unavailable. You can retry."));
+    platformApi
+      .conversations()
+      .then((r) => {
+        const raw = r as { data?: unknown };
+        const items = (
+          Array.isArray(raw.data)
+            ? raw.data
+            : (raw.data as { items?: unknown[] } | undefined)?.items || []
+        ) as Array<{
+          id?: string;
+          episodeId?: string;
+          type?: string;
+          kind?: string;
+        }>;
+        setTeamConversation(
+          items.find(
+            (item) =>
+              item.episodeId === episodeId &&
+              /team|coordination/i.test(
+                `${item.type || ""} ${item.kind || ""}`,
+              ),
+          ) ||
+            items.find((item) => item.episodeId === episodeId) ||
+            null,
+        );
+      })
+      .catch((e) =>
+        setError(
+          (e as { message?: string }).message ||
+            "Assigned team conversation is unavailable. You can retry.",
+        ),
+      );
   }, [reviewer, episodeId]);
   useEffect(() => {
     if (!teamConversation?.id) return;
-    platformApi.messages(teamConversation.id).then((r) => {
-      const raw = r as { data?: unknown };
-      setTeamMessages((Array.isArray(raw.data) ? raw.data : (raw.data as { items?: PairMessage[] } | undefined)?.items || []) as PairMessage[]);
-    }).catch((e) => setError((e as { message?: string }).message || "Assigned team messages are unavailable. You can retry."));
+    platformApi
+      .messages(teamConversation.id)
+      .then((r) => {
+        const raw = r as { data?: unknown };
+        setTeamMessages(
+          (Array.isArray(raw.data)
+            ? raw.data
+            : (raw.data as { items?: PairMessage[] } | undefined)?.items ||
+              []) as PairMessage[],
+        );
+      })
+      .catch((e) =>
+        setError(
+          (e as { message?: string }).message ||
+            "Assigned team messages are unavailable. You can retry.",
+        ),
+      );
   }, [teamConversation?.id]);
   const respond = async (response: string) => {
     if (!pair) return;
@@ -178,25 +244,49 @@ export default function PairCoordinationPanel({
     e.preventDefault();
     if (!teamConversation?.id || !teamBody.trim()) return;
     try {
-      const r = await platformApi.sendMessage(teamConversation.id, teamBody.trim());
-      setTeamMessages((items) => [...items, (r as { data?: PairMessage }).data || (r as PairMessage)]);
+      const r = await platformApi.sendMessage(
+        teamConversation.id,
+        teamBody.trim(),
+      );
+      setTeamMessages((items) => [
+        ...items,
+        (r as { data?: PairMessage }).data || (r as PairMessage),
+      ]);
       setTeamBody("");
-    } catch (e) { setError((e as { message?: string }).message || "Message could not be sent. You can retry."); }
+    } catch (e) {
+      setError(
+        (e as { message?: string }).message ||
+          "Message could not be sent. You can retry.",
+      );
+    }
   };
-  const changeParticipation = async (action: "pause" | "resume" | "withdraw") => {
+  const changeParticipation = async (
+    action: "pause" | "resume" | "withdraw",
+  ) => {
     if (!episodeId) return;
     try {
-      const r = await platformApi.episodeAction(episodeId, action, Number(episode?.version || 0));
+      const r = await platformApi.episodeAction(
+        episodeId,
+        action,
+        Number(episode?.version || 0),
+      );
       // Episode participation is a separate overlay; never merge its response into pair state.
       void r;
       const refreshed = await platformApi.episode(episodeId);
-      setEpisode((refreshed as { data?: Episode }).data || (refreshed as Episode));
+      setEpisode(
+        (refreshed as { data?: Episode }).data || (refreshed as Episode),
+      );
       if (activePairId && typeof platformApi.pair === "function") {
         const pairResult = await platformApi.pair(activePairId);
         setPair((pairResult as { data?: Pair }).data || (pairResult as Pair));
       }
     } catch (e) {
-      setError((e as { status?: number }).status === 409 ? "This case changed in another session. Refresh and try again." : (e as { message?: string }).message || `Could not ${action} this case. You can retry.`);
+      setError(
+        (e as { status?: number }).status === 409
+          ? "This case changed in another session. Refresh and try again."
+          : (e as { message?: string }).message ||
+              `Could not ${action} this case. You can retry.`,
+      );
     }
   };
   const [proposals, setProposals] = useState<Proposal[]>([]);
@@ -270,24 +360,122 @@ export default function PairCoordinationPanel({
       aria-labelledby="pair-coordination-heading"
     >
       <h2 id="pair-coordination-heading">Coordination update</h2>
-      <p>Synthetic-only, unranked coordination support. This does not establish compatibility, eligibility, or clinical clearance.</p>
-      {!activePairId && <p role="status">No active pair is currently available.</p>}
+      <p>
+        Synthetic-only, unranked coordination support. This does not establish
+        compatibility, eligibility, or clinical clearance.
+      </p>
+      {!activePairId && (
+        <p role="status">No active pair is currently available.</p>
+      )}
       {error && <p role="alert">{error}</p>}
       {!pair && !error && (
         <p role="status">No active pair is currently available.</p>
       )}
-      {episodeId && !reviewer && <div aria-label="Participation controls" data-episode-version={episode?.version}><h3>Participation</h3><p>Pause stops new invitations and progression while commitments remain visible.</p>{participation === "withdrawn" ? <p role="status">Withdrawn. Progression controls are disabled.</p> : <><button type="button" className="btn btn-ghost btn-sm" onClick={() => changeParticipation(participation === "paused" ? "resume" : "pause")}>{participation === "paused" ? "Resume case" : "Pause case"}</button><button type="button" className="btn btn-ghost btn-sm" onClick={() => { if (window.confirm("Withdraw from this case? This cannot be undone here.")) void changeParticipation("withdraw"); }}>Withdraw</button></>}</div>}
-      {!reviewer && teamConversation?.id && <div aria-label="Assigned coordination team conversation"><h3>Assigned coordination team</h3><p>Message your assigned coordination team. No direct Doctor or counterpart chat is provided here.</p>{teamMessages.map((m, i) => <p key={m.id || i}><strong>{m.senderRole === "citizen" ? "You" : "Coordination team"}</strong>: {m.body}</p>)}<form onSubmit={sendTeamMessage}><label htmlFor="team-message">Message assigned coordination team</label><textarea id="team-message" maxLength={2000} value={teamBody} onChange={(e) => setTeamBody(e.target.value)} /><button className="btn btn-primary btn-sm" type="submit">Send to team</button></form></div>}
-      {!reviewer && participation === "withdrawn" && <p role="status">Your coordination team has been notified. They will follow up. Any hospital booking remains unresolved until the hospital confirms its status; eBuhay has not claimed cancellation.</p>}
+      {episodeId && !reviewer && (
+        <div
+          aria-label="Participation controls"
+          data-episode-version={episode?.version}
+        >
+          <h3>Participation</h3>
+          <p>
+            Pause stops new invitations and progression while commitments remain
+            visible.
+          </p>
+          {participation === "withdrawn" ? (
+            <p role="status">Withdrawn. Progression controls are disabled.</p>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() =>
+                  changeParticipation(
+                    participation === "paused" ? "resume" : "pause",
+                  )
+                }
+              >
+                {participation === "paused" ? "Resume case" : "Pause case"}
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      "Withdraw from this case? This cannot be undone here.",
+                    )
+                  )
+                    void changeParticipation("withdraw");
+                }}
+              >
+                Withdraw
+              </button>
+            </>
+          )}
+        </div>
+      )}
+      {!reviewer && teamConversation?.id && (
+        <div aria-label="Assigned coordination team conversation">
+          <h3>Assigned coordination team</h3>
+          <p>
+            Message your assigned coordination team. No direct Doctor or
+            counterpart chat is provided here.
+          </p>
+          {teamMessages.map((m, i) => (
+            <p key={m.id || i}>
+              <strong>
+                {m.senderRole === "citizen" ? "You" : "Coordination team"}
+              </strong>
+              : {m.body}
+            </p>
+          ))}
+          <form onSubmit={sendTeamMessage}>
+            <label htmlFor="team-message">
+              Message assigned coordination team
+            </label>
+            <textarea
+              id="team-message"
+              maxLength={2000}
+              value={teamBody}
+              onChange={(e) => setTeamBody(e.target.value)}
+            />
+            <button className="btn btn-primary btn-sm" type="submit">
+              Send to team
+            </button>
+          </form>
+        </div>
+      )}
+      {!reviewer && participation === "withdrawn" && (
+        <p role="status">
+          Your coordination team has been notified. They will follow up. Any
+          hospital booking remains unresolved until the hospital confirms its
+          status; eBuhay has not claimed cancellation.
+        </p>
+      )}
       {pair && (
         <>
           {Array.isArray(pair.milestones) && pair.milestones.length > 0 && (
             <div aria-label="Shared coordination milestones">
               <h3>Shared coordination milestones</h3>
-              {pair.milestones.map((milestone, index) => <p key={index}><strong>{safeCoordinationText(milestone.label) || "Coordination update"}</strong>{safeCoordinationText(milestone.status) ? ` · ${safeCoordinationText(milestone.status)}` : ""}{safeCoordinationText(milestone.nextStep) ? ` · Next: ${safeCoordinationText(milestone.nextStep)}` : ""}</p>)}
+              {pair.milestones.map((milestone, index) => (
+                <p key={index}>
+                  <strong>
+                    {safeCoordinationText(milestone.label) ||
+                      "Coordination update"}
+                  </strong>
+                  {safeCoordinationText(milestone.status)
+                    ? ` · ${safeCoordinationText(milestone.status)}`
+                    : ""}
+                  {safeCoordinationText(milestone.nextStep)
+                    ? ` · Next: ${safeCoordinationText(milestone.nextStep)}`
+                    : ""}
+                </p>
+              ))}
             </div>
           )}
-          {safeCoordinationText(pair.nextStep) && <p>Next coordination step: {safeCoordinationText(pair.nextStep)}</p>}
+          {safeCoordinationText(pair.nextStep) && (
+            <p>Next coordination step: {safeCoordinationText(pair.nextStep)}</p>
+          )}
           <p role="status">
             Status:{" "}
             {pair.state === "awaiting_consent"

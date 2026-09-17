@@ -1,5 +1,3 @@
-import React from "react";
-
 export function UserIcon({ size = 15 }) {
   return (
     <svg

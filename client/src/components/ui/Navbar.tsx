@@ -1,4 +1,3 @@
-import React from "react";
 import { useLocation, Link } from "react-router-dom";
 import VerifiedPill from "./VerifiedPill";
 
@@ -34,10 +33,9 @@ export default function Navbar({
   };
 
   return (
-    <nav className="navbar">
-      {/* rainbow stripe rendered via CSS ::before */}
-      <div className="container navbar-inner">
-        {/* Brand */}
+    <header className="landing-header navbar">
+      <nav className="landing-header-inner navbar-inner" aria-label="Main navigation">
+        {/* Brand matching PublicLanding */}
         <Link
           to={isHospitalRoute ? "/hospital-dashboard" : "/"}
           aria-current={
@@ -46,25 +44,18 @@ export default function Navbar({
               ? "page"
               : undefined
           }
-          className="navbar-brand-link"
+          className="landing-brand navbar-brand-link"
+          aria-label={isHospitalRoute ? "Hospital dashboard" : "eBuhay home"}
         >
-          <div className="brand navbar-brand">
-            <div
-              className={`brand-mark${isHospitalRoute ? " hospital-brand-mark" : ""}`}
-            >
-              {isHospitalRoute ? "🏥" : "e"}
-            </div>
-            <div>
-              <div className="brand-name">
-                {isHospitalRoute ? "Philippine General Hospital" : "eBuhay"}
-              </div>
-              <div className="brand-sub">
-                {isHospitalRoute
-                  ? "Hospital Administrator Demo Review"
-                  : "eBuhay Prototype"}
-              </div>
-            </div>
-          </div>
+          {isHospitalRoute ? (
+            <>
+              Philippine General Hospital <span>Demo</span>
+            </>
+          ) : (
+            <>
+              eBuhay <span>Prototype</span>
+            </>
+          )}
         </Link>
 
         {/* Conditional Navigation / Actions */}
@@ -96,9 +87,10 @@ export default function Navbar({
             {!currentRole && showStaffEntry && (
               <Link
                 to="/staff-sign-in"
-                className="btn btn-ghost btn-sm nav-staff-entry"
+                className="landing-staff-link nav-staff-entry"
               >
-                Staff sign in
+                <b>SIMULATED</b> Staff demo
+                <span className="landing-sr-only">Simulated staff demo</span>
               </Link>
             )}
 
@@ -138,8 +130,8 @@ export default function Navbar({
             )}
           </div>
         )}
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 }
 

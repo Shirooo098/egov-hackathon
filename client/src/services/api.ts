@@ -11,13 +11,25 @@ interface ApiError extends Error {
 }
 type JsonObject = Record<string, unknown>;
 
+function getCsrfToken(): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const match = document.cookie.match(/(^|;\s*)ebuhay_csrf=([^;]+)/);
+  return match ? decodeURIComponent(match[2]) : undefined;
+}
+
 async function request(
   path: string,
   options: RequestOptions = {},
 ): Promise<JsonObject> {
+  const csrf = getCsrfToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string>),
+  };
+  if (csrf) headers["x-csrf-token"] = csrf;
   const res = await fetch(`${API_BASE}${path}`, {
     credentials: "include",
-    headers: { "Content-Type": "application/json", ...options.headers },
+    headers,
     ...options,
   });
   let data: JsonObject = {};
@@ -55,41 +67,20 @@ export const api = {
         body: JSON.stringify({ username, password, mfaCode }),
       }),
   },
-  // Health
-  health: () => request("/health"),
-
-  // eVerify
-  verify: (body: JsonObject) =>
-    request("/auth/verify", { method: "POST", body: JSON.stringify(body) }),
-  verifyQR: (qr_value: string) =>
-    request("/auth/verify/qr", {
-      method: "POST",
-      body: JSON.stringify({ qr_value }),
-    }),
-
-  // Matchmaking
-  findMatches: (params: Record<string, string>) =>
-    request("/matches/find?" + new URLSearchParams(params)),
-  getCompatibility: (blood_type: string) =>
-    request(`/matches/compatibility/${blood_type}`),
-  getMatrix: () => request("/matches/matrix"),
-
-  // AI Scheduler
-  optimizeSchedule: (body: JsonObject) =>
-    request("/schedule/ai-optimize", {
-      method: "POST",
-      body: JSON.stringify(body),
-    }),
-
+  // Operations & Admin Controls
+  operations: {
+    reset: (confirmation = "RESET_SYNTHETIC_DATA") =>
+      request("/v1/operations/reset", {
+        method: "POST",
+        body: JSON.stringify({ confirm: true, confirmation }),
+      }),
+  },
   // Blockchain
   anchorConsent: (body: JsonObject) =>
     request("/blockchain/anchor", {
       method: "POST",
       body: JSON.stringify(body),
     }),
-  getReceipt: (txHash: string) => request(`/blockchain/receipt/${txHash}`),
-  getChainInfo: () => request("/blockchain/chain-info"),
-
   // eGovAI Laws
   askLaws: (prompt: string, category = "PH") =>
     request("/egovai/laws", {

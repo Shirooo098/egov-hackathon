@@ -1,4 +1,3 @@
-import React from 'react';
 import LockGlyph from './LockGlyph';
 
 // Shared "feature currently restricted" panel.

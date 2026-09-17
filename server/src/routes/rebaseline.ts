@@ -157,7 +157,7 @@ router.post('/hospital/candidates/:id/select', requireSession, requireSameOrigin
       JOIN accounts a ON a.id=pair_reviewer_grants.account_id
       JOIN services s ON s.id=pair_reviewer_grants.service_id
       WHERE pair_reviewer_grants.account_id=$1 AND pair_reviewer_grants.hospital_id=$2 AND pair_reviewer_grants.service_id=$3 AND pair_reviewer_grants.revoked_at IS NULL
-        AND a.status='active' AND a.role IN ('coordinator','clinical_lead','hospital_admin') AND a.hospital_id=$2 AND s.code=ANY(a.service_scope::text[])`,
+        AND a.status='active' AND a.role IN ('doctor','clinical_lead') AND a.hospital_id=$2 AND s.code=ANY(a.service_scope::text[])`,
     [reviewerAccountId, candidate.hospital_id, candidate.service_id]);
     if (!reviewerGrant.rowCount) return rollbackFail(client, res, 403, 'forbidden', 'Reviewer is not permitted');
     const repeated = await client.query(`SELECT id,state,version,reviewer_account_id AS "reviewerAccountId",

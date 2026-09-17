@@ -21,8 +21,10 @@ import { useToast } from "./context/ToastContext";
 import { useMatch } from "./context/MatchContext";
 import { AuthProvider, sessionRole, useAuth } from "./context/AuthContext";
 import { MatchProvider } from "./context/MatchContext";
-import { getRuntimeMode, isMixedWorkflowEnabled } from "./services/runtimeMode";
-import { RoleSelectCard } from "./features/onboarding/OnboardingStepCards";
+import {
+  RoleSelectCard,
+  AuthChoiceCard,
+} from "./features/onboarding/OnboardingStepCards";
 import StaffSignIn from "./features/hospital/StaffSignIn";
 import "./styles/global.css";
 import "./styles/shared-ui.css";
@@ -57,17 +59,6 @@ type DonorPledge = {
   organs: string[];
   ageConsent: boolean;
 };
-
-function WorkflowUnavailable() {
-  return (
-    <main id="main-content" tabIndex={-1} className="page-content">
-      <div role="status" aria-live="polite">
-        This workflow is unavailable because this environment is not configured
-        for it. No live approval or clinical decision is implied.
-      </div>
-    </main>
-  );
-}
 
 // Onboarding Steps Enum
 const STEPS = {
@@ -145,13 +136,12 @@ function AppContent() {
   const toast = useToast();
   const { consentSigned, setConsentSigned, saveIntake } = useMatch();
   const { session, restored, redeemInvitation, signOut } = useAuth()!;
-  const runtimeMode = getRuntimeMode();
-  const mixedWorkflowEnabled = isMixedWorkflowEnabled(runtimeMode);
 
   // Which portal the person is heading into, chosen before auth
   const [pendingRole, setPendingRole] = useState<PortalRole | null>(null);
   const [role, setRole] = useState<PortalRole | null>(null);
   const [step, setStep] = useState(STEPS.ROLE_SELECT);
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
 
   const onboardingRole = location.pathname.match(
     /^\/onboarding\/([^/]+)$/,
@@ -160,9 +150,16 @@ function AppContent() {
   useEffect(() => {
     if (onboardingRole === "recipient" || onboardingRole === "donor") {
       setPendingRole(onboardingRole);
+      const searchParams = new URLSearchParams(location.search);
+      const modeParam = searchParams.get("mode");
+      if (modeParam === "signup") {
+        setAuthMode("signup");
+      } else if (modeParam === "signin") {
+        setAuthMode("signin");
+      }
       setStep(STEPS.SSO_PENDING);
     }
-  }, [onboardingRole]);
+  }, [onboardingRole, location.search]);
   useLayoutEffect(() => {
     if (onboardingRole && step !== STEPS.ROLE_SELECT) {
       document.getElementById("onboarding-heading")?.focus();
@@ -273,7 +270,7 @@ function AppContent() {
   // ---------- STEP 1: Role selection ----------
   const choosePortal = (portalId: PortalRole) => {
     setPendingRole(portalId);
-    setStep(STEPS.SSO_PENDING);
+    setStep(STEPS.AUTH_CHOICE);
     navigate(`/onboarding/${portalId}`);
   };
 
@@ -299,7 +296,11 @@ function AppContent() {
       toast.success("Secure invited-tester session started.", {
         title: "Access granted",
       });
-      if (pendingRole) finishRole(pendingRole);
+      if (authMode === "signup") {
+        setStep(STEPS.LIVENESS);
+      } else if (pendingRole) {
+        finishRole(pendingRole);
+      }
     } catch (error) {
       const message =
         typeof errorField(error, "message") === "string"
@@ -354,7 +355,13 @@ function AppContent() {
         });
 
         setTimeout(() => {
-          if (pendingRole) finishRole(pendingRole);
+          if (authMode === "signup") {
+            if (pendingRole === "recipient") setStep(STEPS.RECIPIENT_HEALTH);
+            else if (pendingRole === "donor") setStep(STEPS.DONOR_PLEDGE);
+            else if (pendingRole) finishRole(pendingRole);
+          } else {
+            if (pendingRole) finishRole(pendingRole);
+          }
         }, 1200);
       } else {
         setLivenessStage(4);
@@ -488,38 +495,26 @@ function AppContent() {
     <>
       <Routes>
         <Route path="/staff-sign-in" element={<StaffSignIn />} />
-        <Route
-          path="/hospital-dashboard"
-          element={mixedWorkflowEnabled ? <HospitalRoute /> : <WorkflowUnavailable />}
-        />
+        <Route path="/hospital-dashboard" element={<HospitalRoute />} />
         <Route
           path="/recipient"
-          element={mixedWorkflowEnabled
-            ? citizenDashboard(
-                "recipient",
-                <RecipientDashboard onboardingHealth={recipientHealth} />,
-              )
-            : <WorkflowUnavailable />}
+          element={citizenDashboard(
+            "recipient",
+            <RecipientDashboard onboardingHealth={recipientHealth} />,
+          )}
         />
         <Route
           path="/donor"
-          element={mixedWorkflowEnabled
-            ? citizenDashboard(
-                "donor",
-                <DonorDashboard onboardingPledge={donorPledge} />,
-              )
-            : <WorkflowUnavailable />}
+          element={citizenDashboard(
+            "donor",
+            <DonorDashboard onboardingPledge={donorPledge} />,
+          )}
         />
-        <Route
-          path="/"
-          element={runtimeMode === "unavailable" ? <WorkflowUnavailable /> : <PublicLanding role={role} />}
-        />
+        <Route path="/" element={<PublicLanding role={role} />} />
         <Route
           path="/onboarding/:role"
           element={
-            !mixedWorkflowEnabled ? (
-              <WorkflowUnavailable />
-            ) : onboardingRole !== "recipient" && onboardingRole !== "donor" ? (
+            onboardingRole !== "recipient" && onboardingRole !== "donor" ? (
               <Navigate to="/" replace />
             ) : (
               <>
@@ -561,6 +556,21 @@ function AppContent() {
                       )}
 
                       {/* STEP 2: AUTH CHOICE */}
+                      {step === STEPS.AUTH_CHOICE && (
+                        <AuthChoiceCard
+                          pendingRole={pendingRole}
+                          chooseAuthMode={(mode) => {
+                            setAuthMode(mode);
+                            setStep(STEPS.SSO_PENDING);
+                          }}
+                          onBack={() => {
+                            navigate("/");
+                            setPendingRole(null);
+                            setStep(STEPS.ROLE_SELECT);
+                          }}
+                        />
+                      )}
+
                       {/* STEP 3: SSO EXCHANGE */}
                       {step === STEPS.SSO_PENDING && (
                         <Suspense
@@ -577,10 +587,16 @@ function AppContent() {
                             ssoError={ssoError}
                             ssoLoading={ssoLoading}
                             onSubmit={handleInvitationSubmit}
+                            authMode={authMode}
+                            setAuthMode={setAuthMode}
                             onBack={() => {
-                              navigate("/");
-                              setPendingRole(null);
-                              setStep(STEPS.ROLE_SELECT);
+                              if (authMode === "signup") {
+                                setStep(STEPS.AUTH_CHOICE);
+                              } else {
+                                navigate("/");
+                                setPendingRole(null);
+                                setStep(STEPS.ROLE_SELECT);
+                              }
                             }}
                           />
                         </Suspense>
@@ -599,7 +615,7 @@ function AppContent() {
                             livenessStage={livenessStage}
                             setLivenessStage={setLivenessStage}
                             livenessMessage={livenessMessage}
-                            onBack={() => goBackTo(STEPS.AUTH_CHOICE)}
+                            onBack={() => setStep(STEPS.SSO_PENDING)}
                           />
                         </Suspense>
                       )}
@@ -617,7 +633,7 @@ function AppContent() {
                             recipientHealth={recipientHealth}
                             setRecipientHealth={setRecipientHealth}
                             onSubmit={handleRecipientHealthSubmit}
-                            onBack={() => goBackTo(STEPS.AUTH_CHOICE)}
+                            onBack={() => setStep(STEPS.LIVENESS)}
                           />
                         </Suspense>
                       )}
@@ -640,11 +656,7 @@ function AppContent() {
                               }))
                             }
                             onSubmit={handleDonorPledgeSubmit}
-                            onBack={() => {
-                              navigate("/");
-                              setPendingRole(null);
-                              setStep(STEPS.ROLE_SELECT);
-                            }}
+                            onBack={() => setStep(STEPS.LIVENESS)}
                             savingPledge={anchoringPledge}
                             pledgeError={pledgeError}
                           />

@@ -1,5 +1,5 @@
 import "../../styles/components/match/CalendarScheduleView.css";
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   ChevronLeftIcon,
   ChevronRightIcon,

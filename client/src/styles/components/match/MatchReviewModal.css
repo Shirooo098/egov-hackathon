@@ -134,7 +134,7 @@
 .match-review-modal__summary {
   padding: 14px;
   background: var(--primary-10);
-  border: 1px solid rgba(0, 56, 168, 0.12);
+  border: 1px solid rgba(20, 82, 240, 0.12);
   border-radius: var(--r-md);
   font-size: 12px;
   line-height: 1.6;

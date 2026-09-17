@@ -5,6 +5,9 @@ import { getDb } from '../db/client.js';
 import { requireSession, requireRole } from '../middleware/auth.js';
 import { requireSameOrigin } from '../middleware/origin.js';
 import type { RuntimeConfig } from '../runtime/config.js';
+import { isLiveMode } from '../runtime/config.js';
+import { getPool } from '../db/pool.js';
+import { resetSyntheticData } from '../db/seeds/synthetic.js';
 import {
   isWorkflowPaused,
   pauseWorkflow,
@@ -75,7 +78,7 @@ export function requireWorkflowActive(scope: string) {
   };
 }
 
-export function createOperationsRouter(_config: RuntimeConfig) {
+export function createOperationsRouter(config: RuntimeConfig) {
   const router = express.Router();
   const db = () => getDb();
 
@@ -234,6 +237,39 @@ export function createOperationsRouter(_config: RuntimeConfig) {
       const hospitalId = typeof req.query.hospitalId === 'string' ? req.query.hospitalId : req.account?.hospitalId || null;
       const pauseCheck = await isWorkflowPaused(db(), String(req.params.scope), hospitalId);
       return res.json({ success: true, data: pauseCheck });
+    } catch (err) {
+      return next(err);
+    }
+  });
+
+  // POST /reset - hospital_admin console reset for synthetic fixtures
+  router.post('/reset', requireSession, requireSameOrigin, requireRole('hospital_admin'), async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (isLiveMode(config.mode) || config.mode !== 'synthetic' || process.env.SYNTHETIC_MODE !== 'true') {
+        return res.status(403).json({
+          success: false,
+          error: 'reset_disabled',
+          message: 'Console reset is strictly prohibited outside synthetic mode',
+        });
+      }
+
+      const { confirm, confirmation } = req.body || {};
+      if (confirm !== true && confirmation !== 'RESET_SYNTHETIC_DATA') {
+        return res.status(400).json({
+          success: false,
+          error: 'confirmation_required',
+          message: 'Explicit confirmation is required to reset synthetic fixtures',
+        });
+      }
+
+      const pool = getPool();
+      const result = await resetSyntheticData(pool, req.account!.id);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Synthetic fixtures reset successfully',
+        data: result,
+      });
     } catch (err) {
       return next(err);
     }

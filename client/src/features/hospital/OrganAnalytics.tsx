@@ -1,5 +1,4 @@
 import "../../styles/components/hospital/OrganAnalytics.css";
-import React from "react";
 
 const ORGAN_DATA = [
   { name: "Kidney", pledges: 92, matchRate: 85, color: "var(--primary)" },
