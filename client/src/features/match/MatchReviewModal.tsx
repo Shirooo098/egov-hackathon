@@ -49,7 +49,10 @@ export default function MatchReviewModal({
   const closeRef = React.useRef<HTMLButtonElement>(null);
   React.useEffect(() => {
     if (!match) return undefined;
-    const previousFocus = document.activeElement;
+    const previousFocus =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     closeRef.current?.focus();
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -80,7 +83,7 @@ export default function MatchReviewModal({
     dialog?.addEventListener("keydown", handleKeyDown);
     return () => {
       dialog?.removeEventListener("keydown", handleKeyDown);
-      previousFocus?.focus?.();
+      previousFocus?.focus();
     };
   }, [match, onClose]);
   if (!match) return null;
