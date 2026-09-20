@@ -236,7 +236,7 @@ async function seedBaseline(c: PoolClient, generation = "base") {
   await c.query(
     `INSERT INTO pair_consents(pair_id,episode_id,actor_account_id,consent_version,consent_hash,action,idempotency_key)
     VALUES ($1,$2,$3,'v1.0','synthetic-consent-donor','grant',$4),($1,$5,$6,'v1.0','synthetic-consent-recipient','grant',$7)
-    ON CONFLICT(pair_id,episode_id,consent_version) DO NOTHING`,
+    ON CONFLICT (actor_account_id, idempotency_key) DO NOTHING`,
     [
       pair,
       donorEpisode,
@@ -295,7 +295,8 @@ async function seedBaseline(c: PoolClient, generation = "base") {
   ).rows[0].id;
   await c.query(
     `INSERT INTO pair_consents(pair_id,episode_id,actor_account_id,consent_hash,idempotency_key)
-    VALUES ($1,$2,$3,'synthetic-liver-donor',$4),($1,$5,$6,'synthetic-liver-recipient',$7)`,
+    VALUES ($1,$2,$3,'synthetic-liver-donor',$4),($1,$5,$6,'synthetic-liver-recipient',$7)
+    ON CONFLICT (actor_account_id, idempotency_key) DO NOTHING`,
     [
       liverPair,
       liverDonorEpisode,
@@ -414,7 +415,7 @@ async function seedBaseline(c: PoolClient, generation = "base") {
     ON CONFLICT(hospital_id,slot_reference) DO UPDATE SET service_id=EXCLUDED.service_id,starts_at=EXCLUDED.starts_at,ends_at=EXCLUDED.ends_at,status='published',updated_at=now()`,
     [hospital.id, service.kidney],
   );
-  for (const status of ["draft", "approved", "published", "closed"]) {
+  for (const status of ['draft', 'approved', 'published', 'closed']) {
     const blood = (
       await c.query(
         `INSERT INTO blood_requests(hospital_id,service_id,public_text,status,creator_id,approver_id,approval_reference,approved_at,published_at,closed_at,source) VALUES ($1,$2,$3,$4,$5,$5,CASE WHEN $4 IN ('approved','published','closed') THEN $3 ELSE NULL END,CASE WHEN $4 IN ('approved','published','closed') THEN now() ELSE NULL END,CASE WHEN $4 IN ('published','closed') THEN now() ELSE NULL END,CASE WHEN $4='closed' THEN now() ELSE NULL END,'synthetic-seed') RETURNING id`,
@@ -482,6 +483,25 @@ export async function seedSyntheticData(
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
+    const hosp = (
+      await client.query(
+        "SELECT id FROM hospitals WHERE namespace='ebuhay-simulated-hospital' AND synthetic=true",
+      )
+    ).rows[0];
+    if (hosp) {
+      await client.query(
+        "UPDATE episodes e SET lifecycle='retired',participation='withdrawn',updated_at=now() FROM citizen_cases c WHERE c.id=e.case_id AND c.hospital_id=$1 AND e.lifecycle NOT IN ('retired','withdrawn')",
+        [hosp.id],
+      );
+      await client.query(
+        "UPDATE citizen_cases SET status='retired',updated_at=now() WHERE hospital_id=$1 AND status='active'",
+        [hosp.id],
+      );
+      await client.query(
+        "UPDATE bookings SET status='cancelled',updated_at=now() WHERE request_id IN (SELECT ar.id FROM appointment_requests ar JOIN episodes e ON e.id=ar.episode_id JOIN citizen_cases c ON c.id=e.case_id WHERE c.hospital_id=$1) AND status='confirmed'",
+        [hosp.id],
+      );
+    }
     const count =
       (
         await client.query(

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { platformApi } from "../../services/platformApi";
 
 type Proposal = {
@@ -34,6 +34,27 @@ type PairMessage = {
   role?: string;
   body?: string;
 };
+type Consent = {
+  id?: string;
+  version?: string;
+  consentVersion?: string;
+  purpose?: string;
+  scope?: string;
+  action?: string;
+  anchorStatus?: string;
+  txHash?: string;
+  blockHash?: string;
+  blockNumber?: number;
+  createdAt?: string;
+};
+type ConsentRequirement = { id: "coordination" | "information_sharing"; text: string };
+type ConsentEnvelope = {
+  requirements?: { consentVersion?: string; scope?: string; purposes?: ConsentRequirement[] };
+  current?: Partial<Record<"coordination" | "information_sharing", string>>;
+  events?: Consent[];
+  counterpart?: Partial<Record<"coordination" | "information_sharing", string>>;
+  pairVersion?: number;
+};
 const alias = (role: string | undefined) =>
   ({ donor: "Anonymous donor", recipient: "Anonymous recipient" })[
     role as "donor" | "recipient"
@@ -49,6 +70,8 @@ const safeCoordinationText = (value?: string) => {
     return "";
   return value;
 };
+const newestEvents = (events: Consent[] = []) =>
+  [...events].sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
 type PairProps = {
   role?: string;
   pairId?: string;
@@ -79,6 +102,14 @@ export default function PairCoordinationPanel({
   } | null>(null);
   const [teamMessages, setTeamMessages] = useState<PairMessage[]>([]);
   const [teamBody, setTeamBody] = useState("");
+  const [episodeConsent, setEpisodeConsent] = useState<ConsentEnvelope>({});
+  const [pairConsent, setPairConsent] = useState<ConsentEnvelope>({});
+  const [consentConfirm, setConsentConfirm] = useState<Record<string, boolean>>({});
+  const [consentBusy, setConsentBusy] = useState("");
+  const consentKeys = useRef<Record<string, string>>({});
+  const viewGeneration = useRef(0);
+  const episodeConsentGeneration = useRef(0);
+  const pairConsentGeneration = useRef(0);
   const [authoritativePair, setAuthoritativePair] = useState<Pair | null>(
     currentPairProp || null,
   );
@@ -87,6 +118,20 @@ export default function PairCoordinationPanel({
   );
   const episodeId =
     episodeIdProp || authoritativePair?.episodeId || pair?.episodeId;
+  const consentContext = (target: "case" | "pair") => {
+    const metadata = target === "case" ? episodeConsent : pairConsent;
+    const targetId = target === "case" ? episodeId : activePairId;
+    return `${target}:${targetId || ""}:${metadata.requirements?.scope || ""}:${metadata.requirements?.consentVersion || ""}:${metadata.pairVersion || pair?.version || ""}`;
+  };
+  const consentKey = (target: "case" | "pair", purpose: string, action: string) =>
+    `${consentContext(target)}:${purpose}:${action}`;
+  useEffect(() => {
+    viewGeneration.current += 1;
+    setConsentConfirm({});
+    consentKeys.current = {};
+    episodeConsentGeneration.current += 1;
+    pairConsentGeneration.current += 1;
+  }, [episodeId, activePairId, episodeConsent.requirements?.scope, episodeConsent.requirements?.consentVersion, pairConsent.requirements?.scope, pairConsent.requirements?.consentVersion, pairConsent.pairVersion]);
   const participation =
     episode?.participation ||
     pair?.participationState ||
@@ -94,9 +139,13 @@ export default function PairCoordinationPanel({
     "active";
   useEffect(() => {
     if (!episodeId || typeof platformApi.episode !== "function") return;
+    const generation = viewGeneration.current;
     platformApi
       .episode(episodeId)
-      .then((r) => setEpisode((r as { data?: Episode }).data || (r as Episode)))
+      .then((r) => {
+        if (generation === viewGeneration.current)
+          setEpisode((r as { data?: Episode }).data || (r as Episode));
+      })
       .catch((e) =>
         setError(
           (e as { message?: string }).message ||
@@ -104,6 +153,15 @@ export default function PairCoordinationPanel({
         ),
       );
   }, [episodeId]);
+  useEffect(() => {
+    if (!episodeId || typeof platformApi.episodeConsents !== "function") return;
+    let cancelled = false;
+    const generation = ++episodeConsentGeneration.current;
+    platformApi.episodeConsents(episodeId)
+      .then((r) => { if (!cancelled && generation === episodeConsentGeneration.current) setEpisodeConsent((r as { data?: ConsentEnvelope }).data || {}); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [episodeId, episode?.version]);
   useEffect(() => {
     if (reviewer || typeof platformApi.currentPair !== "function") return;
     platformApi
@@ -125,9 +183,12 @@ export default function PairCoordinationPanel({
   }, [currentPairProp, reviewer]);
   useEffect(() => {
     if (!activePairId || typeof platformApi.pair !== "function") return;
+    const generation = viewGeneration.current;
     platformApi
       .pair(String(activePairId))
-      .then((r) => setPair(r.data || r.pair || r))
+      .then((r) => {
+        if (generation === viewGeneration.current) setPair(r.data || r.pair || r);
+      })
       .catch((e) =>
         setError(
           (e as { message?: string }).message ||
@@ -135,6 +196,37 @@ export default function PairCoordinationPanel({
         ),
       );
   }, [activePairId, currentPairProp?.version]);
+  useEffect(() => {
+    if (!activePairId || typeof platformApi.pairConsents !== "function") return;
+    let cancelled = false;
+    const generation = ++pairConsentGeneration.current;
+    platformApi.pairConsents(activePairId)
+      .then((r) => { if (!cancelled && generation === pairConsentGeneration.current) setPairConsent((r as { data?: ConsentEnvelope }).data || {}); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [activePairId, pair?.version]);
+  useEffect(() => {
+    let cancelled = false;
+    let running = false;
+    const refreshProofs = async () => {
+      if (running || cancelled) return;
+      running = true;
+      try {
+        if (episodeId) {
+          const generation = ++episodeConsentGeneration.current;
+          const result = await platformApi.episodeConsents(episodeId);
+          if (!cancelled && generation === episodeConsentGeneration.current) setEpisodeConsent((result as { data?: ConsentEnvelope }).data || {});
+        }
+        if (activePairId) {
+          const generation = ++pairConsentGeneration.current;
+          const result = await platformApi.pairConsents(activePairId);
+          if (!cancelled && generation === pairConsentGeneration.current) setPairConsent((result as { data?: ConsentEnvelope }).data || {});
+        }
+      } finally { running = false; }
+    };
+    const timer = window.setInterval(() => void refreshProofs(), 15000);
+    return () => { cancelled = true; window.clearInterval(timer); };
+  }, [episodeId, activePairId]);
   useEffect(() => {
     if (
       !activePairId ||
@@ -223,6 +315,56 @@ export default function PairCoordinationPanel({
           : (e as { message?: string }).message ||
               "Your response could not be recorded.",
       );
+    }
+  };
+  const consentAction = async (
+    target: "case" | "pair",
+    purpose: "coordination" | "information_sharing",
+    action: "grant" | "withdraw",
+  ) => {
+    const targetId = target === "case" ? episodeId : activePairId;
+    const requestKey = consentKey(target, purpose, action);
+    if (!targetId || reviewer || (action === "grant" && !consentConfirm[requestKey])) return;
+    const key = requestKey;
+    const generation = viewGeneration.current;
+    const consentGeneration = target === "case" ? episodeConsentGeneration : pairConsentGeneration;
+    const mutationGeneration = ++consentGeneration.current;
+    consentKeys.current[key] ||= crypto.randomUUID();
+    setConsentBusy(key);
+    try {
+      const body = {
+        action,
+        consentVersion: (target === "case" ? episodeConsent : pairConsent).requirements?.consentVersion,
+        purpose,
+        scope: (target === "case" ? episodeConsent : pairConsent).requirements?.scope,
+        evidence: "authenticated-explicit-confirmation",
+        idempotencyKey: consentKeys.current[key],
+        ...(target === "pair" ? { targetVersion: pairConsent.pairVersion ?? pair?.version } : {}),
+      };
+      if (target === "case") {
+        await platformApi.submitEpisodeConsent(targetId, body);
+        const refreshGeneration = ++consentGeneration.current;
+        const refreshed = await platformApi.episodeConsents(targetId);
+        if (generation === viewGeneration.current && refreshGeneration === consentGeneration.current && mutationGeneration < refreshGeneration)
+          setEpisodeConsent((refreshed as { data?: ConsentEnvelope }).data || {});
+      } else {
+        await platformApi.submitPairConsent(targetId, body);
+        const refreshGeneration = ++consentGeneration.current;
+        const [refreshed, pairResult] = await Promise.all([
+          platformApi.pairConsents(targetId),
+          platformApi.pair(targetId),
+        ]);
+        if (generation === viewGeneration.current && refreshGeneration === consentGeneration.current && mutationGeneration < refreshGeneration) {
+          setPairConsent((refreshed as { data?: ConsentEnvelope }).data || {});
+          setPair((pairResult as { data?: Pair }).data || (pairResult as Pair));
+        }
+      }
+      delete consentKeys.current[key];
+      setConsentConfirm((current) => ({ ...current, [requestKey]: false }));
+    } catch (e) {
+      setError((e as { message?: string }).message || "Consent could not be recorded. You can retry.");
+    } finally {
+      setConsentBusy("");
     }
   };
   const send = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -377,6 +519,35 @@ export default function PairCoordinationPanel({
           data-episode-version={episode?.version}
         >
           <h3>Participation</h3>
+          <p>
+            These are separate coordination permissions for this case. They do
+            not grant medical consent or clinical clearance and do not cover a
+            future pair automatically.
+          </p>
+          {(episodeConsent.requirements?.purposes || []).map(({ id: purpose, text }) => {
+            const current = episodeConsent.current?.[purpose] === "granted";
+            const label = text;
+            const latest = episodeConsent.events?.find((event) => event.purpose === purpose);
+            const grantKey = consentKey("case", purpose, "grant");
+            return (
+              <div key={purpose} className="consent-control">
+                <strong>{label}</strong>
+                <p>{current ? "Granted for this case." : `${episodeConsent.current?.[purpose] || "required"}.`} {latest && `Latest proof: ${latest.anchorStatus || "pending"}.`}</p>
+                {latest?.txHash && <small>Staging transaction: {latest.txHash} · Recorded {latest.createdAt || "time unavailable"}</small>}
+                {!!episodeConsent.events?.filter((event) => event.purpose === purpose).length && <ol aria-label={`${label} consent history`}>{newestEvents(episodeConsent.events.filter((event) => event.purpose === purpose)).map((event) => <li key={event.id || `${event.createdAt}-${event.action}-${event.purpose}`}>{event.action || "action"} · {event.purpose || purpose} · {event.createdAt || "time unavailable"} · proof {event.anchorStatus || "pending"}{event.txHash ? ` · tx ${event.txHash}` : ""}</li>)}</ol>}
+                <label>
+                  <input type="checkbox" checked={Boolean(consentConfirm[grantKey])} onChange={(e) => setConsentConfirm((state) => ({ ...state, [grantKey]: e.target.checked }))} />
+                  I explicitly confirm this purpose for this synthetic case.
+                </label>{" "}
+                <button type="button" className="btn btn-primary btn-sm" disabled={current || consentBusy === grantKey} onClick={() => void consentAction("case", purpose, "grant")}>
+                  Grant {label}
+                </button>{" "}
+                <button type="button" className="btn btn-ghost btn-sm" disabled={!current || consentBusy === consentKey("case", purpose, "withdraw")} onClick={() => { if (window.confirm(`Withdraw ${label} for this case? Dependent coordination and sharing will stop.`)) void consentAction("case", purpose, "withdraw"); }}>
+                  Withdraw
+                </button>
+              </div>
+            );
+          })}
           <p>
             Pause stops new invitations and progression while commitments remain
             visible.
@@ -545,11 +716,38 @@ export default function PairCoordinationPanel({
               assigned hospital reviewer.
             </p>
           )}
-          {pair.state === "awaiting_consent" && (
-            <p>
-              This is a coordination state, not medical consent, clinical
-              clearance, or a confirmed booking.
-            </p>
+          {pairConsent.requirements?.purposes && pairConsent.requirements.purposes.length > 0 && !reviewer && (
+            <div>
+              <p>
+                These are pair-specific coordination permissions, separate from
+                medical consent, clinical clearance, or a confirmed booking.
+              </p>
+              {pairConsent.requirements.purposes.map(({ id: purpose, text }) => {
+                const current = pairConsent.current?.[purpose] === "granted";
+                const grantKey = consentKey("pair", purpose, "grant");
+                const latest = pairConsent.events?.find((event) => event.purpose === purpose);
+                return (
+                  <div className="consent-control" key={purpose}>
+                    <strong>{text}</strong>
+                    <p>{current ? "Granted for this pair." : `${pairConsent.current?.[purpose] || "required"}.`} {latest && `Latest proof: ${latest.anchorStatus || "pending"}.`}</p>
+                    {latest?.txHash && <small>Staging transaction: {latest.txHash} · Recorded {latest.createdAt || "time unavailable"}</small>}
+                    {!!pairConsent.events?.filter((event) => event.purpose === purpose).length && <ol aria-label={`${text} consent history`}>{newestEvents(pairConsent.events.filter((event) => event.purpose === purpose)).map((event) => <li key={event.id || `${event.createdAt}-${event.action}-${event.purpose}`}>{event.action || "action"} · {event.purpose || purpose} · {event.createdAt || "time unavailable"} · proof {event.anchorStatus || "pending"}{event.txHash ? ` · tx ${event.txHash}` : ""}</li>)}</ol>}
+                    <label>
+                      <input type="checkbox" checked={Boolean(consentConfirm[grantKey])} onChange={(e) => setConsentConfirm((state) => ({ ...state, [grantKey]: e.target.checked }))} />
+                      I explicitly confirm this purpose for this synthetic pair.
+                    </label>{" "}
+                    <button type="button" className="btn btn-primary btn-sm" disabled={current || consentBusy === grantKey} onClick={() => void consentAction("pair", purpose, "grant")}>
+                      Grant pair permission
+                    </button>{" "}
+                    {current && (
+                      <button type="button" className="btn btn-ghost btn-sm" disabled={consentBusy === consentKey("pair", purpose, "withdraw")} onClick={() => { if (window.confirm(`Withdraw ${text} for this pair? Dependent sharing will stop.`)) void consentAction("pair", purpose, "withdraw"); }}>
+                        Withdraw pair permission
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
           {["awaiting_schedule", "awaiting_consent"].includes(
             pair.state || "",

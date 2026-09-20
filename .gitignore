@@ -9,6 +9,7 @@ build/
 out/
 .next/
 .nuxt/
+.scratch/
 
 # Debug and log files
 logs

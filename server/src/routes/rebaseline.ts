@@ -6,6 +6,8 @@ import { requireSession, requireRole } from '../middleware/auth.js';
 import { requireSameOrigin } from '../middleware/origin.js';
 import type { Account } from '../auth/service.js';
 import { sanitizeMessageBody } from './platform.js';
+import { consentCommitment } from '../services/EgovChainService.js';
+import { CONSENT_PURPOSES, CONSENT_VERSION, latestConsentState, pairConsentScope } from '../services/ConsentPolicy.js';
 
 const router = express.Router();
 const ZERO_UUID = '00000000-0000-0000-0000-000000000000';
@@ -283,7 +285,7 @@ router.post('/pairs/:id/respond', requireSession, requireSameOrigin, async (req,
           ON CONFLICT (pair_id) WHERE pair_id IS NOT NULL DO NOTHING`, [pair.id]);
       }
     }
-    const updated = await client.query(`UPDATE pair_proposals SET state=$2,status=$2,version=version+1,updated_at=now()
+    const updated = await client.query(`UPDATE pair_proposals SET state=$2,status=$2,version=version+1,consent_scope_version=CASE WHEN $2='awaiting_consent' THEN version+1 ELSE consent_scope_version END,updated_at=now()
       WHERE id=$1 RETURNING id,state,version`, [pair.id, state]);
     await notifyPairParticipants(client, pair.id);
     await client.query('COMMIT');
@@ -342,7 +344,7 @@ router.post('/pairs/:id/messages', requireSession, requireSameOrigin, async (req
     const idempotencyKey = req.body?.idempotencyKey;
     if (!body || !isIdempotencyKey(idempotencyKey) || !req.body || Object.keys(req.body).some((key) => !['body', 'idempotencyKey'].includes(key))) return fail(res, 422, 'validation_error', 'Message cannot be stored');
     await client.query('BEGIN');
-    const access = await client.query(`SELECT co.id AS conversation_id,
+    const access = await client.query(`SELECT co.id AS conversation_id, p.id AS pair_id, p.consent_scope_version, re.id AS recipient_episode_id, de.id AS donor_episode_id, rc.hospital_id AS recipient_hospital_id, dc.hospital_id AS donor_hospital_id,
         CASE WHEN rc.account_id=$2 THEN 'recipient' WHEN dc.account_id=$2 THEN 'donor' END AS sender_role
       FROM pair_proposals p
       JOIN episodes re ON re.id=p.own_episode_id JOIN citizen_cases rc ON rc.id=re.case_id
@@ -353,6 +355,11 @@ router.post('/pairs/:id/messages', requireSession, requireSameOrigin, async (req
         AND co.closed_at IS NULL AND (rc.account_id=$2 OR dc.account_id=$2)
       FOR UPDATE OF p,re,de,co`, [req.params.id, requireAccount(req).id]);
     if (!access.rowCount) return rollbackFail(client, res, 403, 'forbidden', 'Chat unavailable');
+    const pairRow = access.rows[0];
+    const pairScope = pairConsentScope(String(pairRow.pair_id), pairRow.consent_scope_version, String(pairRow.recipient_episode_id), pairRow.recipient_hospital_id, String(pairRow.donor_episode_id), pairRow.donor_hospital_id);
+    const grants = await client.query(`SELECT count(*)::int AS count FROM (SELECT DISTINCT ON (episode_id,purpose) episode_id,purpose,action FROM pair_consents WHERE pair_id=$1 AND consent_version='v1.0' AND scope=$2 AND purpose='information_sharing' ORDER BY episode_id,purpose,created_at DESC,id DESC) latest WHERE action='grant'`, [pairRow.pair_id, pairScope]);
+    const caseGrants = await client.query(`SELECT count(*)::int AS count FROM (SELECT DISTINCT ON (episode_id,purpose) episode_id,purpose,action FROM episode_consents WHERE episode_id IN ($1,$2) AND consent_version='v1.0' AND purpose='information_sharing' AND scope IN (('case:'||$1::text||':hospital:'||COALESCE($3::text,'unassigned')||':v1.0'),('case:'||$2::text||':hospital:'||COALESCE($4::text,'unassigned')||':v1.0')) ORDER BY episode_id,purpose,created_at DESC,id DESC) latest WHERE action='grant'`, [pairRow.recipient_episode_id, pairRow.donor_episode_id, pairRow.recipient_hospital_id, pairRow.donor_hospital_id]);
+    if ((grants.rows[0]?.count ?? 0) !== 2 || (caseGrants.rows[0]?.count ?? 0) !== 2) return rollbackFail(client, res, 403, 'forbidden', 'Pair information-sharing consent is no longer current');
     const responseHash = crypto.createHash('sha256').update(JSON.stringify({ body })).digest();
     const prior = await client.query('SELECT id,body,created_at AS "createdAt",request_hash FROM messages WHERE sender_account_id=$1 AND idempotency_key=$2 FOR UPDATE', [requireAccount(req).id, idempotencyKey]);
     if (prior.rowCount) {
@@ -546,7 +553,7 @@ router.post('/pairs/:id/schedule-proposals/:proposalId/respond', requireSession,
 
 router.get('/pairs/:id/consent', requireSession, async (req, res, next) => {
   try {
-    const access = await getPool().query(`SELECT p.id,
+    const access = await getPool().query(`SELECT p.id, p.state, p.version, p.consent_scope_version, p.own_episode_id, p.counterpart_episode_id, rc.account_id AS recipient_account_id, dc.account_id AS donor_account_id, rc.hospital_id AS recipient_hospital_id, dc.hospital_id AS donor_hospital_id,
         (rc.account_id=$2 OR dc.account_id=$2) AS is_participant,
         (p.reviewer_account_id=$2 OR EXISTS (SELECT 1 FROM pair_reviewer_grants g WHERE g.account_id=$2 AND g.hospital_id=rc.hospital_id AND g.service_id=rc.service_id AND g.revoked_at IS NULL)) AS is_reviewer
       FROM pair_proposals p
@@ -555,8 +562,22 @@ router.get('/pairs/:id/consent', requireSession, async (req, res, next) => {
       WHERE p.id=$1`, [req.params.id, requireAccount(req).id]);
     if (!access.rowCount) return fail(res, 404, 'not_found', 'Pair not found');
     if (!access.rows[0].is_participant && !access.rows[0].is_reviewer) return fail(res, 403, 'forbidden', 'Access denied');
-    const consents = await getPool().query(`SELECT id, consent_version AS "consentVersion", action, created_at AS "createdAt" FROM pair_consents WHERE pair_id=$1 ORDER BY created_at`, [req.params.id]);
-    return ok(res, { items: consents.rows });
+    const consents = await getPool().query(`SELECT id, episode_id AS "episodeId", consent_version AS version, purpose, scope, commitment, action, anchor_status AS "anchorStatus", anchor_tx_hash AS "txHash", anchor_block_hash AS "blockHash", anchor_block_number AS "blockNumber", created_at AS "createdAt" FROM pair_consents WHERE pair_id=$1 ORDER BY created_at DESC,id DESC`, [req.params.id]);
+    const pairScope = pairConsentScope(String(req.params.id), access.rows[0].consent_scope_version, String(access.rows[0].own_episode_id), access.rows[0].recipient_hospital_id, String(access.rows[0].counterpart_episode_id), access.rows[0].donor_hospital_id);
+    const byEpisode = new Map<string, string>();
+    for (const item of consents.rows) if (item.scope === pairScope && !byEpisode.has(`${item.episodeId}:${item.purpose}`)) byEpisode.set(`${item.episodeId}:${item.purpose}`, item.action === 'grant' ? 'granted' : 'withdrawn');
+    const ownEpisode = access.rows[0].recipient_account_id === requireAccount(req).id
+      ? access.rows[0].own_episode_id : access.rows[0].donor_account_id === requireAccount(req).id
+        ? access.rows[0].counterpart_episode_id : null;
+    const current = { coordination: 'required', information_sharing: 'required' } as Record<string, string>;
+    for (const purpose of Object.keys(current)) if (ownEpisode && byEpisode.has(`${ownEpisode}:${purpose}`)) current[purpose] = byEpisode.get(`${ownEpisode}:${purpose}`)!;
+    const counterpart = { coordination: 'pending', information_sharing: 'pending' } as Record<string, string>;
+    for (const purpose of Object.keys(counterpart)) {
+      const item = consents.rows.find((row) => row.scope === pairScope && row.purpose === purpose && row.episodeId !== ownEpisode);
+      if (item) counterpart[purpose] = item.action === 'grant' ? 'granted' : 'withdrawn';
+    }
+    const events = ownEpisode ? consents.rows.filter((item) => item.episodeId === ownEpisode) : [];
+    return ok(res, { requirements: { consentVersion: CONSENT_VERSION, scope: pairScope, purposes: CONSENT_PURPOSES.map((id) => ({ id, text: id === 'coordination' ? 'Allow coordination for this proposed pair.' : 'Allow coordination information sharing for this proposed pair.' })) }, current: latestConsentState(consents.rows.filter((item) => item.episodeId === ownEpisode), pairScope), events, counterpart, pairVersion: access.rows[0].version, pairState: access.rows[0].state });
   } catch (error) { return next(error); }
 });
 
@@ -564,14 +585,14 @@ router.post('/pairs/:id/consent', requireSession, requireSameOrigin, async (req,
   let client;
   try {
     client = await getPool().connect();
-    const { action = 'grant', consentVersion = 'v1.0', idempotencyKey, targetVersion } = req.body || {};
-    if (!['grant', 'decline'].includes(action) || !isIdempotencyKey(idempotencyKey) || !Number.isInteger(targetVersion)) {
+    const { action = 'grant', consentVersion = 'v1.0', purpose = 'coordination', scope = 'pair', evidence = '', idempotencyKey, targetVersion } = req.body || {};
+    if (!['grant', 'withdraw', 'decline'].includes(action) || !['coordination', 'information_sharing'].includes(purpose) || consentVersion !== CONSENT_VERSION || typeof scope !== 'string' || typeof evidence !== 'string' || evidence.length > 2000 || !isIdempotencyKey(idempotencyKey) || !Number.isInteger(targetVersion)) {
       return fail(res, 422, 'validation_error', 'Invalid consent request');
     }
     await client.query('BEGIN');
-    const access = await client.query(`SELECT p.id, p.state, p.version,
+    const access = await client.query(`SELECT p.id, p.state, p.version, p.consent_scope_version,
         re.id AS recipient_episode_id, de.id AS donor_episode_id,
-        rc.account_id AS recipient_account_id, dc.account_id AS donor_account_id,
+        rc.account_id AS recipient_account_id, dc.account_id AS donor_account_id, rc.hospital_id AS recipient_hospital_id, dc.hospital_id AS donor_hospital_id,
         re.lifecycle AS recipient_lifecycle, de.lifecycle AS donor_lifecycle,
         re.participation AS recipient_participation, de.participation AS donor_participation
       FROM pair_proposals p
@@ -585,56 +606,75 @@ router.post('/pairs/:id/consent', requireSession, requireSameOrigin, async (req,
       ? row.recipient_episode_id
       : row.donor_account_id === requireAccount(req).id ? row.donor_episode_id : null;
     if (!episodeId) return rollbackFail(client, res, 403, 'forbidden', 'Participant access required');
-    if (row.recipient_lifecycle !== 'active' || row.donor_lifecycle !== 'active' || row.recipient_participation !== 'active' || row.donor_participation !== 'active') {
-      return rollbackFail(client, res, 403, 'forbidden', 'Participation is not active');
-    }
-    const prior = await client.query('SELECT action, idempotency_key FROM pair_consents WHERE pair_id=$1 AND episode_id=$2 AND consent_version=$3', [row.id, episodeId, consentVersion]);
+    const prior = await client.query('SELECT id, action, idempotency_key, consent_version AS "version", purpose, scope, evidence, commitment, anchor_status AS "anchorStatus" FROM pair_consents WHERE pair_id=$1 AND episode_id=$2 AND idempotency_key=$3', [row.id, episodeId, idempotencyKey]);
     if (prior.rowCount) {
       if (prior.rows[0].idempotency_key === idempotencyKey) {
+        if (prior.rows[0].action !== (action === 'decline' ? 'withdraw' : action) || prior.rows[0].purpose !== purpose || prior.rows[0].scope !== scope || prior.rows[0].evidence !== evidence || prior.rows[0].version !== consentVersion) return rollbackFail(client, res, 409, 'conflict', 'Idempotency key payload mismatch');
         await client.query('COMMIT');
         return ok(res, { id: row.id, state: row.state, version: row.version, idempotent: true });
       }
       return rollbackFail(client, res, 409, 'conflict', 'Consent was already submitted');
     }
-    if (row.state !== 'awaiting_consent') {
+    const expectedScope = pairConsentScope(String(row.id), row.consent_scope_version, String(row.recipient_episode_id), row.recipient_hospital_id, String(row.donor_episode_id), row.donor_hospital_id);
+    if (scope !== expectedScope) return rollbackFail(client, res, 409, 'conflict', 'Consent scope is stale');
+    if (action === 'grant' && (row.recipient_lifecycle !== 'active' || row.donor_lifecycle !== 'active' || row.recipient_participation !== 'active' || row.donor_participation !== 'active')) {
+      return rollbackFail(client, res, 403, 'forbidden', 'Participation is not active');
+    }
+    if (action === 'grant' && row.state !== 'awaiting_consent') {
       return rollbackFail(client, res, 409, 'conflict', 'Consent is unavailable until schedule is confirmed');
     }
     if (row.version !== targetVersion) {
       return rollbackFail(client, res, 409, 'conflict', 'Consent submission is stale');
     }
 
-    if (action === 'decline') {
-      await client.query(`UPDATE pair_proposals SET state='declined', status='declined', version=version+1, updated_at=now() WHERE id=$1`, [row.id]);
-      await client.query(`UPDATE conversations SET closed_at=COALESCE(closed_at,now()), closed_by=COALESCE(closed_by,$2) WHERE pair_id=$1`, [row.id, requireAccount(req).id]);
-      await client.query(`INSERT INTO audit_events(actor_account_id, action, target_reference, source, details) VALUES ($1, 'pair_consent_declined', $2, 'coordination', $3)`, [requireAccount(req).id, row.id, JSON.stringify({ consentVersion })]);
-      await client.query('COMMIT');
-      return ok(res, { id: row.id, state: 'declined', version: row.version + 1 });
+    // Verify caller has both case consents currently granted
+    const caseConsent = await client.query(
+      `SELECT count(*)::int AS granted FROM (
+        SELECT DISTINCT ON (episode_id,purpose) episode_id, purpose, action
+        FROM episode_consents
+        WHERE episode_id IN ($1,$2) AND consent_version=$3 AND scope IN (('case:' || $1::text || ':hospital:' || COALESCE($4::text, 'unassigned') || ':v1.0'), ('case:' || $2::text || ':hospital:' || COALESCE($5::text, 'unassigned') || ':v1.0'))
+        ORDER BY episode_id, purpose, created_at DESC, id DESC
+      ) latest WHERE latest.action='grant'`,
+      [row.recipient_episode_id, row.donor_episode_id, CONSENT_VERSION, row.recipient_hospital_id, row.donor_hospital_id]
+    );
+    if (action === 'grant' && (!caseConsent.rowCount || caseConsent.rows[0].granted < 4)) {
+      return rollbackFail(client, res, 409, 'case_consent_required', 'Both case consent purposes must be granted before pair consent');
     }
 
-    const consentHash = crypto.createHash('sha256').update(JSON.stringify({ pairId: row.id, episodeId, accountId: requireAccount(req).id, consentVersion, action, at: new Date().toISOString() })).digest('hex');
-    await client.query(`INSERT INTO pair_consents(pair_id, episode_id, actor_account_id, consent_version, consent_hash, action, idempotency_key)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)`, [row.id, episodeId, requireAccount(req).id, consentVersion, consentHash, action, idempotencyKey]);
+    const { commitment, salt } = consentCommitment({ targetId: row.id, actorId: requireAccount(req).id, version: consentVersion, action: action === 'decline' ? 'withdraw' : action, purpose, scope, evidence, idempotencyKey });
+    const inserted = await client.query(`INSERT INTO pair_consents(pair_id, episode_id, actor_account_id, consent_version, purpose, scope, evidence, commitment_salt, consent_hash, commitment, action, idempotency_key)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9, $10, $11) RETURNING id`, [row.id, episodeId, requireAccount(req).id, consentVersion, purpose, scope, evidence, salt, commitment, action === 'decline' ? 'withdraw' : action, idempotencyKey]);
+    await client.query(`INSERT INTO consent_anchor_outbox(pair_consent_id, commitment) VALUES ($1,$2)`, [inserted.rows[0].id, commitment]);
     await client.query(`INSERT INTO audit_events(actor_account_id, action, target_reference, source, details)
-      VALUES ($1, 'pair_consent_granted', $2, 'coordination', $3)`, [requireAccount(req).id, row.id, JSON.stringify({ consentVersion, consentHash })]);
+      VALUES ($1, $4, $2, 'coordination', $3)`, [requireAccount(req).id, row.id, JSON.stringify({ consentVersion, purpose, scope, commitment }), action === 'withdraw' ? 'pair_consent_withdrawn' : 'pair_consent_granted']);
 
-    const countRes = await client.query(`SELECT count(*)::int AS count FROM pair_consents WHERE pair_id=$1 AND consent_version=$2 AND action='grant'`, [row.id, consentVersion]);
-    const consentCount = countRes.rows[0].count;
+    if (action === 'withdraw' || action === 'decline') {
+      await client.query(`UPDATE pair_proposals SET state='withdrawn', status='withdrawn', version=version+1, updated_at=now() WHERE id=$1`, [row.id]);
+      await client.query(`UPDATE conversations SET closed_at=COALESCE(closed_at,now()), closed_by=COALESCE(closed_by,$2) WHERE pair_id=$1`, [row.id, requireAccount(req).id]);
+      await client.query(`INSERT INTO follow_up_tasks(episode_id,booking_id,cause,assigned_team,conflict_reference)
+        SELECT DISTINCT ar.episode_id,b.id,'pair_consent_withdrawn_booking_reconciliation','coordination',$1
+        FROM appointment_requests ar JOIN bookings b ON b.request_id=ar.id AND b.status IN ('confirmed','pending')
+        WHERE ar.episode_id IN ($2::uuid,$3::uuid)
+          AND NOT EXISTS (SELECT 1 FROM follow_up_tasks f WHERE f.episode_id=ar.episode_id AND f.booking_id=b.id AND f.cause='pair_consent_withdrawn_booking_reconciliation')`, [commitment, row.recipient_episode_id, row.donor_episode_id]);
+      await client.query('COMMIT');
+      return ok(res, { id: row.id, state: 'withdrawn', version: row.version + 1, action: 'withdraw', commitment, anchorStatus: 'pending', suspended: true }, 201);
+    }
 
-    if (consentCount >= 2) {
-      const simulatedTx = '0x' + crypto.randomBytes(32).toString('hex');
-      const simulatedBlockHash = '0x' + crypto.randomBytes(32).toString('hex');
+    const countRes = await client.query(`SELECT purpose,count(*)::int AS count FROM (SELECT DISTINCT ON (episode_id,purpose) episode_id,purpose,action FROM pair_consents WHERE pair_id=$1 AND consent_version=$2 AND scope=$3 ORDER BY episode_id,purpose,created_at DESC,id DESC) current WHERE action='grant' GROUP BY purpose`, [row.id, consentVersion, expectedScope]);
+    const counts = Object.fromEntries(countRes.rows.map((item) => [item.purpose, item.count]));
+
+    if ((counts.coordination ?? 0) >= 2 && (counts.information_sharing ?? 0) >= 2) {
       const updated = await client.query(`UPDATE pair_proposals
         SET state='coordination_complete', status='coordination_complete', version=version+1,
-            simulated_anchor_tx=$2, simulated_anchor_hash=$3, anchor_status='simulated_complete', updated_at=now()
-        WHERE id=$1 RETURNING id, state, version, simulated_anchor_tx AS "simulatedAnchorTx", anchor_status AS "anchorStatus"`,
-        [row.id, simulatedTx, simulatedBlockHash]);
+            anchor_status='pending', updated_at=now()
+        WHERE id=$1 RETURNING id, state, version, anchor_status AS "anchorStatus"`, [row.id]);
       await client.query(`UPDATE conversations SET closed_at=COALESCE(closed_at,now()), closed_by=COALESCE(closed_by,$2) WHERE pair_id=$1`, [row.id, requireAccount(req).id]);
       await client.query(`INSERT INTO audit_events(actor_account_id, action, target_reference, source, details)
         VALUES ($1, 'pair_coordination_completed', $2, 'coordination', $3)`,
         [requireAccount(req).id, row.id, JSON.stringify({ message: 'Coordination complete — clinical clearance still required', consentVersion })]);
       await notifyPairParticipants(client, row.id);
       await client.query('COMMIT');
-      return ok(res, { ...updated.rows[0], consentCount: 2, message: 'Coordination complete — clinical clearance still required' }, 201);
+        return ok(res, { ...updated.rows[0], consentCount: 2, commitment, anchorStatus: 'pending', message: 'Coordination complete — clinical clearance still required' }, 201);
     } else {
       const updated = await client.query(`UPDATE pair_proposals SET version=version+1, updated_at=now() WHERE id=$1 RETURNING id, state, version`, [row.id]);
       await client.query('COMMIT');

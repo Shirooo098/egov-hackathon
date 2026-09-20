@@ -368,7 +368,8 @@ export async function rehearseRestore(options: {
           for (let c = 0; c < columns.length; c++) {
             const col = columns[c];
             const v = row[col];
-            if (v !== null && typeof v === 'object' && !(v instanceof Date) && !Array.isArray(v)) {
+            const isNativeArray = ['service_scope', 'pledged_organs'].includes(col);
+            if (v !== null && typeof v === 'object' && !(v instanceof Date) && !Buffer.isBuffer(v) && (!Array.isArray(v) || !isNativeArray)) {
               flatValues.push(JSON.stringify(v));
             } else {
               flatValues.push(v);

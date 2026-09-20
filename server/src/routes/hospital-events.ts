@@ -72,21 +72,25 @@ export async function applyAppointmentEvent(
     return 'applied';
   }
 
-  if (!['request_pending', 'hospital_accepted'].includes(request.rows[0].status)) return 'conflict';
-  const slotReference = String(envelope.payload.slotReference);
-  const bookingReference = String(envelope.payload.hospitalBookingReference);
-  const slot = await client.query(`SELECT id FROM hospital_slots
-    WHERE hospital_id=$1 AND service_id=$2 AND slot_reference=$3 AND status='published' FOR UPDATE`, [hospitalId, request.rows[0].service_id, slotReference]);
-  if (!slot.rowCount) return 'conflict';
-  const booking = await client.query(`INSERT INTO bookings(request_id,slot_reference,hospital_booking_reference,status,confirmed_at,source_event_id,source,source_event_reference)
-    VALUES($1,$2,$3,'confirmed',$4,$5,$6,$7) ON CONFLICT DO NOTHING RETURNING id`, [envelope.targetReference, slotReference, bookingReference, envelope.observedAt, eventRowId, provenance, eventReference]);
-  if (!booking.rowCount) return 'conflict';
-  await client.query(`UPDATE appointment_requests
-    SET status='hospital_confirmed',slot_reference=$1,response_source=$2,response_author_reference=$3,responded_at=$4,hospital_response_reference=$5,response_external_reference=$6,version=version+1,updated_at=now()
-    WHERE id=$7`, [slotReference, provenance, sourceId, envelope.observedAt, bookingReference, eventReference, envelope.targetReference]);
-  await client.query(`INSERT INTO appointment_request_history(request_id,status,source,author_reference,external_reference,details,occurred_at)
-    VALUES($1,'hospital_confirmed',$2,$3,$4,$5,$6)`, [envelope.targetReference, provenance, sourceId, eventReference, JSON.stringify({ slotReference, hospitalBookingReference: bookingReference }), envelope.observedAt]);
-  return 'applied';
+  if (envelope.eventType === 'booking.confirmed') {
+    if (!['request_pending', 'hospital_accepted'].includes(request.rows[0].status)) return 'conflict';
+    const slotReference = String(envelope.payload.slotReference);
+    const bookingReference = String(envelope.payload.hospitalBookingReference);
+    const slot = await client.query(`SELECT id FROM hospital_slots
+      WHERE hospital_id=$1 AND service_id=$2 AND slot_reference=$3 AND status='published' FOR UPDATE`, [hospitalId, request.rows[0].service_id, slotReference]);
+    if (!slot.rowCount) return 'conflict';
+    const booking = await client.query(`INSERT INTO bookings(request_id,slot_reference,hospital_booking_reference,status,confirmed_at,source_event_id,source,source_event_reference)
+      VALUES($1,$2,$3,'confirmed',$4,$5,$6,$7) ON CONFLICT DO NOTHING RETURNING id`, [envelope.targetReference, slotReference, bookingReference, envelope.observedAt, eventRowId, provenance, eventReference]);
+    if (!booking.rowCount) return 'conflict';
+    await client.query(`UPDATE appointment_requests
+      SET status='hospital_confirmed',slot_reference=$1,response_source=$2,response_author_reference=$3,responded_at=$4,hospital_response_reference=$5,response_external_reference=$6,version=version+1,updated_at=now()
+      WHERE id=$7`, [slotReference, provenance, sourceId, envelope.observedAt, bookingReference, eventReference, envelope.targetReference]);
+    await client.query(`INSERT INTO appointment_request_history(request_id,status,source,author_reference,external_reference,details,occurred_at)
+      VALUES($1,'hospital_confirmed',$2,$3,$4,$5,$6)`, [envelope.targetReference, provenance, sourceId, eventReference, JSON.stringify({ slotReference, hospitalBookingReference: bookingReference }), envelope.observedAt]);
+    return 'applied';
+  }
+
+  return 'conflict';
 }
 
 async function applyDeceasedOfferEvent(client: PoolClient, envelope: Envelope, hospitalId: string): Promise<EventResult> {

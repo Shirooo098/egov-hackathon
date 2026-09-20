@@ -194,13 +194,13 @@ export function createPrivacyRouter(config: RuntimeConfig) {
 
       // 7. Consents granted by this citizen
       const consentsResult = await db().execute(sql`
-        SELECT ec.id, ec.consent_version AS "consentVersion", ec.action, ec.created_at AS "createdAt"
+        SELECT ec.id, ec.consent_version AS "consentVersion", ec.action, ec.purpose, ec.scope, ec.commitment, ec.anchor_status AS "anchorStatus", ec.anchor_tx_hash AS "anchorTxHash", ec.created_at AS "createdAt"
         FROM episode_consents ec
         JOIN episodes e ON e.id = ec.episode_id
         JOIN citizen_cases c ON c.id = e.case_id
         WHERE c.account_id = ${account.id}
         UNION ALL
-        SELECT pc.id, pc.consent_version AS "consentVersion", pc.action, pc.created_at AS "createdAt"
+        SELECT pc.id, pc.consent_version AS "consentVersion", pc.action, pc.purpose, pc.scope, pc.commitment, pc.anchor_status AS "anchorStatus", pc.anchor_tx_hash AS "anchorTxHash", pc.created_at AS "createdAt"
         FROM pair_consents pc
         WHERE pc.actor_account_id = ${account.id}
       `);

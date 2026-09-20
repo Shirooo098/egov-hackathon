@@ -1,4 +1,4 @@
-import express, { type Request, type Response, type NextFunction } from 'express';
+import express, { type Request, type Response } from 'express';
 import crypto from 'crypto';
 import { sql } from 'drizzle-orm';
 import { getDb, withTransaction } from '../db/client.js';
@@ -9,6 +9,8 @@ import type { RuntimeMode } from '../runtime/config.js';
 import { maskPhoneNumber } from '../services/eMessageService.js';
 import { GENERIC_NOTIFICATION_TEMPLATES, runNotificationBatch } from '../services/notificationService.js';
 import { requireWorkflowActive } from './operations.js';
+import { consentCommitment } from '../services/EgovChainService.js';
+import { caseConsentScope, latestConsentState, CONSENT_VERSION, CONSENT_PURPOSES } from '../services/ConsentPolicy.js';
 
 const router = express.Router();
 router.use(requireSession);
@@ -229,56 +231,100 @@ router.put('/episodes/:id/intake', requireSameOrigin, async (req, res, next) => 
 
 router.get('/episodes/:id/consent', async (req, res, next) => {
   try {
-    const result = await db().execute(sql`SELECT ec.id, ec.episode_id AS "episodeId", ec.consent_version AS "consentVersion", ec.consent_hash AS "consentHash", ec.action, ec.created_at AS "createdAt"
-      FROM episode_consents ec
-      JOIN episodes e ON e.id=ec.episode_id JOIN citizen_cases c ON c.id=e.case_id
-      WHERE ec.episode_id=${req.params.id} AND c.account_id=${requireAccount(req).id}
-      ORDER BY ec.created_at DESC`);
-    return json(res, result.rows);
+    if (!UUID.test(String(req.params.id))) return fail(res, 404, 'Episode not found', 'not_found');
+    const actor = requireAccount(req);
+    const isHospitalStaff = Boolean(
+      actor.hospitalId &&
+      ['coordinator', 'scheduler', 'doctor', 'clinical_lead', 'hospital_admin', 'supervisor'].includes(actor.role)
+    );
+    const episode = await db().execute(sql`SELECT c.hospital_id AS "hospitalId" FROM episodes e JOIN citizen_cases c ON c.id=e.case_id
+      WHERE e.id=${req.params.id} AND (
+        c.account_id=${actor.id} OR (
+          ${isHospitalStaff} AND c.hospital_id=${actor.hospitalId}
+          AND EXISTS (SELECT 1 FROM accounts staff WHERE staff.id=${actor.id} AND staff.status='active')
+          AND EXISTS (SELECT 1 FROM services s WHERE s.id=c.service_id AND s.hospital_id=c.hospital_id AND s.code=ANY(${sqlTextArray(actor.serviceScope)}))
+          AND ${latestAssignment(actor)}
+        )
+      )`);
+    if (!episode.rowCount) return fail(res, 404, 'Episode not found', 'not_found');
+    const hospitalId = episode.rows[0].hospitalId ? String(episode.rows[0].hospitalId) : null;
+    const scope = caseConsentScope(String(req.params.id), hospitalId);
+    const result = await db().execute(sql`SELECT ec.id, ec.episode_id AS "episodeId", ec.consent_version AS "version", ec.purpose, ec.scope, ec.commitment, ec.action, ec.anchor_status AS "anchorStatus", ec.anchor_tx_hash AS "txHash", ec.anchor_block_hash AS "blockHash", ec.anchor_block_number AS "blockNumber", ec.created_at AS "createdAt"
+      FROM episode_consents ec WHERE ec.episode_id=${req.params.id} ORDER BY ec.created_at DESC,ec.id DESC`);
+    const current = latestConsentState(result.rows.filter((row) => (row as any).version === CONSENT_VERSION) as Array<{ purpose: string; action: string; scope: string }>, scope);
+    return json(res, {
+      requirements: {
+        consentVersion: CONSENT_VERSION,
+        scope,
+        purposes: CONSENT_PURPOSES.map((id) => ({
+          id,
+          text: id === 'coordination' ? 'Allow coordination of this case.' : 'Allow coordination information sharing for this case.'
+        }))
+      },
+      current,
+      events: result.rows
+    });
   } catch (e) { return next(e); }
 });
 
 router.post('/episodes/:id/consent', requireSameOrigin, async (req, res, next) => {
   try {
-    const { action = 'grant', consentVersion = 'v1.0', idempotencyKey } = req.body || {};
-    if (!['grant', 'withdraw'].includes(action) || typeof idempotencyKey !== 'string' || idempotencyKey.length < 8 || idempotencyKey.length > 200) {
+    const { action, consentVersion = CONSENT_VERSION, purpose, scope, evidence = '', idempotencyKey } = req.body || {};
+    if (!UUID.test(String(req.params.id)) || !['grant', 'withdraw'].includes(action) || !['coordination', 'information_sharing'].includes(purpose) || consentVersion !== CONSENT_VERSION || typeof scope !== 'string' || typeof evidence !== 'string' || evidence.length > 2000 || typeof idempotencyKey !== 'string' || idempotencyKey.length < 8 || idempotencyKey.length > 200) {
       return fail(res, 422, 'Invalid coordination consent request', 'validation_error');
     }
     const actor = requireAccount(req);
     const result = await withTransaction(async (tx) => {
-      const ep = await tx.execute(sql`SELECT e.id, e.lifecycle, e.participation, e.version
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtextextended(${`${actor.id}:${idempotencyKey}`}, 0))`);
+      const ep = await tx.execute(sql`SELECT e.id, e.lifecycle, e.participation, e.version, c.hospital_id AS "hospitalId"
         FROM episodes e JOIN citizen_cases c ON c.id=e.case_id
         WHERE e.id=${req.params.id} AND c.account_id=${actor.id}
           AND NOT EXISTS (SELECT 1 FROM hospital_linkages hl WHERE hl.episode_id=e.id AND hl.state='suspended')
-        FOR UPDATE OF e`);
+        FOR UPDATE OF e,c`);
       if (!ep.rowCount) return { notFound: true };
       const episode = ep.rows[0];
+      const prior = await tx.execute(sql`SELECT id, episode_id AS "episodeId", consent_version AS "consentVersion", purpose, scope, evidence, commitment, action, anchor_status AS "anchorStatus", idempotency_key AS "idempotencyKey", created_at AS "createdAt"
+        FROM episode_consents WHERE actor_account_id=${actor.id} AND idempotency_key=${idempotencyKey}`);
+      if (prior.rowCount) {
+        const previous = prior.rows[0];
+        if (String(previous.episodeId) !== String(req.params.id) || previous.action !== action || previous.purpose !== purpose || previous.scope !== scope || previous.evidence !== evidence || previous.consentVersion !== consentVersion) return { conflict: 'Idempotency key payload mismatch' };
+        return { row: { ...previous, version: previous.consentVersion, idempotent: true }, replay: true };
+      }
+      const expectedScope = caseConsentScope(String(req.params.id), episode.hospitalId ? String(episode.hospitalId) : null);
+      if (scope !== expectedScope) return { conflict: 'Consent scope is stale' };
       if (episode.lifecycle === 'closed' || episode.participation === 'withdrawn') {
         return { conflict: 'Cannot record consent on closed or withdrawn episode' };
       }
-      const prior = await tx.execute(sql`SELECT id, consent_version AS "consentVersion", consent_hash AS "consentHash", action, idempotency_key AS "idempotencyKey", created_at AS "createdAt"
-        FROM episode_consents WHERE episode_id=${req.params.id} AND idempotency_key=${idempotencyKey}`);
-      if (prior.rowCount) {
-        return { row: prior.rows[0], replay: true };
-      }
-      const consentHash = crypto.createHash('sha256').update(JSON.stringify({
-        episodeId: req.params.id,
-        accountId: actor.id,
-        consentVersion,
-        action,
-        timestamp: new Date().toISOString()
-      })).digest('hex');
-      const inserted = await tx.execute(sql`INSERT INTO episode_consents(episode_id, actor_account_id, consent_version, consent_hash, action, idempotency_key)
-        VALUES (${req.params.id}, ${actor.id}, ${consentVersion}, ${consentHash}, ${action}, ${idempotencyKey})
-        ON CONFLICT (episode_id, consent_version) DO NOTHING
-        RETURNING id, episode_id AS "episodeId", consent_version AS "consentVersion", consent_hash AS "consentHash", action, created_at AS "createdAt"`);
+      const { commitment, salt } = consentCommitment({
+        targetId: String(req.params.id),
+        actorId: actor.id,
+        version: consentVersion,
+        action: action as 'grant' | 'withdraw',
+        purpose: purpose as string,
+        scope: scope as string,
+        evidence: evidence as string,
+        idempotencyKey,
+      });
+      const inserted = await tx.execute(sql`INSERT INTO episode_consents(episode_id, actor_account_id, consent_version, purpose, scope, evidence, commitment_salt, consent_hash, commitment, action, idempotency_key)
+        VALUES (${req.params.id}, ${actor.id}, ${consentVersion}, ${purpose}, ${scope}, ${evidence}, ${salt}, ${commitment}, ${commitment}, ${action}, ${idempotencyKey})
+        RETURNING id, episode_id AS "episodeId", consent_version AS "version", purpose, scope, commitment, action, anchor_status AS "anchorStatus", created_at AS "createdAt"`);
       if (!inserted.rowCount) {
         return { conflict: 'Consent for this version is already recorded' };
       }
       await tx.execute(sql`INSERT INTO coordination_updates(target_reference, category, value, source, author_reference, occurred_at)
-        VALUES (${req.params.id}, 'coordination_consent', ${JSON.stringify({ action, consentVersion, consentHash })}::jsonb, 'citizen-portal', ${actor.id}, now())`);
+        VALUES (${req.params.id}, 'coordination_consent', ${JSON.stringify({ action, consentVersion, purpose, scope, commitment })}::jsonb, 'citizen-portal', ${actor.id}, now())`);
+      await tx.execute(sql`INSERT INTO consent_anchor_outbox(episode_consent_id, commitment) VALUES (${inserted.rows[0].id}, ${commitment})`);
       await tx.execute(sql`INSERT INTO audit_events(actor_account_id, action, target_reference, source, details)
-        VALUES (${actor.id}, ${action === 'grant' ? 'coordination_consent_granted' : 'coordination_consent_withdrawn'}, ${req.params.id}, 'coordination', ${JSON.stringify({ consentVersion, consentHash })}::jsonb)`);
+        VALUES (${actor.id}, ${action === 'grant' ? 'coordination_consent_granted' : 'coordination_consent_withdrawn'}, ${req.params.id}, 'coordination', ${JSON.stringify({ consentVersion, purpose, scope, commitment })}::jsonb)`);
+      if (action === 'withdraw') {
+        await tx.execute(sql`UPDATE pair_proposals SET state='withdrawn', status='withdrawn', version=version+1, updated_at=now() WHERE state NOT IN ('declined','withdrawn') AND (own_episode_id=${req.params.id}::uuid OR counterpart_episode_id=${req.params.id}::uuid)`);
+        await tx.execute(sql`UPDATE conversations SET closed_at=COALESCE(closed_at,now()), closed_by=COALESCE(closed_by,${actor.id}::uuid) WHERE (episode_id=${req.params.id}::uuid OR pair_id IN (SELECT id FROM pair_proposals WHERE own_episode_id=${req.params.id}::uuid OR counterpart_episode_id=${req.params.id}::uuid)) AND closed_at IS NULL`);
+        await tx.execute(sql`INSERT INTO follow_up_tasks(episode_id,booking_id,cause,assigned_team,conflict_reference)
+          SELECT DISTINCT ${req.params.id}::uuid, b.id, 'consent_withdrawn_booking_reconciliation', 'coordination', ${commitment}
+          FROM appointment_requests ar JOIN bookings b ON b.request_id=ar.id AND b.status IN ('confirmed','pending')
+          WHERE ar.episode_id=${req.params.id}::uuid
+            AND NOT EXISTS (SELECT 1 FROM follow_up_tasks f WHERE f.episode_id=${req.params.id}::uuid AND f.booking_id=b.id AND f.cause='consent_withdrawn_booking_reconciliation')`);
+      }
       return { row: inserted.rows[0], replay: false };
     });
     if (result.notFound) return fail(res, 404, 'Episode not found', 'not_found');
@@ -403,6 +449,8 @@ router.post('/appointments/requests', requireSameOrigin, async (req, res, next) 
           AND NOT EXISTS (SELECT 1 FROM hospital_linkages hl WHERE (hl.episode_id=e.id OR hl.case_id=c.id) AND hl.state='suspended')
           AND c.hospital_id=s.hospital_id AND (${(req as PlatformRequest).platformLiveMode !== true} OR s.code='blood')
           AND ${actorAccess}
+          AND NOT EXISTS (SELECT 1 FROM (SELECT DISTINCT ON (purpose) purpose,action FROM episode_consents WHERE episode_id=e.id AND consent_version='v1.0' AND scope=('case:' || e.id::text || ':hospital:' || COALESCE(c.hospital_id::text, 'unassigned') || ':v1.0') ORDER BY purpose,created_at DESC,id DESC) latest WHERE latest.action <> 'grant')
+          AND (SELECT count(*) FROM (SELECT DISTINCT ON (purpose) purpose,action FROM episode_consents WHERE episode_id=e.id AND consent_version='v1.0' AND scope=('case:' || e.id::text || ':hospital:' || COALESCE(c.hospital_id::text, 'unassigned') || ':v1.0') ORDER BY purpose,created_at DESC,id DESC) latest WHERE latest.action='grant')=2
         FOR UPDATE OF r`);
       if (existing.rowCount) {
         const row = existing.rows[0];
@@ -420,6 +468,8 @@ router.post('/appointments/requests', requireSameOrigin, async (req, res, next) 
           AND NOT EXISTS (SELECT 1 FROM hospital_linkages hl WHERE (hl.episode_id=e.id OR hl.case_id=c.id) AND hl.state='suspended')
           AND c.hospital_id=s.hospital_id AND (${(req as PlatformRequest).platformLiveMode !== true} OR s.code='blood')
           AND ${actorAccess}
+          AND NOT EXISTS (SELECT 1 FROM (SELECT DISTINCT ON (purpose) purpose,action FROM episode_consents WHERE episode_id=e.id AND consent_version='v1.0' AND scope=('case:' || e.id::text || ':hospital:' || COALESCE(c.hospital_id::text, 'unassigned') || ':v1.0') ORDER BY purpose,created_at DESC,id DESC) latest WHERE latest.action <> 'grant')
+          AND (SELECT count(*) FROM (SELECT DISTINCT ON (purpose) purpose,action FROM episode_consents WHERE episode_id=e.id AND consent_version='v1.0' AND scope=('case:' || e.id::text || ':hospital:' || COALESCE(c.hospital_id::text, 'unassigned') || ':v1.0') ORDER BY purpose,created_at DESC,id DESC) latest WHERE latest.action='grant')=2
           AND (${actor.role === 'coordinator' ? sql`c.hospital_id IS NOT DISTINCT FROM s.hospital_id` : sql`true`})
           AND (${slotReference ? sql`EXISTS (SELECT 1 FROM hospital_slots hs WHERE hs.hospital_id=s.hospital_id AND hs.service_id=s.id AND hs.slot_reference=${slotReference} AND hs.status='published')` : sql`true`})
         RETURNING id, episode_id AS "episodeId", slot_reference AS "slotReference", preferred_dates AS "preferredDates", status, version, created_at AS "createdAt"`);
@@ -456,7 +506,7 @@ router.post('/conversations/:id/messages', requireSameOrigin, async (req, res, n
     const result = await withTransaction(async (tx) => {
       await tx.execute(sql`SELECT co.id FROM conversations co JOIN episodes e ON e.id=co.episode_id JOIN citizen_cases c ON c.id=e.case_id WHERE co.id=${req.params.id} AND co.pair_id IS NULL FOR UPDATE OF co,e,c`);
       await tx.execute(sql`SELECT sa.id FROM staff_assignments sa WHERE sa.episode_id=(SELECT episode_id FROM conversations WHERE id=${req.params.id}) FOR UPDATE`);
-      const conversation = await tx.execute(sql`SELECT co.id FROM conversations co JOIN episodes e ON e.id=co.episode_id JOIN citizen_cases c ON c.id=e.case_id JOIN services s ON s.id=c.service_id WHERE co.id=${req.params.id} AND co.pair_id IS NULL AND NOT EXISTS (SELECT 1 FROM hospital_linkages hl WHERE (hl.episode_id=e.id OR hl.case_id=c.id) AND hl.state='suspended') AND ${teamConversationAccess(account, (req as PlatformRequest).platformLiveMode === true, true)} FOR UPDATE OF co,e,c`);
+      const conversation = await tx.execute(sql`SELECT co.id FROM conversations co JOIN episodes e ON e.id=co.episode_id JOIN citizen_cases c ON c.id=e.case_id JOIN services s ON s.id=c.service_id WHERE co.id=${req.params.id} AND co.pair_id IS NULL AND NOT EXISTS (SELECT 1 FROM hospital_linkages hl WHERE (hl.episode_id=e.id OR hl.case_id=c.id) AND hl.state='suspended') AND NOT EXISTS (SELECT 1 FROM (SELECT DISTINCT ON (purpose) purpose,action FROM episode_consents WHERE episode_id=e.id AND consent_version='v1.0' AND scope=('case:' || e.id::text || ':hospital:' || COALESCE(c.hospital_id::text, 'unassigned') || ':v1.0') ORDER BY purpose,created_at DESC,id DESC) latest WHERE latest.action <> 'grant') AND (SELECT count(*) FROM (SELECT DISTINCT ON (purpose) purpose,action FROM episode_consents WHERE episode_id=e.id AND consent_version='v1.0' AND scope=('case:' || e.id::text || ':hospital:' || COALESCE(c.hospital_id::text, 'unassigned') || ':v1.0') ORDER BY purpose,created_at DESC,id DESC) latest WHERE latest.action='grant')=2 AND ${teamConversationAccess(account, (req as PlatformRequest).platformLiveMode === true, true)} FOR UPDATE OF co,e,c`);
       if (!conversation.rowCount) return null;
       const prior = await tx.execute(sql`SELECT id,body,visibility,request_hash AS "requestHash",created_at AS "createdAt" FROM messages WHERE sender_account_id=${account.id} AND idempotency_key=${input.idempotencyKey.trim()} FOR UPDATE`);
       if (prior.rowCount) {

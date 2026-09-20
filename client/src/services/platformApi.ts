@@ -53,6 +53,12 @@ export const platformApi = {
       body: JSON.stringify(body),
     }),
   episode: (id: string) => api.request(`/platform/episodes/${id}`),
+  episodeConsents: (id: string) => api.request(`/platform/episodes/${id}/consent`),
+  submitEpisodeConsent: (id: string, body: Payload) =>
+    api.request(`/platform/episodes/${id}/consent`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
   episodeAction: (id: string, action: string, version: number) =>
     api.request(`/platform/episodes/${id}/${action}`, {
       method: "POST",
@@ -102,6 +108,12 @@ export const platformApi = {
     }),
   currentPair: () => api.request("/pairs/current"),
   pair: (id: string) => api.request(`/pairs/${id}`),
+  pairConsents: (id: string) => api.request(`/pairs/${id}/consent`),
+  submitPairConsent: (id: string, body: Payload) =>
+    api.request(`/pairs/${id}/consent`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
   respondToPair: (id: string, body: Payload) =>
     api.request(`/pairs/${id}/respond`, {
       method: "POST",

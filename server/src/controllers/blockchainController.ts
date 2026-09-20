@@ -1,45 +1,9 @@
 import type { Request, Response, NextFunction } from "express";
-import {
-  anchorConsent,
-  getTransactionReceipt,
-  getChainInfo,
-} from "../services/BesuService.js";
+import { getChainInfo } from "../services/BesuService.js";
 
 async function anchor(req: Request, res: Response, next: NextFunction) {
   try {
-    const {
-      matchId,
-      donorId,
-      recipientId,
-      donorSignature,
-      recipientSignature,
-    } = req.body;
-    if (
-      !matchId ||
-      !donorId ||
-      !recipientId ||
-      !donorSignature ||
-      !recipientSignature
-    ) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message:
-            "matchId, donorId, recipientId, donorSignature, recipientSignature are required",
-        });
-    }
-    const consentData = {
-      matchId,
-      donorId,
-      recipientId,
-      donorSignature,
-      recipientSignature,
-      timestamp: new Date().toISOString(),
-      platform: "eBuhay DICT eGov Platform",
-    };
-    const result = await anchorConsent(consentData);
-    res.json({ success: true, data: result });
+    return res.status(410).json({ success: false, error: 'legacy_endpoint_disabled', message: 'Use an authenticated consent event endpoint.' });
   } catch (err) {
     next(err);
   }
@@ -52,8 +16,7 @@ async function getReceipt(req: Request, res: Response, next: NextFunction) {
       return res
         .status(400)
         .json({ success: false, message: "txHash is required" });
-    const result = await getTransactionReceipt(String(txHash));
-    res.json({ success: true, data: result });
+    return res.status(404).json({ success: false, error: 'not_found', message: 'Receipt lookup requires an authorized consent event.' });
   } catch (err) {
     next(err);
   }
