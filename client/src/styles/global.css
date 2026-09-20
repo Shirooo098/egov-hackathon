@@ -9,11 +9,12 @@
    ============================================================ */
 :root {
   /* --- Brand (Light Mode Default) --- */
-  --primary: #0038A8;
-  --primary-hover: #0057D9;
-  --primary-active: #00287A;
-  --primary-10: rgba(0, 56, 168, 0.08);
-  --primary-20: rgba(0, 56, 168, 0.14);
+  --primary: #1452f0;
+  --primary-hover: #0f3fc0;
+  --primary-active: #0c329c;
+  --primary-10: rgba(20, 82, 240, 0.08);
+  --primary-20: rgba(20, 82, 240, 0.15);
+  --primary-subtle: #e4f0fb;
   --primary-fg: #ffffff;
 
   --destructive: #CE1126;
@@ -28,24 +29,29 @@
   --emerald-lt: #34D399;
   --emerald-10: rgba(5, 150, 105, 0.08);
 
+  /* --- Role Accents (from PublicLanding) --- */
+  --accent-recipient: #4f9ae1;
+  --accent-donor: #047857;
+
   /* --- Surfaces (Light) --- */
   --background: #FFFFFF;
   --background-alt: #F8FAFC;
-  --background-tertiary: #F1F5F9;
+  --background-tertiary: #EDF5FC;
   --card: #FFFFFF;
   --card-hover: #F8FAFC;
   --card-muted: rgba(248, 250, 252, 0.8);
-  --overlay: rgba(15, 23, 42, 0.65);
+  --overlay: rgba(17, 43, 77, 0.65);
 
   /* --- Borders --- */
-  --border: #E2E8F0;
-  --border-strong: #CBD5E1;
+  --border: #D7E3EF;
+  --border-strong: #9FB7CE;
   --border-focus: var(--primary);
 
   /* --- Text (Light) --- */
-  --foreground: #0F172A;
-  --foreground-muted: #64748B;
-  --foreground-subtle: #475569;
+  --foreground: #112B4D;
+  --foreground-deep: #102744;
+  --foreground-muted: #52657D;
+  --foreground-subtle: #36516E;
   --foreground-inverse: #FFFFFF;
 
   /* --- Semantic Status Colors --- */
@@ -55,16 +61,15 @@
   --status-danger: var(--destructive);
   --status-info-bg: var(--primary-10);
   --status-success-bg: var(--emerald-10);
-  --status-warning-bg: var(--sun-10);
   --status-danger-bg: var(--destructive-10);
-  --surface-civic: #EEF4FF;
+  --surface-civic: #EDF5FC;
 
   /* --- Rainbow top stripe (from platforms.e.gov.ph) --- */
   --stripe-gradient: linear-gradient(to right, var(--primary), var(--destructive), var(--sun));
 
-  /* --- Navy feature card (from platforms.e.gov.ph hero credential card) --- */
-  --navy: #06145b;
-  --navy-mid: #0b2da8;
+  /* --- Navy feature card --- */
+  --navy: #102744;
+  --navy-mid: #112b4d;
   --navy-light: #1e3a8a;
 
   /* --- Typography --- */
@@ -101,7 +106,7 @@
   --shadow-md: 0 12px 34px rgba(15, 23, 42, 0.07);
   --shadow-lg: 0 18px 42px rgba(15, 23, 42, 0.10);
   --shadow-xl: 0 28px 60px rgba(15, 23, 42, 0.13);
-  --shadow-blue: 0 12px 26px rgba(0, 56, 168, 0.22);
+  --shadow-blue: 0 12px 26px rgba(20, 82, 240, 0.22);
   --shadow-emerald: 0 8px 20px rgba(5, 150, 105, 0.2);
   --shadow-destructive: 0 8px 20px rgba(206, 17, 38, 0.2);
 
@@ -239,32 +244,76 @@ img {
 }
 
 /* ============================================================
-   NAVBAR  (sticky, border-b, backdrop-blur like the site)
+   NAVBAR  (aligned to PublicLanding clean header)
    ============================================================ */
 .navbar {
   position: sticky;
   top: 0;
   z-index: 50;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  height: 70px;
+  background: #ffffff;
+  color: var(--foreground);
   border-bottom: 1px solid var(--border);
 }
 
-/* Rainbow top stripe — platforms.e.gov.ph signature */
-.navbar::before {
-  content: '';
-  display: block;
-  height: 2px;
-  background: var(--stripe-gradient);
-}
-
 .navbar-inner {
+  max-width: 1200px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--s7);
-  height: 60px;
+}
+
+.landing-brand {
+  color: var(--primary, #1452f0);
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.landing-brand span {
+  margin-left: 4px;
+}
+
+.landing-brand:focus-visible {
+  outline: 3px solid var(--primary, #1452f0);
+  outline-offset: 3px;
+}
+
+.landing-staff-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--foreground-muted, #52657d);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.landing-staff-link b {
+  border: 1px solid var(--border, #d7e3ef);
+  border-radius: 99px;
+  padding: 5px 8px;
+  font-size: 11px;
+}
+
+.landing-staff-link:focus-visible {
+  outline: 3px solid var(--primary, #1452f0);
+  outline-offset: 3px;
+}
+
+@media (max-width: 720px) {
+  .navbar {
+    height: 64px;
+  }
+  .navbar-inner {
+    padding: 0 20px;
+  }
 }
 
 .brand {
@@ -398,7 +447,7 @@ img {
   color: var(--primary);
   margin-bottom: var(--s6);
   background: var(--primary-10);
-  border: 1px solid rgba(0, 56, 168, 0.15);
+  border: 1px solid rgba(20, 82, 240, 0.15);
   padding: 6px 16px;
   border-radius: var(--r-full);
   white-space: nowrap;
@@ -668,7 +717,7 @@ img {
   background: var(--primary);
   color: #ffffff;
   border-color: var(--primary);
-  box-shadow: 0 4px 12px rgba(0, 56, 168, 0.25);
+  box-shadow: 0 4px 12px rgba(20, 82, 240, 0.25);
 }
 
 .tab-btn.locked {
@@ -796,7 +845,7 @@ img {
 .feature-preview:hover {
   transform: translateY(-4px);
   box-shadow: 0 36px 80px rgba(37, 99, 235, 0.14);
-  border-color: rgba(0, 56, 168, 0.2);
+  border-color: rgba(20, 82, 240, 0.2);
 }
 
 /* ============================================================
@@ -830,7 +879,7 @@ img {
 .btn-primary {
   background: var(--primary);
   color: white;
-  box-shadow: 0 4px 14px rgba(0, 56, 168, 0.25);
+  box-shadow: 0 4px 14px rgba(20, 82, 240, 0.25);
 }
 
 .btn-primary:hover {
@@ -924,7 +973,7 @@ img {
 .badge-primary {
   background: var(--primary-10);
   color: var(--primary);
-  border: 1px solid rgba(0, 56, 168, 0.15);
+  border: 1px solid rgba(20, 82, 240, 0.15);
 }
 
 .badge-success {
@@ -960,7 +1009,7 @@ img {
 .badge-organ {
   background: var(--primary-10);
   color: var(--primary);
-  border: 1px solid rgba(0, 56, 168, 0.15);
+  border: 1px solid rgba(20, 82, 240, 0.15);
 }
 
 .badge-verified {
@@ -1046,7 +1095,7 @@ img {
 .badge-moderate {
   background: var(--primary-10);
   color: var(--primary);
-  border: 1px solid rgba(0, 56, 168, 0.15);
+  border: 1px solid rgba(20, 82, 240, 0.15);
 }
 
 /* ============================================================
@@ -1093,7 +1142,7 @@ img {
 .icon-badge-navy {
   background: var(--primary);
   color: white;
-  box-shadow: 0 8px 16px rgba(0, 56, 168, 0.2);
+  box-shadow: 0 8px 16px rgba(20, 82, 240, 0.2);
 }
 
 /* ============================================================
@@ -1128,7 +1177,7 @@ img {
 
 .input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(0, 56, 168, 0.1);
+  box-shadow: 0 0 0 3px rgba(20, 82, 240, 0.1);
 }
 
 .input::placeholder {
@@ -1173,7 +1222,7 @@ textarea.input {
 
 .blood-pill-organ {
   background: linear-gradient(135deg, #1e3a8a, var(--primary));
-  box-shadow: 0 4px 14px rgba(0, 56, 168, 0.3);
+  box-shadow: 0 4px 14px rgba(20, 82, 240, 0.3);
 }
 
 /* ============================================================
@@ -1245,7 +1294,7 @@ textarea.input {
   color: white;
   border-bottom-right-radius: 4px;
   margin-left: auto;
-  box-shadow: 0 4px 14px rgba(0, 56, 168, 0.2);
+  box-shadow: 0 4px 14px rgba(20, 82, 240, 0.2);
 }
 
 .bubble-recv {
@@ -2357,7 +2406,7 @@ select.input {
 }
 
 .alert-info {
-  border-color: rgba(0, 56, 168, 0.15);
+  border-color: rgba(20, 82, 240, 0.15);
   background: var(--primary-10);
 }
 
@@ -2940,7 +2989,7 @@ select.input {
 
 /* Better tap highlight for links */
 a {
-  -webkit-tap-highlight-color: rgba(0, 56, 168, 0.2);
+  -webkit-tap-highlight-color: rgba(20, 82, 240, 0.2);
 }
 
 /* Ensure readable text sizes on mobile */
@@ -3033,11 +3082,6 @@ a:focus-visible {
 }
 .stepper-dot.done {
   box-shadow: 0 0 0 4px var(--emerald-10);
-}
-
-/* --- Brand lockup --- */
-.brand-lockup {
-  /* component is flexbox inline; no extra rules needed today */
 }
 
 /* --- Verified pill (navbar) --- */
@@ -3746,7 +3790,7 @@ a:focus-visible {
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: rgba(0, 56, 168, 0.08);
+  background: rgba(20, 82, 240, 0.08);
   color: var(--primary);
   display: inline-flex;
   align-items: center;
@@ -3794,6 +3838,7 @@ a:focus-visible {
   line-height: 1.08;
   letter-spacing: -0.04em;
 }
+
 .onboarding-hero-copy {
   margin: 0 0 24px;
   color: var(--foreground-muted);

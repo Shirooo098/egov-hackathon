@@ -1,0 +1,18 @@
+ALTER TABLE blood_requests ADD COLUMN IF NOT EXISTS creator_id uuid REFERENCES accounts(id);
+ALTER TABLE blood_requests ADD COLUMN IF NOT EXISTS publisher_id uuid REFERENCES accounts(id);
+ALTER TABLE blood_requests ADD COLUMN IF NOT EXISTS closer_id uuid REFERENCES accounts(id);
+ALTER TABLE blood_requests ADD COLUMN IF NOT EXISTS published_at timestamptz;
+ALTER TABLE blood_requests ADD COLUMN IF NOT EXISTS closed_at timestamptz;
+ALTER TABLE blood_requests DROP CONSTRAINT IF EXISTS blood_requests_creator_required_ck;
+ALTER TABLE blood_requests ADD CONSTRAINT blood_requests_creator_required_ck CHECK (creator_id IS NOT NULL) NOT VALID;
+ALTER TABLE blood_responses ALTER COLUMN appointment_request_id DROP NOT NULL;
+ALTER TABLE blood_responses ADD COLUMN IF NOT EXISTS response_status text NOT NULL DEFAULT 'submitted';
+ALTER TABLE blood_responses ADD COLUMN IF NOT EXISTS response_hash bytea;
+ALTER TABLE blood_responses ADD COLUMN IF NOT EXISTS version integer NOT NULL DEFAULT 1;
+UPDATE blood_responses SET response_hash = digest(id::text, 'sha256') WHERE response_hash IS NULL;
+ALTER TABLE blood_responses ALTER COLUMN response_hash SET NOT NULL;
+ALTER TABLE blood_requests DROP CONSTRAINT IF EXISTS blood_requests_status_ck;
+ALTER TABLE blood_requests ADD CONSTRAINT blood_requests_status_ck CHECK (status IN ('draft','approved','published','closed'));
+ALTER TABLE blood_responses DROP CONSTRAINT IF EXISTS blood_responses_status_ck;
+ALTER TABLE blood_responses ADD CONSTRAINT blood_responses_status_ck CHECK (response_status IN ('submitted','withdrawn'));
+CREATE UNIQUE INDEX IF NOT EXISTS blood_responses_actor_idempotency_idx ON blood_responses(actor_account_id, idempotency_key);

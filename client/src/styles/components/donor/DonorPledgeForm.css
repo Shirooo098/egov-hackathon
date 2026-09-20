@@ -1,0 +1,116 @@
+.migrated-1f2c3427 {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.migrated-78d8b799 {
+  font-size: 13px;
+  color: var(--foreground-muted);
+  text-align: center;
+  margin-bottom: 20px;
+}
+.migrated-039dd51e {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.migrated-fd720fd5 {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 18px;
+  background: var(--background-alt);
+}
+.migrated-20dcf194 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.migrated-e72f3736 {
+  font-weight: 700;
+  font-size: 14px;
+}
+.migrated-702ab413 {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.migrated-e5022c59 {
+  font-size: 11px;
+  color: var(--foreground-muted);
+}
+.migrated-763aa118 {
+  width: 80px;
+  height: 28px;
+  padding: 0 4px;
+  font-size: 12px;
+}
+.migrated-5f18923c {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.migrated-5d4df660 {
+  text-transform: capitalize;
+}
+.migrated-cc187a47 {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.migrated-d2a1a31b {
+  margin-top: 3px;
+}
+.migrated-cd1c6985 {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--foreground-muted);
+}
+.migrated-32e14a60 {
+  background: var(--background-alt);
+  text-align: center;
+  padding: 14px;
+}
+.migrated-791c71cb {
+  margin: 0 auto 8px;
+}
+.migrated-a54e6f50 {
+  font-size: 12px;
+  font-weight: 700;
+}
+.migrated-bb1140cf {
+  border: 1px solid rgba(5, 150, 105, 0.25);
+  background: rgba(5, 150, 105, 0.03);
+  padding: 12px;
+}
+.migrated-5d0e1ffa {
+  color: var(--emerald);
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.migrated-83c40d56 {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--foreground-subtle);
+  margin-top: 4px;
+}
+.migrated-729dd964 {
+  color: var(--destructive);
+  font-size: 12px;
+  margin: 0px;
+}
+.migrated-888b2c34 {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+.migrated-7e90f870 {
+  flex: 1;
+}
+.migrated-b3730661 {
+  flex: 2;
+}

@@ -1,0 +1,4 @@
+-- Synthetic seed separation: Synthetic seed data is strictly separated from forward-only DDL migrations.
+-- See src/db/seeds/synthetic.ts for synthetic environment bootstrapping.
+-- Live and staging migrations running from a blank boundary must not import synthetic records.
+-- This migration remains as a no-op milestone to preserve migration version history.
