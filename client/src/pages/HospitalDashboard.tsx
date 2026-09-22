@@ -4,15 +4,11 @@ import EGovAIWidget from "../features/hospital/EGovAIWidget";
 import OrganAnalytics from "../features/hospital/OrganAnalytics";
 import { useToast } from "../context/ToastContext";
 import { useAuth } from "../context/AuthContext";
-import { ClinicalTriageTab } from "../features/hospital/HospitalTabComponents";
+import { ExperimentalCompatibilityPanel } from "../features/hospital/HospitalTabComponents";
 import {
-  STATIC_MATCHES,
-  URGENCY_BADGES,
-  URGENCY_LABELS,
   getLiveMatchAsItem,
   filterMatches,
 } from "../services/domain";
-import { usePersistedStaticMatches } from "../context/usePersistedStaticMatches";
 import {
   ClipIcon,
   ScaleIcon,
@@ -50,8 +46,7 @@ type ScheduleProposal = { id: string; state?: string; [key: string]: unknown };
 type HospitalMatch = import("../services/domain").MatchItem;
 
 export default function HospitalDashboard() {
-  const { match, advanceStatus, anchorToBlockchain, resetMatch, platform } =
-    useMatch();
+  const { match, resetMatch, platform } = useMatch();
   const auth = useAuth(true);
   const { success, warning } = useToast();
 
@@ -62,8 +57,6 @@ export default function HospitalDashboard() {
   const [currentPair, setCurrentPair] = useState<Pair | null>(null);
   const [activeScheduleProposal, setActiveScheduleProposal] =
     useState<ScheduleProposal | null>(null);
-  const [staticState, setStaticState] =
-    usePersistedStaticMatches(STATIC_MATCHES);
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [resetMessage, setResetMessage] = useState("");
@@ -142,38 +135,6 @@ export default function HospitalDashboard() {
       active = false;
     };
   }, []);
-  const handleApproveMatch = (matchId: string) => {
-    if (matchId === match.id) {
-      advanceStatus("approved");
-    } else {
-      setStaticState((prev) =>
-        prev.map((c) => (c.id === matchId ? { ...c, status: "approved" } : c)),
-      );
-      success(
-        `Demo match ${matchId} approved for the hospital review workflow.`,
-        { title: "Demo Review Approved" },
-      );
-    }
-  };
-
-  const handleRejectMatch = (matchId: string) => {
-    if (matchId === match.id) {
-      advanceStatus("rejected");
-    } else {
-      setStaticState((prev) =>
-        prev.map((c) => (c.id === matchId ? { ...c, status: "rejected" } : c)),
-      );
-      warning(
-        `This demo match was marked declined. No new match search has started.`,
-        { title: "Demo Match Declined" },
-      );
-    }
-  };
-
-  const handleAnchor = async () => {
-    await anchorToBlockchain();
-  };
-
   const TABS = [
     { id: "matches", label: "Hospital Demo Review", icon: <ClipIcon /> },
     { id: "laws", label: "PH Health Laws AI", icon: <ScaleIcon /> },
@@ -184,12 +145,16 @@ export default function HospitalDashboard() {
     },
   ];
 
-  // Combine shared live match with static demo items for rich UI table
-  const liveMatchAsItem = getLiveMatchAsItem(match);
-  const allMatches: HospitalMatch[] = platform.authoritative
-    ? []
-    : ([liveMatchAsItem, ...staticState] as HospitalMatch[]);
-  const { pendingMatches, activeMatches, rejectedMatches } =
+  // Non-authoritative live match item for demo indicator/hero rail
+  const liveMatchAsItem =
+    match?.donor?.first_name && match?.recipient?.first_name
+      ? getLiveMatchAsItem(match)
+      : null;
+  const allMatches: HospitalMatch[] =
+    platform.authoritative || !liveMatchAsItem?.id
+      ? []
+      : ([liveMatchAsItem] as HospitalMatch[]);
+  const { pendingMatches, activeMatches } =
     filterMatches(allMatches);
 
   // Active workflow items = matches already in scheduling or beyond
@@ -408,20 +373,9 @@ export default function HospitalDashboard() {
                   <LifecycleStrip status={match.status} compact />
                 </div>
               )}
-              {!platform.authoritative && (
-                <ClinicalTriageTab
-                  pendingMatches={pendingMatches}
-                  activeMatches={activeMatches}
-                  rejectedMatches={rejectedMatches}
-                  match={liveMatchAsItem}
-                  handleRejectMatch={handleRejectMatch}
-                  handleApproveMatch={handleApproveMatch}
-                  handleAnchor={handleAnchor}
-                  advanceStatus={advanceStatus}
-                  URGENCY_BADGES={URGENCY_BADGES}
-                  URGENCY_LABELS={URGENCY_LABELS}
-                />
-              )}
+              <div className="dashboard-section-gap">
+                <ExperimentalCompatibilityPanel />
+              </div>
             </>
           )}
 
