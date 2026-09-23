@@ -44,7 +44,11 @@ Citizen runtime login is official eGov SSO only in every environment; invitation
 
 **Case intent:** A Citizen's post-authentication choice to begin a donor or recipient case, not a distinct account type or login.
 
-**Official eGov scope:** The first scope is official eGov SSO, official eGovChain consent commitments, official eMessage transactional notifications triggered by consent and authenticated actions, and official eGovAI informational-only responses. eGovAI never makes clinical or legal decisions. eVerify and dependent Face Liveness are deferred pending team assessment.
+**Official eGov scope:** The first scope is official eGov SSO, official eGovChain consent commitments, official eMessage transactional notifications triggered by consent and authenticated actions, official eGovAI informational-only responses, and optional standalone Face Liveness. eGovAI never makes clinical or legal decisions; eVerify remains deferred.
+
+**Standalone Face Liveness:** An optional Citizen-initiated proof-of-presence check after SSO. It is not eVerify, identity authentication, case eligibility, or clinical clearance.
+
+**Liveness opt-in:** Explicit permission for one optional Face Liveness session. It does not authorize eBuhay to retain or display a selfie or reference image.
 
 **eMessage boundary:** Official eMessage is limited to appointment changes, status updates, and document-action reminders. Each notification requires explicit opt-in and an authenticated server trigger; SMS content is generic and non-medical.
 
