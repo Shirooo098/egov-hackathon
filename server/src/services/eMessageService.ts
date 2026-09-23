@@ -2,28 +2,15 @@
  * eBuhay - DICT eMessage SMS Notification Service
  * Sends SMS push notifications to citizens via DICT eMessage API.
  *
- * Truthful delivery: Failures are never reported as delivered.
+ * Truthful delivery: Failures and unconfirmed deliveries are never reported as delivered.
  * Privacy & Redaction: Logs and return values never contain unmasked mobile numbers,
  * unredacted credentials, or raw upstream errors.
  */
-import { isLegacyIntegrationDisabled } from '../runtime/config.js';
-
-const DEMO_MODE = process.env.DEMO_MODE === 'true' || isLegacyIntegrationDisabled();
-
-export type DemoMessage = {
-  id: string;
-  number: string;
-  message: string;
-  timestamp: string;
-  status: 'delivered' | 'failed';
-  delivery_time?: string;
-};
-
 export type SmsResult =
   | {
       success: true;
       message_id: string;
-      status: 'delivered';
+      status: 'delivered' | 'sent';
       number?: string;
       message?: string;
       timestamp?: string;
@@ -32,12 +19,10 @@ export type SmsResult =
   | {
       success: false;
       error: string;
-      status: 'failed';
+      status: 'failed' | 'unavailable';
       number?: string;
       _demo?: boolean;
     };
-
-const demoMessageLog: DemoMessage[] = [];
 
 let mockSmsHandler: ((number: string, message: string) => Promise<SmsResult>) | null = null;
 
@@ -73,21 +58,19 @@ export function redactErrorMessage(err: unknown): string {
   return 'delivery_failed';
 }
 
-function simulateDelay(minMs = 10, maxMs = 50): Promise<void> {
-  const delay = Math.floor(Math.random() * (maxMs - minMs + 1)) + minMs;
-  return new Promise(resolve => setTimeout(resolve, delay));
-}
-
-function generateMessageId(): string {
-  return 'MSG-' + Date.now() + '-' + Math.floor(Math.random() * 10000);
-}
-
 /**
- * Send an SMS message to a Philippine mobile number
+ * Send an SMS message to a Philippine mobile number via official eMessage provider.
+ * Simulated and network-failure success are removed; if official delivery cannot be confirmed,
+ * unavailable is returned truthfully.
+ *
  * @param {string} number - E.164 format e.g. +639090000000
  * @param {string} message - Generic SMS message body
  */
-export async function sendSMS(number: string, message: string): Promise<SmsResult> {
+export async function sendSMS(
+  number: string,
+  message: string,
+  dependencies: { fetchImpl?: typeof fetch; timeoutMs?: number } = {},
+): Promise<SmsResult> {
   if (!number || !/^\+[1-9]\d{7,14}$/.test(number)) {
     return {
       success: false,
@@ -97,50 +80,45 @@ export async function sendSMS(number: string, message: string): Promise<SmsResul
   }
 
   if (mockSmsHandler) {
-    return mockSmsHandler(number, message);
-  }
-
-  // Demo mode: mock delivery truthfully
-  if (DEMO_MODE || !process.env.EMESSAGE_API_URL) {
-    await simulateDelay();
-
-    // Simulated test failure hook: numbers ending in 999 fail to test provider failure handling
-    if (number.endsWith('999')) {
-      return {
-        success: false,
-        error: 'simulated_provider_failure',
-        status: 'failed',
-        _demo: true,
-      };
+    const mockRes = await mockSmsHandler(number, message);
+    if (mockRes.success) {
+      if (!mockRes.message_id || (mockRes.status !== 'sent' && mockRes.status !== 'delivered')) {
+        return {
+          success: false,
+          error: 'delivery_unconfirmed',
+          status: 'unavailable',
+        };
+      }
     }
+    return mockRes;
+  }
 
-    const msgId = generateMessageId();
-    const demoEntry: DemoMessage = {
-      id: msgId,
-      number: maskPhoneNumber(number),
-      message,
-      timestamp: new Date().toISOString(),
-      status: 'delivered',
-      delivery_time: new Date(Date.now() + 1000).toISOString(),
-    };
-
-    demoMessageLog.push(demoEntry);
-
+  // Official provider configuration check:
+  // Provider mocks are test-only. Without a configured official provider, delivery cannot be confirmed;
+  // return unavailable truthfully without simulating success.
+  const baseUrl = process.env.EMESSAGE_API_URL?.trim();
+  const apiToken = process.env.EMESSAGE_API_TOKEN?.trim();
+  let providerUrl: URL | null = null;
+  try {
+    providerUrl = baseUrl ? new URL(baseUrl) : null;
+  } catch {
+    providerUrl = null;
+  }
+  if (!providerUrl || providerUrl.protocol !== 'https:' || !apiToken) {
     return {
-      success: true,
-      message_id: msgId,
-      status: 'delivered',
-      timestamp: demoEntry.timestamp,
-      _demo: true,
+      success: false,
+      error: 'provider_unavailable',
+      status: 'unavailable',
     };
   }
 
-  // Real API call path
+  // Official provider call path
   try {
-    const res = await fetch(`${process.env.EMESSAGE_API_URL}/sms/push`, {
+    const res = await (dependencies.fetchImpl ?? fetch)(`${providerUrl.toString().replace(/\/$/, '')}/sms/push`, {
       method: 'POST',
+      signal: AbortSignal.timeout(dependencies.timeoutMs ?? 10_000),
       headers: {
-        'X-EMESSAGE-Auth': process.env.EMESSAGE_API_TOKEN || '',
+        'X-EMESSAGE-Auth': apiToken,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ number, message }),
@@ -148,20 +126,64 @@ export async function sendSMS(number: string, message: string): Promise<SmsResul
 
     if (res.status === 400) return { success: false, error: 'invalid_number', status: 'failed' };
     if (res.status === 422) return { success: false, error: 'invalid_payload', status: 'failed' };
+    if (res.status === 401 || res.status === 403) return { success: false, error: 'unauthorized', status: 'failed' };
+    if (res.status === 429) return { success: false, error: 'rate_limited', status: 'failed' };
+    if (res.status >= 500) return { success: false, error: 'provider_unavailable', status: 'unavailable' };
     if (!res.ok) return { success: false, error: 'upstream_error', status: 'failed' };
 
-    const data = (await res.json().catch(() => ({}))) as { data?: { id?: string }; message_id?: string };
+    const data = (await res.json().catch(() => ({}))) as {
+      data?: { id?: string; message_id?: string; status?: string };
+      message_id?: string;
+      id?: string;
+      status?: string;
+    };
+    const rawMessageId = data?.data?.id || data?.data?.message_id || data?.message_id || data?.id;
+    const messageId =
+      typeof rawMessageId === 'string' && /^[A-Za-z0-9._:-]{1,200}$/.test(rawMessageId.trim())
+        ? rawMessageId.trim()
+        : null;
+    const rawProviderStatus = data?.data?.status || data?.status;
+    const providerStatus =
+      typeof rawProviderStatus === 'string'
+        ? rawProviderStatus.trim().toLowerCase()
+        : '';
+
+    // Succeeds only for explicitly confirmed provider status 'sent' or 'delivered' plus correlation id.
+    // failed/rejected/malformed/pending/queued are not successful and never claimed sent/delivered.
+    // Do not invent undocumented statuses.
+    if (!messageId || (providerStatus !== 'sent' && providerStatus !== 'delivered')) {
+      const isUnavailable =
+        providerStatus === 'queued' ||
+        providerStatus === 'pending' ||
+        !messageId;
+      const error =
+        providerStatus === 'rejected' || providerStatus === 'failed'
+          ? 'delivery_failed'
+          : providerStatus === 'queued' || providerStatus === 'pending' || !messageId
+          ? 'delivery_unconfirmed'
+          : 'delivery_failed';
+
+      return {
+        success: false,
+        error,
+        status: isUnavailable ? 'unavailable' : 'failed',
+      };
+    }
+
     return {
       success: true,
-      message_id: data?.data?.id || data?.message_id || generateMessageId(),
-      status: 'delivered',
+      message_id: messageId,
+      status: providerStatus as 'sent' | 'delivered',
     };
   } catch (err: unknown) {
-    const redacted = redactErrorMessage(err);
+    const redacted =
+      err instanceof DOMException && err.name === 'TimeoutError'
+        ? 'provider_timeout'
+        : redactErrorMessage(err);
     return {
       success: false,
       error: redacted,
-      status: 'failed',
+      status: 'unavailable',
     };
   }
 }
@@ -170,55 +192,14 @@ export async function sendSMS(number: string, message: string): Promise<SmsResul
 
 export const GENERIC_SMS_TEMPLATES: Record<string, string> = {
   coordination_update: '[eBuhay] You have a coordination update. Please sign in to ebuhay.e.gov.ph to review your case.',
-  withdrawal_update: '[eBuhay] A case participation status was updated. Sign in to ebuhay.e.gov.ph to review.',
   appointment_scheduled: '[eBuhay] An appointment status has been updated. Please sign in to ebuhay.e.gov.ph to review.',
-  team_message: '[eBuhay] You have a new coordination message from your care team. Sign in to ebuhay.e.gov.ph to reply.',
   action_required: '[eBuhay] Action is requested for your coordination record. Please sign in to ebuhay.e.gov.ph.',
-  blood_request_update: '[eBuhay] A blood coordination update is available. Sign in to ebuhay.e.gov.ph to review.',
-  match_update: '[eBuhay] A coordination match proposal status has changed. Sign in to ebuhay.e.gov.ph to review.',
-  consent_recorded: '[eBuhay] A coordination consent action has been recorded. Sign in to ebuhay.e.gov.ph to review.',
 };
-
-export async function notifyMatchFound(phone: string, _donorName?: string, _matchType?: string) {
-  return sendSMS(phone, GENERIC_SMS_TEMPLATES.match_update);
-}
-
-export async function notifyAppointmentConfirmed(phone: string, _dateTime?: string, _hospitalName?: string) {
-  return sendSMS(phone, GENERIC_SMS_TEMPLATES.appointment_scheduled);
-}
-
-export async function notifyChatMessage(phone: string, _senderName?: string) {
-  return sendSMS(phone, GENERIC_SMS_TEMPLATES.team_message);
-}
-
-export async function notifyAgreementFinalized(phone: string, _role?: string) {
-  return sendSMS(phone, GENERIC_SMS_TEMPLATES.consent_recorded);
-}
-
-export const notifyConsentSigned = notifyAgreementFinalized;
-
-export function getDemoMessages() {
-  return [...demoMessageLog];
-}
-
-export function clearDemoMessages() {
-  demoMessageLog.length = 0;
-}
-
-export { DEMO_MODE };
 export default {
   sendSMS,
   maskPhoneNumber,
   redactErrorMessage,
   setMockSmsHandler,
   resetMockSmsHandler,
-  notifyMatchFound,
-  notifyAppointmentConfirmed,
-  notifyChatMessage,
-  notifyAgreementFinalized,
-  notifyConsentSigned,
-  getDemoMessages,
-  clearDemoMessages,
   GENERIC_SMS_TEMPLATES,
-  DEMO_MODE,
 };

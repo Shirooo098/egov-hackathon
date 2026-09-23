@@ -7,6 +7,7 @@ import {
 } from "./runtime/config.js";
 import { withDeadline } from "./runtime/shutdown.js";
 import { broadcast, egovchainEnabled, verifyReceipt, rpc, signConsentTransaction, signerAddress } from "./services/EgovChainService.js";
+import { runNotificationBatch } from "./services/notificationService.js";
 
 export type AppointmentDelivery = (message: {
   eventType: string;
@@ -238,7 +239,7 @@ export async function startWorker(options: WorkerOptions) {
     options.process ??
     (options.check
       ? check
-      : async () => { await runAppointmentOutboxBatch(); await runConsentAnchorBatch(); });
+      : async () => { await runAppointmentOutboxBatch(); await runConsentAnchorBatch(); await runNotificationBatch(); });
   let inFlight: Promise<void> | undefined;
   const runWork = () => {
     if (!inFlight)

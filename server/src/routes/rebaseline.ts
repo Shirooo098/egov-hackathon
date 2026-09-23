@@ -46,21 +46,21 @@ async function rollbackFail(client: PoolClient, res: Response, status: number, e
   return fail(res, status, error, message);
 }
 
-async function notifyPairParticipants(client: PoolClient, pairId: string) {
-  await client.query(`INSERT INTO notifications(recipient_account_id, template, safe_reference, channel, delivery_status, delivered_at)
-    SELECT DISTINCT c.account_id, 'coordination_update', $1::text, 'in_app', 'delivered', now()
+async function notifyPairParticipants(client: PoolClient, pairId: string, actorAccountId: string) {
+  await client.query(`INSERT INTO notifications(recipient_account_id, actor_account_id, template, safe_reference, channel, delivery_status, delivered_at)
+    SELECT DISTINCT c.account_id, $2::uuid, 'coordination_update', $1::text, 'in_app', 'delivered', now()
     FROM pair_proposals p
     JOIN episodes e ON e.id IN (p.own_episode_id, p.counterpart_episode_id)
     JOIN citizen_cases c ON c.id=e.case_id
-    WHERE p.id=$1::uuid AND c.account_id IS NOT NULL`, [pairId]);
+    WHERE p.id=$1::uuid AND c.account_id IS NOT NULL`, [pairId, actorAccountId]);
 
-  await client.query(`INSERT INTO notifications(recipient_account_id, template, safe_reference, channel, delivery_status)
-    SELECT DISTINCT c.account_id, 'coordination_update', $1::text, 'external_sms', 'pending'
+  await client.query(`INSERT INTO notifications(recipient_account_id, actor_account_id, template, safe_reference, channel, delivery_status)
+    SELECT DISTINCT c.account_id, $2::uuid, 'coordination_update', $1::text, 'external_sms', 'pending'
     FROM pair_proposals p
     JOIN episodes e ON e.id IN (p.own_episode_id, p.counterpart_episode_id)
     JOIN citizen_cases c ON c.id=e.case_id
     JOIN notification_preferences pref ON pref.account_id=c.account_id
-    WHERE p.id=$1::uuid AND c.account_id IS NOT NULL AND pref.sms_consent=true AND pref.phone_number IS NOT NULL`, [pairId]);
+    WHERE p.id=$1::uuid AND c.account_id IS NOT NULL AND pref.sms_consent=true AND pref.phone_number IS NOT NULL`, [pairId, actorAccountId]);
 }
 
 router.get('/hospital/candidates', requireSession, async (req, res, next) => {
@@ -183,7 +183,7 @@ router.post('/hospital/candidates/:id/select', requireSession, requireSameOrigin
       VALUES($1,$2,$3,'awaiting_citizen_acceptance','awaiting_citizen_acceptance',$4,$5)
       RETURNING id,state,version,reviewer_account_id AS "reviewerAccountId"`,
     [recipientId, donorId, reviewerAccountId, requireAccount(req).id, idempotencyKey]);
-    await notifyPairParticipants(client, inserted.rows[0].id);
+    await notifyPairParticipants(client, inserted.rows[0].id, requireAccount(req).id);
     await client.query('COMMIT');
     return ok(res, inserted.rows[0], 201);
   } catch (error) {
@@ -287,7 +287,7 @@ router.post('/pairs/:id/respond', requireSession, requireSameOrigin, async (req,
     }
     const updated = await client.query(`UPDATE pair_proposals SET state=$2,status=$2,version=version+1,consent_scope_version=CASE WHEN $2='awaiting_consent' THEN version+1 ELSE consent_scope_version END,updated_at=now()
       WHERE id=$1 RETURNING id,state,version`, [pair.id, state]);
-    await notifyPairParticipants(client, pair.id);
+    await notifyPairParticipants(client, pair.id, requireAccount(req).id);
     await client.query('COMMIT');
     return ok(res, updated.rows[0], 201);
   } catch (error) {
@@ -461,7 +461,7 @@ router.post('/pairs/:id/schedule-proposals', requireSession, requireSameOrigin, 
         slot_reference AS "slotReference",version,state`,
     [pair.id, start, end, location, slotReference, source, requireAccount(req).id, supersedesId]);
     const updated = await client.query('UPDATE pair_proposals SET version=version+1,updated_at=now() WHERE id=$1 RETURNING version', [pair.id]);
-    await notifyPairParticipants(client, pair.id);
+    await notifyPairParticipants(client, pair.id, requireAccount(req).id);
     await client.query('COMMIT');
     return ok(res, { ...proposal.rows[0], pairVersion: updated.rows[0].version }, 201);
   } catch (error) {
@@ -541,7 +541,7 @@ router.post('/pairs/:id/schedule-proposals/:proposalId/respond', requireSession,
     }
     const updated = await client.query(`UPDATE pair_proposals SET state=$2,status=$2,version=version+1,updated_at=now()
       WHERE id=$1 RETURNING id,state,version`, [item.pair_id, state]);
-    await notifyPairParticipants(client, item.pair_id);
+    await notifyPairParticipants(client, item.pair_id, requireAccount(req).id);
     await client.query('COMMIT');
     return ok(res, updated.rows[0]);
   } catch (error) {
@@ -672,7 +672,7 @@ router.post('/pairs/:id/consent', requireSession, requireSameOrigin, async (req,
       await client.query(`INSERT INTO audit_events(actor_account_id, action, target_reference, source, details)
         VALUES ($1, 'pair_coordination_completed', $2, 'coordination', $3)`,
         [requireAccount(req).id, row.id, JSON.stringify({ message: 'Coordination complete — clinical clearance still required', consentVersion })]);
-      await notifyPairParticipants(client, row.id);
+      await notifyPairParticipants(client, row.id, requireAccount(req).id);
       await client.query('COMMIT');
         return ok(res, { ...updated.rows[0], consentCount: 2, commitment, anchorStatus: 'pending', message: 'Coordination complete — clinical clearance still required' }, 201);
     } else {

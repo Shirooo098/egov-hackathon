@@ -7,7 +7,7 @@ import { requireSameOrigin } from '../middleware/origin.js';
 import type { Account } from '../auth/service.js';
 import type { RuntimeMode } from '../runtime/config.js';
 import { maskPhoneNumber } from '../services/eMessageService.js';
-import { GENERIC_NOTIFICATION_TEMPLATES, runNotificationBatch } from '../services/notificationService.js';
+import { GENERIC_NOTIFICATION_TEMPLATES } from '../services/notificationService.js';
 import { requireWorkflowActive } from './operations.js';
 import { consentCommitment } from '../services/EgovChainService.js';
 import { caseConsentScope, latestConsentState, CONSENT_VERSION, CONSENT_PURPOSES } from '../services/ConsentPolicy.js';
@@ -587,13 +587,6 @@ router.put('/notifications/preferences', requireSameOrigin, async (req, res, nex
   } catch (e) { return next(e); }
 });
 
-router.post('/notifications/dispatch', requireSameOrigin, async (_req, res, next) => {
-  try {
-    const stats = await runNotificationBatch();
-    return json(res, stats);
-  } catch (e) { return next(e); }
-});
-
 router.get('/notifications/:id', async (req, res, next) => {
   try {
     const account = requireAccount(req);
@@ -816,7 +809,7 @@ router.post('/appointments/requests/:id/changes', requireSameOrigin, async (req,
 export function createCitizenPlatformRouter(mode: RuntimeMode) {
   const citizen = express.Router();
   citizen.use((req, res, next) => {
-    if (!(/^\/services$|^\/cases(?:\/[0-9a-f-]+(?:\/episodes|\/invitation|\/claim)?)?$|^\/episodes(?:\/[0-9a-f-]+)?(?:\/intake|\/pause|\/resume|\/withdraw|\/consent)?$|^\/hospital\/cases(?:\/[0-9a-f-]+(?:\/invitation|\/claim)?)?$|^\/hospital\/linkages\/[0-9a-f-]+\/(?:verify|suspend|correct)$|^\/hospital\/slots$|^\/appointments\/requests$|^\/bookings$|^\/conversations(?:\/[0-9a-f-]+\/messages)?$|^\/notifications(?:\/(?:preferences|dispatch|[0-9a-f-]+(?:\/read)?))?$/.test(req.path))) {
+    if (!(/^\/services$|^\/cases(?:\/[0-9a-f-]+(?:\/episodes|\/invitation|\/claim)?)?$|^\/episodes(?:\/[0-9a-f-]+)?(?:\/intake|\/pause|\/resume|\/withdraw|\/consent)?$|^\/hospital\/cases(?:\/[0-9a-f-]+(?:\/invitation|\/claim)?)?$|^\/hospital\/linkages\/[0-9a-f-]+\/(?:verify|suspend|correct)$|^\/hospital\/slots$|^\/appointments\/requests$|^\/bookings$|^\/conversations(?:\/[0-9a-f-]+\/messages)?$|^\/notifications(?:\/(?:preferences|[0-9a-f-]+(?:\/read)?))?$/.test(req.path))) {
       return next('router');
     }
     (req as PlatformRequest).platformLiveMode = mode === 'controlled-live' || mode === 'production';

@@ -711,6 +711,7 @@ const notifications = pgTable("notifications", {
   recipientAccountId: uuid("recipient_account_id")
     .notNull()
     .references(() => accounts.id),
+  actorAccountId: uuid("actor_account_id").references(() => accounts.id),
   template: text("template").notNull(),
   safeReference: text("safe_reference"),
   channel: text("channel").notNull(),
