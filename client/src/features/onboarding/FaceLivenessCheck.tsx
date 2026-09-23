@@ -1,5 +1,4 @@
 import "../../styles/components/onboarding/FaceLivenessCheck.css";
-import Stepper from "./Stepper";
 
 type Props = {
   livenessStage?: number;
@@ -14,9 +13,6 @@ export default function FaceLivenessCheck({
 }: Props) {
   return (
     <div className="anim-in migrated-7f597a40" data-testid="face-liveness-check">
-      <div className="migrated-05a2dd68">
-        <Stepper active={4} />
-      </div>
       <h3 className="migrated-9f19d7d0">Face Liveness Check — Unavailable</h3>
       <div
         className="badge badge-muted"

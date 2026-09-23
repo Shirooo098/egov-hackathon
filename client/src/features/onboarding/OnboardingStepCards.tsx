@@ -102,24 +102,24 @@ export function AuthChoiceCard({
           className="btn btn-primary btn-lg btn-full btn-stacked"
           onClick={() => chooseAuthMode("signin")}
         >
-          <span className="btn-stacked-title">Sign In with eGov (Demo)</span>
+          <span className="btn-stacked-title">Sign In with eGovPH</span>
           <span className="btn-caption btn-caption-on-primary">
-            Use the demo exchange code supplied by the presenter
+            Official eGov staging sign-in is currently unavailable
           </span>
         </button>
         <button
           className="btn btn-outline btn-lg btn-full btn-stacked"
           onClick={() => chooseAuthMode("signup")}
         >
-          <span className="btn-stacked-title">Sign Up with eGov (Demo)</span>
+          <span className="btn-stacked-title">Sign Up with eGovPH</span>
           <span className="btn-caption">
-            Walk through the sample profile and consent steps
+            Official eGov staging sign-in is required before creating a case
           </span>
         </button>
       </div>
       <p className="migrated-dc777a65">
-        This prototype shows a sample eGov exchange and face check for Recipient
-        and Donor citizen journeys. It does not verify a government identity.
+        Citizen access requires official eGov staging SSO. Face Liveness is
+        optional and currently unavailable; it is not required for sign-in.
       </p>
     </div>
   );

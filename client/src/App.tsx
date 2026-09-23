@@ -33,9 +33,6 @@ const RecipientDashboard = lazy(() => import("./pages/RecipientDashboard"));
 const DonorDashboard = lazy(() => import("./pages/DonorDashboard"));
 const HospitalDashboard = lazy(() => import("./pages/HospitalDashboard"));
 const EgovSsoForm = lazy(() => import("./features/onboarding/EgovSsoForm"));
-const FaceLivenessCheck = lazy(
-  () => import("./features/onboarding/FaceLivenessCheck"),
-);
 const RecipientHealthForm = lazy(
   () => import("./features/recipient/RecipientHealthForm"),
 );
@@ -46,7 +43,7 @@ const errorField = (error: unknown, field: "status" | "message"): unknown =>
     ? (error as Record<string, unknown>)[field]
     : undefined;
 type PortalRole = "recipient" | "donor";
-type LivenessSession = { token: string; url: string };
+
 type RecipientHealth = {
   request_type: string;
   blood_type_needed: string;
@@ -65,7 +62,6 @@ const STEPS = {
   ROLE_SELECT: "ROLE_SELECT", // 1. Pick recipient or donor
   AUTH_CHOICE: "AUTH_CHOICE", // 2. Sign in (existing eGov account) or Sign up (new)
   SSO_PENDING: "SSO_PENDING", // 3. Exchanging code / fetching profile via eGov SSO
-  LIVENESS: "LIVENESS", // 4. Face liveness check via eGov Face Liveness API
   RECIPIENT_HEALTH: "RECIPIENT_HEALTH", // 5a. Sign-up only: recipient profile form
   DONOR_PLEDGE: "DONOR_PLEDGE", // 5b. Sign-up only: donor pledge form
 };
@@ -209,15 +205,6 @@ function AppContent() {
 
   const [ssoError, setSsoError] = useState("");
 
-  // Liveness state
-  const [livenessSession, setLivenessSession] =
-    useState<LivenessSession | null>(null);
-  const [livenessStage, setLivenessStage] = useState(0); // 0 idle, 1 waiting on popup, 2 polling, 3 success, 4 fail
-  const [livenessMessage, setLivenessMessage] = useState(
-    "Preparing the demo face-check session...",
-  );
-  const livenessPopupRef = useRef<Window | null>(null);
-
   // Recipient Health Form States
   const [recipientHealth, setRecipientHealth] = useState<RecipientHealth>({
     request_type: "organ",
@@ -291,21 +278,6 @@ function AppContent() {
   };
 
 
-  // ---------- STEP 4: Face Liveness (deferred and unavailable) ----------
-  const startLivenessCheck = async () => {
-    setLivenessStage(4);
-    setLivenessMessage(
-      "Official Face Liveness verification is deferred and unavailable. No identity verification was performed.",
-    );
-    setVerified(false);
-  };
-
-  useEffect(() => {
-    if (step === STEPS.LIVENESS && livenessStage === 0) {
-      startLivenessCheck();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step]);
 
   // ---------- STEP 5a: Recipient Health Submit (sign-up only) ----------
   const handleRecipientHealthSubmit = async (
@@ -351,8 +323,6 @@ function AppContent() {
     setVerified(false);
     setUserProfile(null);
     setSsoError("");
-    setLivenessSession(null);
-    setLivenessStage(0);
     navigate("/", { replace: true });
     toast.info("Signed out successfully", { title: "Signed Out" });
   };
@@ -451,8 +421,7 @@ function AppContent() {
                 >
                   <div className="container onboarding-container">
                     <div className="card anim-up onboarding-card">
-                      {step !== STEPS.LIVENESS &&
-                        step !== STEPS.ROLE_SELECT && (
+                      {step !== STEPS.ROLE_SELECT && (
                           <div className="onboarding-heading">
                             <div className="onboarding-mark">e</div>
                             <h1 id="onboarding-heading" tabIndex={-1}>
@@ -514,23 +483,6 @@ function AppContent() {
                         </Suspense>
                       )}
 
-                      {/* STEP 4: FACE LIVENESS */}
-                      {step === STEPS.LIVENESS && (
-                        <Suspense
-                          fallback={
-                            <div role="status" aria-live="polite">
-                              Loading face-check…
-                            </div>
-                          }
-                        >
-                          <FaceLivenessCheck
-                            livenessStage={livenessStage}
-                            setLivenessStage={setLivenessStage}
-                            livenessMessage={livenessMessage}
-                            onBack={() => setStep(STEPS.SSO_PENDING)}
-                          />
-                        </Suspense>
-                      )}
 
                       {/* STEP 5a: RECIPIENT HEALTH DECLARATION (sign-up only) */}
                       {step === STEPS.RECIPIENT_HEALTH && (

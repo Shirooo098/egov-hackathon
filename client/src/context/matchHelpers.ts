@@ -22,9 +22,6 @@ export const INITIAL_DEMO_MATCH = {
     location_city: "Quezon City",
     location_province: "Metro Manila",
     age: 32,
-    everify_status: "verified",
-    everify_tier: "Tier I",
-    philsys_pcn: "PH-9823-1122-3344",
   },
   recipient: {
     id: "33333333-3333-3333-3333-333333333333",
@@ -37,9 +34,6 @@ export const INITIAL_DEMO_MATCH = {
     urgency: "urgent",
     description:
       "Urgent kidney transplant required following stage IV chronic renal disease.",
-    everify_status: "verified",
-    everify_tier: "Tier I",
-    philsys_pcn: "PH-8844-5566-7788",
   },
   proposedSchedule: null, // { date, time, location, proposedBy }
   scheduledDate: null,

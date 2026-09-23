@@ -1,5 +1,4 @@
 import express from "express";
-import verifyRouter from "./verify.js";
 import { createSessionRouter } from "./session.js";
 import staffRouter from "./staff.js";
 import rebaselineRouter from "./rebaseline.js";
@@ -34,10 +33,10 @@ export function createV1Router(config: RuntimeConfig) {
     res.json({ success: true, status: "alive", mode: config.mode }),
   );
   if (config.mode !== "synthetic") router.use("/egov", unavailable);
-  router.use("/auth", verifyRouter);
   router.use("/auth", createSessionRouter(config));
   router.use("/auth/egov", createEgovAuthRouter(config));
   router.use("/auth", staffRouter);
+  router.use("/auth", unavailable);
   router.use("/hospital-events", createHospitalEventsRouter(config));
   if (config.mode === "synthetic")
     router.use("/", createSyntheticHospitalRouter(config));

@@ -389,7 +389,7 @@ img {
   box-shadow: var(--shadow-sm);
 }
 
-/* eVerify pill */
+/* Status pill */
 .ev-pill {
   display: flex;
   align-items: center;
@@ -408,12 +408,6 @@ img {
   border-color: var(--primary);
   color: var(--primary);
   background: var(--primary-10);
-}
-
-.ev-pill.done {
-  border-color: rgba(5, 150, 105, 0.3);
-  color: var(--emerald);
-  background: rgba(5, 150, 105, 0.06);
 }
 
 /* ============================================================

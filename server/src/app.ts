@@ -2,7 +2,6 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import type { Request, Response, NextFunction } from "express";
-import verifyRouter from "./routes/verify.js";
 import { createSessionRouter } from "./routes/session.js";
 import staffRouter from "./routes/staff.js";
 import rebaselineRouter from "./routes/rebaseline.js";
@@ -188,7 +187,6 @@ export function createApp(options: AppOptions = {}) {
       version: "1.0.0",
       timestamp: new Date().toISOString(),
       services: {
-        eVerify: integrationStatus,
         eMessage: integrationStatus,
         eGovAI: integrationStatus,
         BesuBlockchain: integrationStatus,
@@ -197,11 +195,11 @@ export function createApp(options: AppOptions = {}) {
   });
 
   // Routes
-  app.use("/api/auth", verifyRouter);
-  // Invitation/session auth is intentionally mounted beside the legacy verifier.
-  // It is database-backed and does not alter the legacy demo endpoint.
   app.use("/api/auth", createSessionRouter(config!));
   app.use("/api/auth", staffRouter);
+  app.use("/api/auth", (_req, res) =>
+    res.status(404).json({ success: false, error: "not_found", message: "Route not found" }),
+  );
   if (config!.mode !== "synthetic")
     app.use("/api/egov", (_req, res) =>
       res

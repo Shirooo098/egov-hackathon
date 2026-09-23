@@ -13,7 +13,6 @@ const DEMO_DONORS = [
     last_name: "Dela Cruz",
     blood_type: "O-",
     location_city: "Quezon City",
-    everify_status: "verified",
     donor_profile: {
       organ_pledges: ["kidney", "cornea"],
       availability_status: "available",
@@ -27,7 +26,6 @@ const DEMO_DONORS = [
     last_name: "Reyes",
     blood_type: "A+",
     location_city: "Pasig City",
-    everify_status: "verified",
     donor_profile: {
       organ_pledges: ["liver"],
       availability_status: "available",
@@ -41,7 +39,6 @@ const DEMO_DONORS = [
     last_name: "Garcia",
     blood_type: "B+",
     location_city: "Manila",
-    everify_status: "verified",
     donor_profile: {
       organ_pledges: [],
       availability_status: "available",
@@ -55,7 +52,6 @@ const DEMO_DONORS = [
     last_name: "Magtanggol",
     blood_type: "AB-",
     location_city: "Mandaluyong",
-    everify_status: "verified",
     donor_profile: {
       organ_pledges: ["kidney", "liver"],
       availability_status: "available",
