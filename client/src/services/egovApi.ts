@@ -50,22 +50,6 @@ export const egovApi = {
    * Backend route should call POST {{base_url}}/api/token with
    * exchange_code, scope: 'SSO_AUTHENTICATION', partner_code, partner_secret.
    */
-  async exchangeCodeForToken(exchangeCode: string) {
-    return postJSON(`${BASE}/token`, { exchange_code: exchangeCode });
-    // -> { access_token }
-  },
-
-  /**
-   * STEP 2 of SSO: resolve the authenticated citizen's profile using the
-   * bearer access_token. Backend route calls
-   * POST {{base_url}}/api/partner/sso_authentication
-   * with Authorization: Bearer {{access_token}}.
-   */
-  async ssoAuthenticate(accessToken: string) {
-    return postJSON(`${BASE}/sso-authenticate`, { access_token: accessToken });
-    // -> { status, message, data: { first_name, last_name, birth_date, signature, ... } }
-  },
-
   /**
    * STEP 1 of Liveness: create a session. action:'redirect' opens a hosted
    * capture page; we use 'redirect' with a callback_url pointing back into

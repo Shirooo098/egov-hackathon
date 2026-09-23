@@ -55,11 +55,6 @@ export const api = {
   request,
   auth: {
     session: () => request("/auth/session"),
-    redeemInvitation: (token: string) =>
-      request("/auth/invitations/redeem", {
-        method: "POST",
-        body: JSON.stringify({ token }),
-      }),
     logout: () => request("/auth/logout", { method: "POST" }),
     staffSignIn: (username: string, password: string, mfaCode: string) =>
       request("/auth/staff/sign-in", {

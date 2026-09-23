@@ -135,7 +135,7 @@ function AppContent() {
   const location = useLocation();
   const toast = useToast();
   const { consentSigned, setConsentSigned, saveIntake } = useMatch();
-  const { session, restored, redeemInvitation, signOut } = useAuth()!;
+  const { session, restored, signOut } = useAuth()!;
 
   // Which portal the person is heading into, chosen before auth
   const [pendingRole, setPendingRole] = useState<PortalRole | null>(null);
@@ -190,7 +190,23 @@ function AppContent() {
   // selected case context and may be either donor or recipient.
   const accountRole = sessionRole(session);
 
-  const [invitationToken, setInvitationToken] = useState("");
+  useEffect(() => {
+    if (
+      restored &&
+      accountRole === "citizen" &&
+      (onboardingRole === "recipient" || onboardingRole === "donor")
+    ) {
+      finishRole(onboardingRole);
+    }
+  }, [restored, accountRole, onboardingRole]);
+
+  useEffect(() => {
+    if (restored && accountRole === "citizen" && !role) {
+      if (location.pathname === "/recipient") setRole("recipient");
+      else if (location.pathname === "/donor") setRole("donor");
+    }
+  }, [restored, accountRole, role, location.pathname]);
+
   const [ssoError, setSsoError] = useState("");
 
   // Liveness state
@@ -274,114 +290,14 @@ function AppContent() {
     navigate(`/onboarding/${portalId}`);
   };
 
-  // ---------- STEP 3: invitation-backed citizen session ----------
-  const handleInvitationSubmit = async (
-    e: React.FormEvent<HTMLFormElement>,
-  ) => {
-    e.preventDefault();
-    if (!invitationToken.trim()) {
-      setSsoError(
-        "Enter the invitation or login token supplied to you, then try again.",
-      );
-      return;
-    }
-    setSsoLoading(true);
-    setSsoError("");
-    try {
-      await redeemInvitation(invitationToken.trim());
-      setInvitationToken("");
-      setVerified(false);
-      setUserProfile(null);
-      setTier("Invited tester · synthetic records");
-      toast.success("Secure invited-tester session started.", {
-        title: "Access granted",
-      });
-      if (authMode === "signup") {
-        setStep(STEPS.LIVENESS);
-      } else if (pendingRole) {
-        finishRole(pendingRole);
-      }
-    } catch (error) {
-      const message =
-        typeof errorField(error, "message") === "string"
-          ? (errorField(error, "message") as string)
-          : "We could not redeem that invitation. It may be expired or already used.";
-      setSsoError(message);
-      toast.error(message, { title: "Invitation not accepted" });
-    } finally {
-      setSsoLoading(false);
-    }
-  };
 
-  // ---------- STEP 4: Face Liveness (create session -> popup -> poll result) ----------
+  // ---------- STEP 4: Face Liveness (deferred and unavailable) ----------
   const startLivenessCheck = async () => {
-    setLivenessStage(1);
-    setLivenessMessage("Opening the demo face-check window...");
-    try {
-      const callbackUrl = `${window.location.origin}${window.location.pathname}#liveness-complete`;
-      const session = await egovApi.createLivenessSession({ callbackUrl });
-      const liveness = session as LivenessSession;
-      setLivenessSession(liveness);
-
-      livenessPopupRef.current = window.open(
-        liveness.url,
-        "eGovLiveness",
-        "width=480,height=640,noopener",
-      );
-
-      setLivenessStage(2);
-      setLivenessMessage("Waiting for the demo face check...");
-
-      const result = (await egovApi.pollLivenessResult(liveness.token)) as {
-        status?: string;
-        confidence_score?: number;
-      };
-
-      if (livenessPopupRef.current && !livenessPopupRef.current.closed) {
-        livenessPopupRef.current.close();
-      }
-
-      if (
-        result.status === "SUCCEEDED" &&
-        Number(result.confidence_score) >= 95.0
-      ) {
-        setLivenessStage(3);
-        setLivenessMessage(
-          "Demo face check complete. No government identity was verified.",
-        );
-        setVerified(true);
-        toast.success("Demo face check complete", {
-          title: "Demo step complete",
-        });
-
-        setTimeout(() => {
-          if (authMode === "signup") {
-            if (pendingRole === "recipient") setStep(STEPS.RECIPIENT_HEALTH);
-            else if (pendingRole === "donor") setStep(STEPS.DONOR_PLEDGE);
-            else if (pendingRole) finishRole(pendingRole);
-          } else {
-            if (pendingRole) finishRole(pendingRole);
-          }
-        }, 1200);
-      } else {
-        setLivenessStage(4);
-        setLivenessMessage(
-          `Demo face check ${result.status === "SUCCEEDED" ? "did not meet the sample threshold" : "failed"} — select “Retry Liveness Check” to try again.`,
-        );
-        toast.error("Demo face check did not complete. Retry the demo step.", {
-          title: "Retry Required",
-        });
-      }
-    } catch {
-      setLivenessStage(4);
-      setLivenessMessage(
-        "The demo face check could not start or finish. Close any open capture window and try again.",
-      );
-      toast.error(
-        "The demo face check could not start or finish. Close any open capture window and try again.",
-        { title: "Liveness Error" },
-      );
-    }
+    setLivenessStage(4);
+    setLivenessMessage(
+      "Official Face Liveness verification is deferred and unavailable. No identity verification was performed.",
+    );
+    setVerified(false);
   };
 
   useEffect(() => {
@@ -434,7 +350,6 @@ function AppContent() {
     setStep(STEPS.ROLE_SELECT);
     setVerified(false);
     setUserProfile(null);
-    setInvitationToken("");
     setSsoError("");
     setLivenessSession(null);
     setLivenessStage(0);
@@ -582,11 +497,8 @@ function AppContent() {
                         >
                           <EgovSsoForm
                             pendingRole={pendingRole}
-                            invitationToken={invitationToken}
-                            setInvitationToken={setInvitationToken}
                             ssoError={ssoError}
                             ssoLoading={ssoLoading}
-                            onSubmit={handleInvitationSubmit}
                             authMode={authMode}
                             setAuthMode={setAuthMode}
                             onBack={() => {
@@ -633,7 +545,7 @@ function AppContent() {
                             recipientHealth={recipientHealth}
                             setRecipientHealth={setRecipientHealth}
                             onSubmit={handleRecipientHealthSubmit}
-                            onBack={() => setStep(STEPS.LIVENESS)}
+                            onBack={() => setStep(STEPS.SSO_PENDING)}
                           />
                         </Suspense>
                       )}
@@ -656,7 +568,7 @@ function AppContent() {
                               }))
                             }
                             onSubmit={handleDonorPledgeSubmit}
-                            onBack={() => setStep(STEPS.LIVENESS)}
+                            onBack={() => setStep(STEPS.SSO_PENDING)}
                             savingPledge={anchoringPledge}
                             pledgeError={pledgeError}
                           />

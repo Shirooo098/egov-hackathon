@@ -1,7 +1,7 @@
 import React from "react";
 import "../../styles/components/onboarding/Stepper.css";
 
-// Horizontal 5-step progress indicator for the onboarding flow.
+// Horizontal progress indicator for the onboarding flow.
 // `steps` is an array of strings or {label, key}.
 // `active` is the 1-based index of the current step (1..N).
 // Completed steps show a check; the active step is filled.
@@ -27,15 +27,14 @@ function CheckMini({ color = "white" }) {
 export const ONBOARDING_SIGNUP_STEPS = [
   { key: "role", label: "Role" },
   { key: "auth", label: "Access" },
-  { key: "sso", label: "Invitation" },
-  { key: "face", label: "Face check" },
+  { key: "sso", label: "eGovPH" },
   { key: "profile", label: "Profile" },
 ];
 
 export const ONBOARDING_SIGNIN_STEPS = [
   { key: "role", label: "Role" },
   { key: "auth", label: "Access" },
-  { key: "sso", label: "Invitation" },
+  { key: "sso", label: "eGovPH" },
 ];
 
 export const ONBOARDING_STEPS = ONBOARDING_SIGNUP_STEPS;

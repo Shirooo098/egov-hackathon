@@ -10,7 +10,7 @@ type Message = {
 const GREETING = {
   id: "greeting",
   sender: "ai",
-  text: "Hi! I'm the eBuhay prototype assistant. Ask about sample Philippine government-service references, organ/blood donation information, or how this demo works. I cannot provide legal or clinical advice.",
+  text: "Welcome to eGovAI guidance. This assistant provides public process information only and cannot provide clinical, legal, eligibility, matching, or scheduling decisions. The official service is currently deferred pending contract verification.",
   time: "",
 };
 
@@ -75,7 +75,7 @@ export default function FloatingAIChat() {
         {
           id: Date.now() + 1,
           sender: "ai",
-          text: "Sorry, I couldn't reach the eGov AI service just now. Please try again in a moment.",
+          text: "The official eGovAI service is currently unavailable or deferred (503). Please retry later after official integration is verified.",
           time: timeNow(),
         },
       ]);
@@ -99,11 +99,14 @@ export default function FloatingAIChat() {
             <div className="floating-ai-avatar">e</div>
             <div className="floating-ai-title-wrap">
               <h2 id="floating-ai-chat-title" className="floating-ai-title">
-                Prototype assistant
+                eGovAI Guidance
               </h2>
               <div className="floating-ai-status">
-                <span className="floating-ai-status-dot" />
-                Demo service
+                <span
+                  className="floating-ai-status-dot"
+                  style={{ backgroundColor: "var(--danger, #DC2626)" }}
+                />
+                Service unavailable (503)
               </div>
             </div>
             <button
@@ -113,6 +116,21 @@ export default function FloatingAIChat() {
             >
               ✕
             </button>
+          </div>
+
+          <div
+            className="floating-ai-disclaimer"
+            style={{
+              padding: "0.5rem 0.75rem",
+              fontSize: "0.75rem",
+              background: "var(--surface-muted, #f1f5f9)",
+              borderBottom: "1px solid var(--border, #e2e8f0)",
+              color: "var(--foreground-muted, #64748b)",
+            }}
+          >
+            <strong>Informational guidance only:</strong> Public process questions
+            only. Excludes clinical, legal, eligibility, matching, or scheduling
+            advice.
           </div>
 
           {/* Messages */}
@@ -161,7 +179,7 @@ export default function FloatingAIChat() {
                   send();
                 }
               }}
-              placeholder="Ask about eGov services…"
+              placeholder="Ask a public process question…"
               rows={1}
               disabled={loading}
               className="input floating-ai-textarea"
