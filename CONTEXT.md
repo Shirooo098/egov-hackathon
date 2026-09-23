@@ -20,6 +20,8 @@ _Avoid_: Match
 **Experimental compatibility suggestion:** A Hospital Staff-only, read-only, visibly unvalidated eBuhay research mockup made from static synthetic donor/recipient fixtures for kidney, liver, heart, lung, and pancreas. It is separate from eGovAI, unordered, has no percentage, and cannot establish compatibility, rank authoritative candidates, change workflow, create a pair, send an offer, or allocate an organ.
 _Avoid_: AI match, verified match, clinical recommendation, allocation
 
+**Measured synthetic baseline:** Attributable, retained evidence that the current synthetic platform and fixtures pass its automated checks. It permits foundation and simulation work to progress but does not establish Synthetic Demo Ready.
+
 **Synthetic Demo Ready:** The state in which the synthetic showcase walkthrough, disclosures, reset behavior, and checks are repeatable. It is not production readiness.
 _Avoid_: Production ready
 
