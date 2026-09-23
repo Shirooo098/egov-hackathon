@@ -38,6 +38,12 @@ Citizen runtime login is official eGov SSO only in every environment; invitation
 
 **eGov SSO:** Citizen authentication only. eGov SSO never grants Hospital Staff authority; staff access remains a separate project-owned boundary (named accounts with password plus MFA). Official staging identity never grants production or live approval.
 
+**Pending SSO sign-in:** A verified official eGovPH identity awaiting the Citizen's explicit confirmation before eBuhay creates a local session. It grants no eBuhay access.
+
+**eBuhay session:** Revocable local Citizen access created after confirmed official SSO. Ending it does not end the eGovPH session.
+
+**Case intent:** A Citizen's post-authentication choice to begin a donor or recipient case, not a distinct account type or login.
+
 **Official eGov scope:** The first scope is official eGov SSO, official eGovChain consent commitments, official eMessage transactional notifications triggered by consent and authenticated actions, and official eGovAI informational-only responses. eGovAI never makes clinical or legal decisions. eVerify and dependent Face Liveness are deferred pending team assessment.
 
 **eMessage boundary:** Official eMessage is limited to appointment changes, status updates, and document-action reminders. Each notification requires explicit opt-in and an authenticated server trigger; SMS content is generic and non-medical.
