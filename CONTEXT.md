@@ -50,7 +50,14 @@ Citizen runtime login is official eGov SSO only in every environment; invitation
 
 eMessage opt-in defaults off and can be revoked. A provider mobile number does not auto-enroll a Citizen.
 
+**eMessage destination:** The Citizen mobile number supplied by official SSO and covered by explicit SMS opt-in. An unverified manually entered number is not a notification destination.
+
+**Accepted SMS request:** An official eMessage acknowledgement that it created an SMS request. It does not prove carrier submission or handset delivery.
+_Avoid_: Delivered SMS
+
 **eGovAI boundary:** Official eGovAI provides public process guidance and FAQs only. It receives no identity, case, clinical, donor, recipient, or appointment data.
+
+**Curated eGovAI FAQ:** A fixed public eBuhay-process question selected by a user, with no free-text case or personal details sent to eGovAI.
 
 **Project-owned security secrets and keys:** Required eBuhay-controlled secrets and signing keys remain distinct from generated provider outputs. Production or live use is not authorized.
 
@@ -58,7 +65,7 @@ Any enabled feature missing required credentials blocks deployment. Runtime prov
 
 **eGovChain privacy:** eGovChain stores commitments or hashes and non-identifying metadata only; it never stores PII, medical data, case data, or raw consent content.
 
-**eGov audit and status:** Audit logs include the feature, internal request ID, provider status, time, actor, and correlation ID when supplied, but never credentials, tokens, exchange codes, message bodies, or unneeded PII. The UI never reports verified, sent, or anchored without a confirmed official response or receipt; otherwise it shows unavailable, pending, or the exact returned status. This completes the decision set.
+**eGov audit and status:** Audit logs include the feature, internal request ID, provider status, time, actor, and correlation ID when supplied, but never credentials, tokens, exchange codes, message bodies, or unneeded PII. The UI never reports verified, delivered, or anchored without confirmed official evidence; an eMessage-created request is labeled accepted, not delivered.
 
 **Ticket completion:** The state in which the current implementation satisfies every binding acceptance criterion and retains the required evidence. Implemented code without that evidence is not ticket completion.
 _Avoid_: Code complete
@@ -81,7 +88,7 @@ _Avoid_: Code complete
 
 **Consent scope:** The exact case, pairing, purpose, terms, assigned hospital, or proposed pairing covered by a consent grant. Changes require fresh consent for the affected scope while retaining prior evidence.
 
-**eGovChain receipt:** Evidence of an actual eGovChain staging transaction anchoring synthetic consent, clearly labeled with its environment. It is shown only after successful anchoring; pending or failed retries never become a fabricated receipt.
+**eGovChain receipt:** Evidence of an actual official eGovChain staging transaction anchoring synthetic consent, clearly labeled with its environment. It is shown only after successful anchoring; simulated, pending, or failed attempts never become a receipt.
 
 **eGovChain signer:** A project-controlled blockchain identity dedicated to one synthetic staging environment. Its private key authorizes transactions and remains server-side; only its public address may be shared for verification or provider allowlisting. Local and hosted Preview environments use different signers.
 _Avoid_: Personal wallet
