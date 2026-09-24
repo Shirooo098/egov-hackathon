@@ -4,7 +4,7 @@
 
 **Blocked by:** 01 — Official eGov SSO-only Citizen login.
 
-**Status:** in progress — legacy chain-info cannot expose simulated data, and consent reads distinguish pending, unavailable, and verified evidence; actual signed staging write and validated receipt remain unproven
+**Status:** in progress — legacy chain-info cannot expose simulated data, consent reads distinguish pending, unavailable, and verified evidence, and the Citizen UI names anchoring only for a verified proof state; actual signed staging write and validated receipt remain unproven
 
 - [ ] Consent anchoring uses the credential-issued official staging endpoint, chain ID `13371`, the project-controlled signer, and zero-gas validation.
 - [ ] On-chain payloads contain commitments or hashes and non-identifying metadata only; they exclude names, contact information, medical information, case content, and raw consent documents.

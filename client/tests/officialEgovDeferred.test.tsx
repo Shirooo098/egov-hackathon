@@ -5,7 +5,9 @@ import { createRoot } from 'react-dom/client';
 import FaceLivenessCheck from '../src/features/onboarding/FaceLivenessCheck';
 import { FindDonorsStep } from '../src/features/recipient/RecipientStepComponents';
 import FloatingAIChat from '../src/components/ui/FloatingAIChat';
+import PairCoordinationPanel from '../src/features/match/PairCoordinationPanel';
 import { egovApi } from '../src/services/egovApi';
+import { platformApi } from '../src/services/platformApi';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -45,6 +47,27 @@ describe('Issue 02: FaceLivenessCheck user surface', () => {
     expect(backBtn).not.toBeNull();
     act(() => backBtn!.click());
     expect(onBack).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Issue 03: consent proof labels', () => {
+  it('reserves anchored wording for verified official staging proof', async () => {
+    vi.spyOn(platformApi, 'currentPair').mockResolvedValue({ data: null });
+    vi.spyOn(platformApi, 'episode').mockResolvedValue({ data: { id: 'e1', version: 1, participation: 'active' } });
+    vi.spyOn(platformApi, 'episodeConsents').mockResolvedValue({ data: {
+      requirements: { purposes: [{ id: 'coordination', text: 'Coordination' }] },
+      current: { coordination: 'granted' },
+      events: [
+        { id: 'verified', purpose: 'coordination', action: 'grant', anchorStatus: 'verified', createdAt: '2026-09-24T12:00:00Z' },
+        { id: 'pending', purpose: 'coordination', action: 'grant', anchorStatus: 'pending', createdAt: '2026-09-24T11:00:00Z' },
+        { id: 'unavailable', purpose: 'coordination', action: 'grant', anchorStatus: 'unavailable', createdAt: '2026-09-24T10:00:00Z' },
+      ],
+    } });
+    const body = render(<PairCoordinationPanel role="recipient" episodeId="e1" />);
+    await vi.waitFor(() => expect(body.textContent).toContain('Latest proof: anchored on the official staging chain.'));
+    expect(body.textContent).toContain('proof pending official staging receipt');
+    expect(body.textContent).toContain('proof official chain unavailable');
+    expect(body.textContent).not.toMatch(/proof verified|proof failed/i);
   });
 });
 
