@@ -4,7 +4,7 @@
 
 **Blocked by:** 01 — Official eGov SSO-only Citizen login.
 
-**Status:** in progress — official SSO mobile is the only SMS destination, with explicit opt-in and revocation; documented `201 Created` records accepted without a delivery claim. Undocumented `200`/`204` responses remain unconfirmed and unavailable for reconciliation, with no automatic retry. Arbitrary short provider exception text is redacted to a generic error before return or audit persistence. Credentialed staging and full workflow validation remain open.
+**Status:** in progress — official SSO mobile is the only SMS destination, with explicit opt-in and revocation; the three generic outbound SMS templates explicitly say they are simulated demo updates. Documented `201 Created` records accepted without a delivery claim. Undocumented `200`/`204` responses remain unconfirmed and unavailable for reconciliation, with no automatic retry. Arbitrary short provider exception text is redacted to a generic error before return or audit persistence. Credentialed staging and full workflow validation remain open.
 
 Local regression checks now reject anonymous and cross-origin SMS consent writes and prove that an unavailable provider attempt is recorded without a second automatic send or secret-bearing audit value. The full authenticated workflow and staging acceptance gate remains open.
 

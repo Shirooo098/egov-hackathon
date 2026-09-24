@@ -11,6 +11,7 @@ test('Citizen SMS opt-in uses only the current eGovPH mobile and revocation stop
   assert.deepEqual([...ALLOWED_NOTIFICATION_PURPOSES].sort(), ['action_required', 'application_status_update', 'appointment_scheduled']);
   assert.deepEqual(Object.keys(GENERIC_SMS_TEMPLATES).sort(), [...ALLOWED_NOTIFICATION_PURPOSES].sort());
   assert.ok(Object.values(GENERIC_SMS_TEMPLATES).every((body) => !/https?:|kidney|blood|patient|case/i.test(body)));
+  assert.ok(Object.values(GENERIC_SMS_TEMPLATES).every((body) => body.startsWith('[eBuhay demo]') && body.includes('simulated')));
   const accountId = '00000000-0000-4000-8000-000000000001';
   const mobile = '+639171234567';
   let consent = false;

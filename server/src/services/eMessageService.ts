@@ -169,9 +169,9 @@ export async function sendSMS(
 // === Generic SMS template helpers (Zero-leak: no names, medical data, or sensitive specifics) ===
 
 export const GENERIC_SMS_TEMPLATES: Record<string, string> = {
-  application_status_update: '[eBuhay] Your application status has changed. Open eBuhay in eGovPH to review.',
-  appointment_scheduled: '[eBuhay] An appointment status has been updated. Open eBuhay in eGovPH to review.',
-  action_required: '[eBuhay] A document action is requested. Open eBuhay in eGovPH to review.',
+  application_status_update: '[eBuhay demo] A simulated application status was updated. Open eBuhay in eGovPH to review.',
+  appointment_scheduled: '[eBuhay demo] A simulated appointment status was updated. Open eBuhay in eGovPH to review.',
+  action_required: '[eBuhay demo] A simulated document action is requested. Open eBuhay in eGovPH to review.',
 };
 export default {
   sendSMS,

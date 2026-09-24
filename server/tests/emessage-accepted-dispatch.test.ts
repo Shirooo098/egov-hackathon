@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { dispatchExternalNotification } from '../src/services/notificationService.js';
-import { resetMockSmsHandler, setMockSmsHandler } from '../src/services/eMessageService.js';
+import { GENERIC_SMS_TEMPLATES, resetMockSmsHandler, setMockSmsHandler } from '../src/services/eMessageService.js';
 
 test('an accepted SMS request is persisted without a delivery claim or provider retry', async () => {
   const previousDatabaseUrl = process.env.DATABASE_URL;
   process.env.DATABASE_URL = 'postgres://test:test@localhost:5432/test';
   const writes: Array<{ sql: string; values: unknown[] }> = [];
   let providerCalls = 0;
+  let sentMessage = '';
   let claimed = false;
   const executor = {
     async query(sql: string, values: unknown[] = []) {
@@ -27,8 +28,9 @@ test('an accepted SMS request is persisted without a delivery claim or provider 
       return { rowCount: 1, rows: [] };
     },
   };
-  setMockSmsHandler(async () => {
+  setMockSmsHandler(async (_number, message) => {
     providerCalls += 1;
+    sentMessage = message;
     return { success: true, status: 'accepted' };
   });
   try {
@@ -40,6 +42,8 @@ test('an accepted SMS request is persisted without a delivery claim or provider 
     assert.equal(first.sent, false);
     assert.equal(second.status, 'accepted');
     assert.equal(providerCalls, 1);
+    assert.equal(sentMessage, GENERIC_SMS_TEMPLATES.appointment_scheduled);
+    assert.match(sentMessage, /demo.*simulated/i);
     const saved = writes.find((write) => write.sql.includes('UPDATE notifications'));
     assert.ok(saved);
     assert.equal(saved.values[3], 'accepted');
