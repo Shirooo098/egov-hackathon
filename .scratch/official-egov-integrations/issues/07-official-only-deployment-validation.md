@@ -16,4 +16,4 @@ The local startup check verifies HTTPS URL shape and credential presence, not wh
 - [ ] No eVerify feature or provider call is present; Face Liveness remains unavailable unless separately enabled through Ticket 09.
 - [ ] Smoke checks use approved staging identities and synthetic healthcare records, never print secrets, and remain separate from ordinary CI.
 - [ ] Server and client typechecks, targeted provider-boundary tests, and the production client build pass.
-- [ ] Deployment documentation states that production or controlled-live use is not authorized.
+- [x] Deployment documentation states that production or controlled-live use is not authorized.
