@@ -78,7 +78,7 @@ export async function receipt(txHash: string) { return await rpc('eth_getTransac
 
 export async function verifyReceipt(txHash: string, commitment: string) {
   const r = await receipt(txHash);
-  if (!r || !['0x1', '0x0'].includes(r.status ?? '') || !r.blockHash || !r.blockNumber) return null;
+  if (!r || !['0x1', '0x0'].includes(r.status ?? '') || !r.blockHash || !r.blockNumber || r.transactionHash?.toLowerCase() !== txHash.toLowerCase()) return null;
   const [tx, block] = await Promise.all([
     rpc('eth_getTransactionByHash', [txHash]) as Promise<{ from?: string; to?: string; value?: string; input?: string; chainId?: string; hash?: string } | null>,
     rpc('eth_getBlockByNumber', [r.blockNumber, false]) as Promise<{ hash?: string; transactions?: string[] } | null>,

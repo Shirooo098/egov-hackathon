@@ -4,23 +4,23 @@
 - 2026-09-23 [USER] Goal: finish official eGov tickets first, then unblock synthetic hospital demo; confirmed SSO, Chain, Message, AI, and optional standalone Face Liveness; eVerify is explicitly absent from the product.
 - 2026-09-23 [USER] Work on a `{feature}` branch, commit each accomplishment, never push, and never use a `codex/*` branch.
 - 2026-09-23 [CODE] Current branch: `feature/official-egov-open-tickets`.
-- 2026-09-24 [TOOL] Ticket04 authorization/no-retry tests are committed (`759781e`); Ticket03 Citizen proof labels are verified locally. A separate Chain reorg-sweep fix is in progress. Unrelated staged synthetic specs and user-owned `AGENTS.md` remain untouched.
+- 2026-09-24 [TOOL] Ticket03 Citizen proof labels are committed (`925654f`); the Chain reorg-sweep fix and receipt hash binding passed local checks. Unrelated staged synthetic specs and user-owned `AGENTS.md` remain untouched.
 - 2026-09-24 [USER] Supplied the SSO guide again and confirmed the credential-issued URL, partner code, and secret are configured in `server/.env`; do not expose their values. The guide does not define `state`/nonce.
 - 2026-09-23 [USER] Resumed available-ticket work; include `.scratch/official-egov-integrations/issues`. Current implementation covers safe Ticket 01 work and Ticket 02; preserve external gates and all ticket scope.
 - 2026-09-23 [TOOL] Astra Ticket01 safe slice and Ticket02 correction completed; conversation `2f06993a-41e4-48d5-9038-b20b7ee11785` terminal (exit0/SUCCESS). Codex verification/review complete. No active agent or process.
 - 2026-09-23 [USER] Commit each verified accomplishment on the existing feature branch; do not push. Preserve unrelated staged specification work. This supersedes this turn's no-commit default.
-- 2026-09-24 [CODE] Now: Tickets 01/08 SSO, Ticket04 eMessage mobile consent/error redaction, Ticket03 truthful chain status, and Ticket07 enabled-provider startup/documentation are committed. Nothing pushed.
+- 2026-09-24 [CODE] Now: Tickets 01/08 SSO, Ticket04 eMessage mobile consent/error redaction, Ticket03 truthful chain status, and Ticket07 enabled-provider startup/documentation are committed. The Chain receipt sweep is locally verified; no provider call or push occurred.
 - 2026-09-24 [CODE] Open: eGovPH callback correlation and partner acceptance need authenticated clarification; no provider smoke ran. Ticket 24 baseline remains unrun; isolated test DB is currently inaccessible (EACCES) in this sandbox.
 - 2026-09-24 [CODE] Open: Ticket03 signed official-staging receipt, Ticket04 provider SMS acknowledgement, Ticket05/06 authenticated AI contract, Ticket07 deployment smoke, and optional Ticket09 privacy/error terms require external evidence or credentials/approval. No live provider calls ran.
 
 ## Done
+- 2026-09-24 [TOOL] Commit `925654f` labels Citizen case/pair consent proof truthfully in the UI; rendered test, typecheck, and client build passed.
+- 2026-09-24 [TOOL] Commit `759781e` covers Ticket04 HTTP authorization and provider-unavailable no-retry behavior; focused tests and typecheck passed.
 - 2026-09-24 [TOOL] Commit `5070ee1` rejects arbitrary provider error text before SMS return/audit persistence; independent focused tests 7/7, typecheck, and security review passed.
 - 2026-09-24 [TOOL] Commit `c8002e0` explicitly states production and controlled-live eGov use are unauthorized and closes Ticket07's documentation criterion.
 - 2026-09-24 [TOOL] Commit `2616de9` adds HTTP SSO provider-failure/cancellation regressions; focused tests 10/10 passed.
 - 2026-09-24 [TOOL] Commit `26313f8` rejects malformed enabled SMS/Chain startup configuration; server suite 56/56 and typecheck passed.
 - 2026-09-24 [TOOL] Commit `f9dd815` maps unavailable/pending/verified consent proof reads without leaking outbox errors; 55/55 server suite and independent review passed.
-- 2026-09-24 [TOOL] Commit `a6390d5` removes the legacy simulated chain-info response and adds an HTTP regression check; Ticket03 still needs signed staging evidence.
-- 2026-09-24 [TOOL] Commit `56ac6b7` records SSO-mobile-only SMS opt-in, revocation, narrow generic purposes, and truthfully masked preference UX; independent review issue fixed.
 
 ## Decisions
 - D1 2026-09-24 [CODE] Official SSO handoff is implemented with pending identity and explicit user confirmation, without invented state/nonce; provider callback-correlation evidence and credentialed validation remain open.
@@ -41,14 +41,16 @@
 - D16 2026-09-24 [CODE] Ticket04 stores only current SSO mobile, resets consent on changed/missing mobile, checks it at notification record and dispatch, and uses generic messages for three approved purposes; credentialed staging remains open.
 
 ## Working set
-- `server/src/services/eMessageService.ts`
-- `server/tests/emessage-service.test.ts`
-- `server/src/services/notificationService.ts`
+- `server/src/worker.ts`
+- `server/src/services/EgovChainService.ts`
+- `server/tests/egovchain-sweep.test.ts`
+- `server/package.json`
 - `.scratch/official-egov-integrations/issues/07-official-only-deployment-validation.md`
 - `.scratch/official-egov-integrations/issues/03-official-egovchain-consent-proof.md`
 - `.scratch/official-egov-integrations/issues/04-official-opted-in-emessage-notifications.md`
 
 ## Receipts
+- 2026-09-24 [TOOL] Ticket03 reorg sweep/receipt hash binding: Antigravity worker `f01a1c5b-d7a3-4adb-b4f0-2b120190ea07` exited 0/SUCCESS; final focused tests 10/10, full server suite 61/61, and typecheck passed with Windows userInfo shim. Independent reviewer found both P2 issues closed. No real staging receipt or SQL integration was exercised.
 - 2026-09-24 [TOOL] Ticket03 Citizen proof labels: rendered coordination test 10/10 and client production build/typecheck passed. Only server `verified` maps to anchored wording; pending/unavailable retain distinct wording. No real staging receipt was used.
 - 2026-09-24 [TOOL] Ticket04 local HTTP consent/dispatch regressions: focused SMS tests 8/8 and server typecheck passed, then the 3 affected tests passed after a final audit-value assertion. Full authenticated workflow and credentialed staging checks remain open.
 - 2026-09-24 [TOOL] Ticket04 redaction: Antigravity worker `8f2253a5-969e-4c51-ae16-4545ce844fa6` exited 0/JSON SUCCESS; reproduced short secret-like error leak test-first and fixed with a safe classification allowlist. Independent focused tests 7/7 and server typecheck passed; security review found no material issue. No provider call ran.
@@ -57,5 +59,3 @@
 - 2026-09-24 [TOOL] Ticket03 read-state mapping: focused 5/5, server full suite 55/55, typecheck passed; independent review had no actionable findings. Database-backed joins and official-chain behavior were not exercised.
 - 2026-09-24 [TOOL] Ticket03 route removal: focused chain tests 3/3, server full suite 53/53, and server typecheck passed. No real staging transaction or isolated DB test ran.
 - 2026-09-24 [TOOL] Independent Ticket04 review found revoke-response masked-mobile UI bug; fixed, and server/client regression checks passed. Reviewer also identified stale ignored/untracked `server/tests/notifications.test.ts`; new scoped HTTP test covers current contract, while that legacy DB test remains unrun/untracked.
-- 2026-09-24 [TOOL] Ticket04: focused server SSO/SMS tests 10/10, client preference/trust tests 9/9, server full test 52/52, server typecheck passed. Server lint exit0 with pre-existing warnings. Database migration and credentialed provider smoke remain unrun (sandbox DB EACCES/no live call).
-- 2026-09-24 [TOOL] Prior SSO package verification at `b7b3315`: server 52/52, client full suite and build, both typechecks passed; no provider or isolated DB call.
