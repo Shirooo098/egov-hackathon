@@ -160,6 +160,8 @@ export async function dispatchExternalNotification(
       if (!existingRes.rowCount) return { success: false, error: "not_found" };
       const existing = existingRes.rows[0];
 
+      if (existing.delivery_status === "accepted")
+        return { success: true, accepted: true, delivered: false, sent: false, status: "accepted", providerReference: existing.provider_reference };
       if (existing.delivery_status === "delivered")
         return { success: true, delivered: true, sent: false, status: "delivered", providerReference: existing.provider_reference };
       if (existing.delivery_status === "sent")
@@ -247,7 +249,7 @@ export async function dispatchExternalNotification(
     const result = await sendSMS(row.phone_number, message);
 
     if (result.success) {
-      const finalStatus = result.status === "sent" ? "sent" : "delivered";
+      const finalStatus = result.status;
       await client.query(
         `UPDATE notifications
          SET delivery_status=$4, provider_reference=$2,
@@ -264,6 +266,7 @@ export async function dispatchExternalNotification(
       );
       return {
         success: true,
+        accepted: finalStatus === "accepted",
         delivered: finalStatus === "delivered",
         sent: finalStatus === "sent",
         status: finalStatus,
@@ -315,6 +318,7 @@ export async function runNotificationBatch(
 
   let delivered = 0;
   let sent = 0;
+  let accepted = 0;
   let failed = 0;
   let suppressed = 0;
   let unavailable = 0;
@@ -323,6 +327,7 @@ export async function runNotificationBatch(
     const res = await dispatchExternalNotification(row.id);
     if (res.delivered) delivered += 1;
     else if (res.sent) sent += 1;
+    else if (res.accepted) accepted += 1;
     else if (res.suppressed) suppressed += 1;
     else if (res.status === "unavailable") unavailable += 1;
     else failed += 1;
@@ -332,6 +337,7 @@ export async function runNotificationBatch(
     leased: pending.rows.length,
     delivered,
     sent,
+    accepted,
     failed,
     suppressed,
     unavailable,

@@ -9,8 +9,9 @@
 export type SmsResult =
   | {
       success: true;
-      message_id: string;
-      status: 'delivered' | 'sent';
+      message_id?: string;
+      status: 'accepted' | 'delivered' | 'sent';
+      accepted?: boolean;
       number?: string;
       message?: string;
       timestamp?: string;
@@ -82,6 +83,7 @@ export async function sendSMS(
   if (mockSmsHandler) {
     const mockRes = await mockSmsHandler(number, message);
     if (mockRes.success) {
+      if (mockRes.status === 'accepted') return { ...mockRes, accepted: true };
       if (!mockRes.message_id || (mockRes.status !== 'sent' && mockRes.status !== 'delivered')) {
         return {
           success: false,
@@ -96,7 +98,7 @@ export async function sendSMS(
   // Official provider configuration check:
   // Provider mocks are test-only. Without a configured official provider, delivery cannot be confirmed;
   // return unavailable truthfully without simulating success.
-  const baseUrl = process.env.EMESSAGE_API_URL?.trim();
+  const baseUrl = process.env.EMESSAGE_BASE_URL?.trim();
   const apiToken = process.env.EMESSAGE_API_TOKEN?.trim();
   let providerUrl: URL | null = null;
   try {
@@ -114,7 +116,7 @@ export async function sendSMS(
 
   // Official provider call path
   try {
-    const res = await (dependencies.fetchImpl ?? fetch)(`${providerUrl.toString().replace(/\/$/, '')}/sms/push`, {
+    const res = await (dependencies.fetchImpl ?? fetch)(`${providerUrl.toString().replace(/\/$/, '')}/messaging/v1/sms/push`, {
       method: 'POST',
       signal: AbortSignal.timeout(dependencies.timeoutMs ?? 10_000),
       headers: {
@@ -129,52 +131,11 @@ export async function sendSMS(
     if (res.status === 401 || res.status === 403) return { success: false, error: 'unauthorized', status: 'failed' };
     if (res.status === 429) return { success: false, error: 'rate_limited', status: 'failed' };
     if (res.status >= 500) return { success: false, error: 'provider_unavailable', status: 'unavailable' };
-    if (!res.ok) return { success: false, error: 'upstream_error', status: 'failed' };
-
-    const data = (await res.json().catch(() => ({}))) as {
-      data?: { id?: string; message_id?: string; status?: string };
-      message_id?: string;
-      id?: string;
-      status?: string;
-    };
-    const rawMessageId = data?.data?.id || data?.data?.message_id || data?.message_id || data?.id;
-    const messageId =
-      typeof rawMessageId === 'string' && /^[A-Za-z0-9._:-]{1,200}$/.test(rawMessageId.trim())
-        ? rawMessageId.trim()
-        : null;
-    const rawProviderStatus = data?.data?.status || data?.status;
-    const providerStatus =
-      typeof rawProviderStatus === 'string'
-        ? rawProviderStatus.trim().toLowerCase()
-        : '';
-
-    // Succeeds only for explicitly confirmed provider status 'sent' or 'delivered' plus correlation id.
-    // failed/rejected/malformed/pending/queued are not successful and never claimed sent/delivered.
-    // Do not invent undocumented statuses.
-    if (!messageId || (providerStatus !== 'sent' && providerStatus !== 'delivered')) {
-      const isUnavailable =
-        providerStatus === 'queued' ||
-        providerStatus === 'pending' ||
-        !messageId;
-      const error =
-        providerStatus === 'rejected' || providerStatus === 'failed'
-          ? 'delivery_failed'
-          : providerStatus === 'queued' || providerStatus === 'pending' || !messageId
-          ? 'delivery_unconfirmed'
-          : 'delivery_failed';
-
-      return {
-        success: false,
-        error,
-        status: isUnavailable ? 'unavailable' : 'failed',
-      };
+    if (res.status !== 201) {
+      return { success: false, error: 'upstream_error', status: 'failed' };
     }
 
-    return {
-      success: true,
-      message_id: messageId,
-      status: providerStatus as 'sent' | 'delivered',
-    };
+    return { success: true, accepted: true, status: 'accepted' };
   } catch (err: unknown) {
     const redacted =
       err instanceof DOMException && err.name === 'TimeoutError'
