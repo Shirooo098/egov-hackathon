@@ -31,6 +31,7 @@ import {
 import { SESSION_COOKIE } from "./auth/service.js";
 import { createEgovCallbackRouter } from "./routes/egov-auth.js";
 import { egovchainEnabled } from "./services/EgovChainService.js";
+import { safeRouteClass } from "./middleware/route-class.js";
 
 export type AppOptions = {
   config?: RuntimeConfig;
@@ -43,16 +44,6 @@ function containsDisabledService(value: unknown): boolean {
   if (value && typeof value === "object")
     return Object.values(value).some(containsDisabledService);
   return false;
-}
-
-function safeRouteClass(path: string): string {
-  const parts = path.split("/").filter(Boolean);
-  if (parts.includes("health") && parts.includes("live")) return "health.live";
-  const liveness = parts.indexOf("liveness");
-  if (liveness >= 0)
-    return `egov.liveness.${parts[liveness + 1] === "result" ? "result" : "session"}`;
-  // Keep unknown routes at a low-cardinality prefix; never emit identifiers.
-  return parts.slice(0, 2).join(".") || "root";
 }
 
 export function createApp(options: AppOptions = {}) {
@@ -68,6 +59,7 @@ export function createApp(options: AppOptions = {}) {
   const app = express();
 
   // Middleware
+  app.use(requestCorrelation);
   const allowedOrigins = config?.allowedOrigins ?? [];
   app.use(
     cors({
@@ -131,7 +123,6 @@ export function createApp(options: AppOptions = {}) {
   });
 
   // Request logger
-  app.use(requestCorrelation);
   app.use((req, res, next) => {
     console.log(
       JSON.stringify({
@@ -249,7 +240,7 @@ export function createApp(options: AppOptions = {}) {
       .status(404)
       .json({
         success: false,
-        message: `Route ${req.method} ${req.url} not found`,
+        message: "Route not found",
       });
   });
 
@@ -259,21 +250,22 @@ export function createApp(options: AppOptions = {}) {
       err: Error & { status?: number },
       req: Request,
       res: Response,
-      next: NextFunction,
+      _next: NextFunction,
     ) => {
       const requestId = (req as Request & { requestId?: string }).requestId;
-      const cause = (
-        err as { cause?: { message?: string; detail?: string; code?: string } }
-      ).cause;
+      const status =
+        typeof err.status === "number" && err.status >= 400 && err.status < 600
+          ? err.status
+          : 500;
+      const errorCategory = status >= 500 ? "server_error" : "client_error";
       console.error(
         JSON.stringify({
           level: "error",
           requestId,
+          route: safeRouteClass(req.path),
+          status,
+          category: errorCategory,
           message: "request_failed",
-          detail: err.message,
-          causeMessage: cause?.message,
-          causeDetail: cause?.detail,
-          causeCode: cause?.code,
         }),
       );
       if (req.path.startsWith("/api/v1")) {

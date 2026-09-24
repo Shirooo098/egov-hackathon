@@ -209,3 +209,51 @@ test('Issue 06: eGovAI HTTP endpoint rejects requests carrying extra data or inv
     await new Promise<void>((resolve) => server.close(() => resolve()));
   }
 });
+
+test('Issues 01 and 07: unmatched callback and unknown path cannot expose an exchange code', async () => {
+  const server = createServer(createApp({ config: testConfig }));
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  const logs: string[] = [];
+  const original = console.log;
+  console.log = (value?: unknown) => logs.push(String(value));
+  try {
+    const code = 'exchange-code-canary-789';
+    const response = await fetch(`${base}/egovph/missing?exchange_code=${code}`);
+    assert.equal(response.status, 404);
+    assert.doesNotMatch(await response.text(), /exchange-code-canary-789|egovph\/missing/);
+    await fetch(`${base}/unknown-path-canary/arbitrary`);
+    assert.doesNotMatch(logs.join('\n'), /exchange-code-canary-789|unknown-path-canary|egovph\.missing/);
+    assert.match(logs.join('\n'), /"route":"unknown"/);
+  } finally {
+    console.log = original;
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+});
+
+test('Issue 07: malformed JSON cannot put request content in error logs', async () => {
+  const server = createServer(createApp({ config: testConfig }));
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  const logs: string[] = [];
+  const original = console.error;
+  console.error = (value?: unknown) => logs.push(String(value));
+  try {
+    const response = await fetch(`${base}/api/v1/auth/exchange`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin: 'https://client.test' },
+      body: '{"secret": json-body-canary-123}',
+    });
+    assert.equal(response.status, 400);
+    assert.doesNotMatch(await response.text(), /json-body-canary-123/);
+    assert.equal(logs.length, 1);
+    assert.doesNotMatch(logs[0], /json-body-canary-123|causeMessage|causeDetail|"detail"/);
+    const logged = JSON.parse(logs[0]) as { requestId?: string; route?: string; status?: number };
+    assert.ok(logged.requestId);
+    assert.equal(logged.route, 'api.v1');
+    assert.equal(logged.status, 400);
+  } finally {
+    console.error = original;
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+});

@@ -9,18 +9,18 @@
 - 2026-09-23 [USER] Resumed available-ticket work; include `.scratch/official-egov-integrations/issues`. Current implementation covers safe Ticket 01 work and Ticket 02; preserve external gates and all ticket scope.
 - 2026-09-23 [TOOL] Astra Ticket01 safe slice and Ticket02 correction completed; conversation `2f06993a-41e4-48d5-9038-b20b7ee11785` terminal (exit0/SUCCESS). Codex verification/review complete. No active agent or process.
 - 2026-09-23 [USER] Commit each verified accomplishment on the existing feature branch; do not push. Preserve unrelated staged specification work. This supersedes this turn's no-commit default.
-- 2026-09-24 [CODE] Now: Tickets 01/08 SSO, Ticket04 eMessage consent/error redaction and ambiguous-2xx handling, Ticket03 truthful chain status and receipt sweep, Ticket06 local AI request boundary, and Ticket07 enabled-provider startup/documentation are implemented. Obsolete Besu simulation and misleading health label are removed. No provider call or push occurred.
+- 2026-09-24 [CODE] Now: Tickets 01/08 SSO, Ticket04 eMessage consent/error redaction and ambiguous-2xx handling, Ticket03 truthful chain status and receipt sweep, Ticket06 local AI request boundary, and Ticket07 startup plus shared response/log privacy are implemented. Obsolete Besu simulation and misleading health label are removed. No provider call or push occurred.
 - 2026-09-24 [CODE] Open: eGovPH callback correlation and partner acceptance need authenticated clarification; no provider smoke ran. Ticket 24 baseline remains unrun; isolated test DB is currently inaccessible (EACCES) in this sandbox.
 - 2026-09-24 [CODE] Open: Ticket03 signed official-staging receipt, Ticket04 provider SMS acknowledgement, Ticket05/06 authenticated AI contract, Ticket07 deployment smoke, and optional Ticket09 privacy/error terms require external evidence or credentials/approval. No live provider calls ran.
 
 ## Done
+- 2026-09-24 [TOOL] Ticket01/07 unmatched callback 404 responses, unknown route logs, and unexpected error logs no longer copy untrusted URL/body/exception content; tracked canary regressions pass.
 - 2026-09-24 [TOOL] Ticket06 local AI endpoint now rejects extra request data or invalid categories; the official client payload remains deferred, and user-visible retry guidance is asserted. Independent review found no material issue.
 - 2026-09-24 [TOOL] Ticket04 undocumented `200`/`204` SMS responses stay unavailable/unconfirmed without an automatic second send; Antigravity worker implemented the fix, and independent review and verification passed.
 - 2026-09-24 [TOOL] Commit `291b745` preserves the Citizen or Staff session when eBuhay logout is unconfirmed and corrects Ticket01/08 exchange-code wording to match the supplied SSO guide; client tests/build passed.
 - 2026-09-24 [TOOL] Commit `f06795f` removes unused simulated Besu success and automatic demo anchoring; health reports staging configuration without a receipt claim. Server 95/95, client tests/build, and typechecks passed.
 - 2026-09-24 [TOOL] Commit `02eebdd` adds tracked official integration regressions to regular server suite; 95/95 passed.
 - 2026-09-24 [TOOL] Commit `fdda661` revokes Chain anchors on reverted receipts and binds receipts to their transaction hash; full server suite 61/61 and independent review passed.
-- 2026-09-24 [TOOL] Commit `925654f` labels Citizen case/pair consent proof truthfully in the UI; rendered test, typecheck, and client build passed.
 
 ## Decisions
 - D1 2026-09-24 [CODE] Official SSO handoff is implemented with pending identity and explicit user confirmation, without invented state/nonce; provider callback-correlation evidence and credentialed validation remain open.
@@ -42,12 +42,14 @@
 - D17 2026-09-24 [USER] The supplied SSO guide exposes the short-lived exchange code in the eGovPH launch URL or official widget callback. Ticket01/08 now require prompt server redemption and exclusion from eBuhay responses, persistence, and logs, rather than impossible browser non-exposure. A failed local logout preserves the session until server revocation is confirmed.
 
 ## Working set
-- `server/src/routes/egov.ts`
+- `server/src/app.ts`
+- `server/src/middleware/route-class.ts`
 - `server/tests/official-egov-issues-02-05-06.test.ts`
-- `client/tests/officialEgovDeferred.test.tsx`
-- `.scratch/official-egov-integrations/issues/06-official-egovai-public-guidance.md`
+- `.scratch/official-egov-integrations/issues/01-official-egov-sso-citizen-login.md`
+- `.scratch/official-egov-integrations/issues/07-official-only-deployment-validation.md`
 
 ## Receipts
+- 2026-09-24 [TOOL] Ticket01/07 Antigravity explorer `b7301c85-32d5-4afc-bb8d-635fc56db8f9` returned partial/no finding at 10-minute print timeout; root verified the leak in source. Worker `4bef04b7-0712-469b-b1d1-c6a536400655` exited 0/SUCCESS and reproduced failing 404/error-log canaries before fixing. Worker tests initially landed in ignored `api-security.test.ts`; root restored that file and moved regressions into tracked official suite. Independent tracked tests 7/7, server full suite 99/99, typecheck and lint exited 0 (existing lint warnings); final independent review found no material issue. No provider call ran.
 - 2026-09-24 [TOOL] Ticket06 Antigravity explorer `e1f198ca-998d-4096-84ff-1a24479cb31b` and worker `2f847d66-a1a0-4469-8dc1-a1d7b83e2621` exited 0/SUCCESS. Worker reproduced extra-data `503` before fix. Independent client focused 5/5 and both typechecks passed; independent server test initially could not start (`uv_os_get_passwd` ENOMEM), then root reran with temporary userInfo shim: focused 5/5, full server 97/97. Worker reported full client 84/84 Vitest plus 15/15 node. No provider call ran.
 - 2026-09-24 [TOOL] Ticket04 ambiguous 2xx: Antigravity explorer `60bd335a-54e5-4a2c-b2cb-8722b201eb05` and worker `adb823ae-0012-4519-8315-91db4dbbe455` exited 0/SUCCESS. Worker reproduced a failing regression before fixing it; full server suite 96/96 and typecheck passed. Independent tester passed focused service 6/6, dispatch 2/2, and typecheck; reviewer found no actionable issue. No provider call ran.
 - 2026-09-24 [TOOL] Ticket08 failed-logout regression reproduced a false success/route change, then passed after the fix: focused client tests 24/24, full client tests exit0, production build/typecheck exit0. No provider call or deployment ran.
@@ -56,4 +58,3 @@
 - 2026-09-24 [TOOL] Ticket03 reorg sweep/receipt hash binding: Antigravity worker `f01a1c5b-d7a3-4adb-b4f0-2b120190ea07` exited 0/SUCCESS; final focused tests 10/10, full server suite 61/61, and typecheck passed with Windows userInfo shim. Independent reviewer found both P2 issues closed. No real staging receipt or SQL integration was exercised.
 - 2026-09-24 [TOOL] Ticket03 Citizen proof labels: rendered coordination test 10/10 and client production build/typecheck passed. Only server `verified` maps to anchored wording; pending/unavailable retain distinct wording. No real staging receipt was used.
 - 2026-09-24 [TOOL] Ticket04 local HTTP consent/dispatch regressions: focused SMS tests 8/8 and server typecheck passed, then the 3 affected tests passed after a final audit-value assertion. Full authenticated workflow and credentialed staging checks remain open.
-- 2026-09-24 [TOOL] Ticket04 redaction: Antigravity worker `8f2253a5-969e-4c51-ae16-4545ce844fa6` exited 0/JSON SUCCESS; reproduced short secret-like error leak test-first and fixed with a safe classification allowlist. Independent focused tests 7/7 and server typecheck passed; security review found no material issue. No provider call ran.
