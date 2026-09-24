@@ -6,6 +6,8 @@
 
 **Status:** in progress — documented widget and post-authentication case choice are implemented; local sign-out now retains the session when server revocation is unconfirmed; the in-app SSO evidence gate in Ticket 01 and credentialed validation remain open
 
+Local HTTP coverage now rejects widget exchange and in-app callback during an active Citizen session with `409 session_exists`, and rejects pending confirmation without replacing that session. This is local fixture evidence only.
+
 - [x] The official web widget uses only provider-documented launch and return behavior; eBuhay adds no independent OTP, PIN, synthetic login, or guessed provider URL.
 - [ ] Both official entry paths create or use the same `uniqid`-linked Citizen account and never grant Hospital Staff authority.
 - [ ] Partner secrets and provider access tokens remain server-side. The documented widget callback's short-lived exchange code is sent only to the backend for redemption and is absent from eBuhay responses, persistence, and application logs.

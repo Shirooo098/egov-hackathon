@@ -14,13 +14,13 @@
 - 2026-09-24 [CODE] Open: Ticket03 signed official-staging receipt, Ticket04 provider SMS acknowledgement, Ticket05/06 authenticated AI contract, Ticket07 deployment smoke, and optional Ticket09 privacy/error terms require external evidence or credentials/approval. No live provider calls ran.
 
 ## Done
+- 2026-09-25 [TOOL] Ticket01/08 local HTTP regression now proves an active Citizen session blocks widget exchange, in-app callback, and pending confirmation before provider or identity writes; focused 5/5, server typecheck, and full server suite 106/106 passed; independent review found no material issue.
 - 2026-09-25 [TOOL] Removed the unused browser Face Liveness session/polling prototype that exposed arbitrary callback selection and raw result fields; deferred backend responses remain unchanged. Focused client tests 5/5, full client tests 84 Vitest + 15 Node, and typecheck passed; independent review found no material issue.
 - 2026-09-25 [TOOL] Ticket04 outbound SMS copy now explicitly labels synthetic demo updates for all three approved purposes. Full server suite 105/105 passed; no provider call ran.
 - 2026-09-24 [TOOL] Ticket03 tracked Citizen consent HTTP test now covers unavailable, receipt-pending, and recorded verified proof fields; SQL selection and response redaction assertions exclude raw evidence/salt and internal outbox fields. Astra explorer and Codex tester verified the seam.
 - 2026-09-24 [TOOL] Ticket03 pending signed transaction remains recoverable past eight worker leases without duplicate broadcast; malformed receipts cap as unavailable. Antigravity worker and independent review surfaced and closed a test-fidelity gap and invalid-receipt retry gap; full server suite 105/105 and typecheck passed.
 - 2026-09-24 [TOOL] Ticket01/07 unmatched callback 404 responses, unknown route logs, and unexpected error logs no longer copy untrusted URL/body/exception content; tracked canary regressions pass.
 - 2026-09-24 [TOOL] Ticket06 local AI endpoint now rejects extra request data or invalid categories; the official client payload remains deferred, and user-visible retry guidance is asserted. Independent review found no material issue.
-- 2026-09-24 [TOOL] Ticket04 undocumented `200`/`204` SMS responses stay unavailable/unconfirmed without an automatic second send; Antigravity worker implemented the fix, and independent review and verification passed.
 
 ## Decisions
 - D1 2026-09-24 [CODE] Official SSO handoff is implemented with pending identity and explicit user confirmation, without invented state/nonce; provider callback-correlation evidence and credentialed validation remain open.
@@ -42,11 +42,12 @@
 - D17 2026-09-24 [USER] The supplied SSO guide exposes the short-lived exchange code in the eGovPH launch URL or official widget callback. Ticket01/08 now require prompt server redemption and exclusion from eBuhay responses, persistence, and logs, rather than impossible browser non-exposure. A failed local logout preserves the session until server revocation is confirmed.
 
 ## Working set
-- `client/src/services/egovApi.ts`
-- `client/src/App.tsx`
-- `.scratch/official-egov-integrations/issues/09-optional-standalone-face-liveness.md`
+- `server/tests/egov-returning-sessions.test.ts`
+- `.scratch/official-egov-integrations/issues/01-official-egov-sso-citizen-login.md`
+- `.scratch/official-egov-integrations/issues/08-official-web-widget-and-post-sso-journey.md`
 
 ## Receipts
+- 2026-09-25 [TOOL] Codex explorer identified missing active-session HTTP coverage for Ticket01/08. Independent tester found the first harness stopped at 403 due missing configured origin middleware; after adding it, focused 5/5 and server typecheck passed. Root ran full server suite 106/106; independent reviewer found no material issue. Test runner required a temporary Node userInfo shim for this host's `uv_os_get_passwd` ENOMEM; no provider call ran.
 - 2026-09-25 [TOOL] Antigravity `agy models` exited 1 with “Please sign in to view available models”; per Astra skill, no Agy delegation could be claimed. Codex independent tester passed `officialEgovDeferred.test.tsx` 5/5, client typecheck, and diff check; root ran full client tests 84 Vitest + 15 Node, independent reviewer found no material issue. No provider call ran.
 - 2026-09-25 [TOOL] Ticket04 synthetic SMS disclosure: Antigravity explorer `1ec1c810-c088-4a13-852c-4cb1d5ab4f4a` print-timed out after 10 minutes with empty response; no finding used. Root traced outbound templates and runtime dispatch. Independent tester passed opt-in 1/1 and typecheck, then root linked the accepted-send test to the exact disclosed body (2/2) and reran server typecheck and full suite 105/105. No provider call ran.
 - 2026-09-24 [TOOL] Ticket03 local HTTP gap: Antigravity explorer `d15725e4-3ecd-4326-8ea7-3d8e7e51aae3` exited 0/SUCCESS and identified missing verified receipt evidence on the public route. Independent Codex tester ran focused consent suite 5/5 and server typecheck exit0; root ran full server suite 105/105. No real DB or provider call ran.
@@ -55,4 +56,3 @@
 - 2026-09-24 [TOOL] Ticket06 Antigravity explorer `e1f198ca-998d-4096-84ff-1a24479cb31b` and worker `2f847d66-a1a0-4469-8dc1-a1d7b83e2621` exited 0/SUCCESS. Worker reproduced extra-data `503` before fix. Independent client focused 5/5 and both typechecks passed; independent server test initially could not start (`uv_os_get_passwd` ENOMEM), then root reran with temporary userInfo shim: focused 5/5, full server 97/97. Worker reported full client 84/84 Vitest plus 15/15 node. No provider call ran.
 - 2026-09-24 [TOOL] Ticket04 ambiguous 2xx: Antigravity explorer `60bd335a-54e5-4a2c-b2cb-8722b201eb05` and worker `adb823ae-0012-4519-8315-91db4dbbe455` exited 0/SUCCESS. Worker reproduced a failing regression before fixing it; full server suite 96/96 and typecheck passed. Independent tester passed focused service 6/6, dispatch 2/2, and typecheck; reviewer found no actionable issue. No provider call ran.
 - 2026-09-24 [TOOL] Ticket08 failed-logout regression reproduced a false success/route change, then passed after the fix: focused client tests 24/24, full client tests exit0, production build/typecheck exit0. No provider call or deployment ran.
-- 2026-09-24 [TOOL] Obsolete Besu cleanup and truthful `/api/health`: server suite 95/95 and typecheck passed; client full tests and production build/typecheck passed. Independent static review found no material server issue. Follow-up reviewer request hit account usage limit; root checked the small client diff. No provider call ran.

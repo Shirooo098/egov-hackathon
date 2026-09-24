@@ -8,6 +8,8 @@
 
 Local HTTP fixtures verify that malformed provider profiles and provider outages create no pending identity or session and disclose no code, token, or secret in the response. An unmatched callback URL also cannot echo its exchange code through the generic 404 response or request log. Cancellation consumes the pending identity and blocks later confirmation. These fixtures do not prove the partner's callback-correlation behavior or a real staging handoff.
 
+A local HTTP regression also verifies that an active Citizen session blocks widget exchange, in-app callback, and pending confirmation before provider use or identity writes. This does not replace the authenticated partner or staging checks.
+
 - [ ] A valid official staging in-app handoff exchanges its single-use code server-side and shows a pending verified identity without creating an eBuhay session yet.
 - [x] Explicit Citizen confirmation creates the HttpOnly eBuhay session; cancellation creates none, and an uncorrelated code never silently replaces an existing account session.
 - [x] Citizen accounts are created or linked only by provider plus stable `uniqid`; names, email addresses, and mobile numbers never trigger automatic merging.

@@ -3,9 +3,11 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import express from 'express';
 import { currentSession, listSessions, listVerificationHistory, revokeSession } from '../src/auth/service.js';
-import { createEgovAuthRouter } from '../src/routes/egov-auth.js';
+import { createEgovAuthRouter, createEgovCallbackRouter } from '../src/routes/egov-auth.js';
 import { createCsrfProtection, v1Cors } from '../src/middleware/v1-security.js';
+import { setPool, closePool } from '../src/db/pool.js';
 import type { RuntimeConfig } from '../src/runtime/config.js';
+import type { Pool } from 'pg';
 import { execFileSync } from 'node:child_process';
 
 type Query = { sql: string; params: unknown[] };
@@ -104,4 +106,44 @@ test('synthetic mode returns HTTP 503 without DB access, while injected currentS
   }
   const fake = sessionExecutor([{ id: 's1', token_hash: hash('b'.repeat(43)), created_at: new Date('2029-12-31T23:00:00Z'), last_seen_at: new Date('2029-12-31T23:45:00Z'), expires_at: new Date('2040-01-01'), revoked_at: null }]);
   assert.equal((await currentSession('b'.repeat(43), { executor: fake.executor, now: new Date('2030-01-01') }))?.id, 'acct-1');
+});
+
+test('active Citizen session blocks both SSO exchanges and pending confirmation before provider or identity writes', async () => {
+  const queries: string[] = [];
+  let providerCalls = 0;
+  const query = async (sql: string) => {
+    queries.push(sql);
+    if (sql.startsWith('UPDATE sessions s SET')) return { rowCount: 1, rows: [account()] };
+    throw new Error(`Unexpected database operation: ${sql.slice(0, 35)}`);
+  };
+  setPool({ query, end: async () => {} } as unknown as Pool);
+  const config = { mode: 'synthetic', allowedOrigins: ['https://client.test'], egovBaseUrl: 'https://staging.example.test', egovPartnerCode: 'partner', egovPartnerSecret: 'secret' } as RuntimeConfig;
+  const providerFetch = async () => { providerCalls++; throw new Error('Provider must not be called'); };
+  const app = express();
+  app.use(express.json());
+  app.use('/api/v1', v1Cors(config));
+  app.use('/api/v1/auth/egov', createEgovAuthRouter(config, { providerFetch }));
+  app.use('/egovph', createEgovCallbackRouter(config, { providerFetch }));
+  const listener = app.listen(0);
+  try {
+    const base = `http://127.0.0.1:${(listener.address() as { port: number }).port}`;
+    const cookie = `ebuhay_session=${'a'.repeat(43)}; ebuhay_egov_pending=pending-cookie`;
+    const headers = { origin: 'https://client.test', 'content-type': 'application/json', cookie };
+    const exchange = await fetch(`${base}/api/v1/auth/egov/exchange`, { method: 'POST', headers, body: JSON.stringify({ exchange_code: 'widget-code' }) });
+    assert.equal(exchange.status, 409);
+    assert.equal((await exchange.json() as { error: string }).error, 'session_exists');
+    const callback = await fetch(`${base}/egovph/sso?exchange_code=launch-code`, { headers: { cookie }, redirect: 'manual' });
+    assert.equal(callback.status, 409);
+    assert.equal((await callback.json() as { error: string }).error, 'session_exists');
+    const confirm = await fetch(`${base}/api/v1/auth/egov/confirm`, { method: 'POST', headers, body: JSON.stringify({ pendingId: '00000000-0000-4000-8000-000000000001' }) });
+    assert.equal(confirm.status, 409);
+    assert.equal((await confirm.json() as { error: string }).error, 'session_exists');
+    assert.equal(confirm.headers.get('set-cookie'), null);
+    assert.equal(providerCalls, 0);
+    assert.equal(queries.length, 3);
+    assert.ok(queries.every((sql) => sql.startsWith('UPDATE sessions s SET')));
+  } finally {
+    await new Promise<void>((resolve) => listener.close(() => resolve()));
+    await closePool();
+  }
 });
