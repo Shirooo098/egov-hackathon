@@ -4,7 +4,7 @@
 - 2026-09-23 [USER] Goal: finish official eGov tickets first, then unblock synthetic hospital demo; confirmed SSO, Chain, Message, AI, and optional standalone Face Liveness; eVerify is explicitly absent from the product.
 - 2026-09-23 [USER] Work on a `{feature}` branch, commit each accomplishment, never push, and never use a `codex/*` branch.
 - 2026-09-23 [CODE] Current branch: `feature/official-egov-open-tickets`.
-- 2026-09-24 [TOOL] Ticket03 Chain reorg sweep (`fdda661`), expanded server suite (`02eebdd`), and obsolete simulated Besu removal (`f06795f`) are committed. Ticket08 failed-logout fix passed client checks and awaits a scoped commit. Unrelated staged synthetic specs and user-owned `AGENTS.md` remain untouched.
+- 2026-09-24 [TOOL] Ticket03 Chain reorg sweep (`fdda661`), expanded server suite (`02eebdd`), obsolete simulated Besu removal (`f06795f`), and Ticket08 failed-logout fix (`291b745`) are committed. Unrelated staged synthetic specs and user-owned `AGENTS.md` remain untouched.
 - 2026-09-24 [USER] Supplied the SSO guide again and confirmed the credential-issued URL, partner code, and secret are configured in `server/.env`; do not expose their values. The guide does not define `state`/nonce.
 - 2026-09-23 [USER] Resumed available-ticket work; include `.scratch/official-egov-integrations/issues`. Current implementation covers safe Ticket 01 work and Ticket 02; preserve external gates and all ticket scope.
 - 2026-09-23 [TOOL] Astra Ticket01 safe slice and Ticket02 correction completed; conversation `2f06993a-41e4-48d5-9038-b20b7ee11785` terminal (exit0/SUCCESS). Codex verification/review complete. No active agent or process.
@@ -14,13 +14,13 @@
 - 2026-09-24 [CODE] Open: Ticket03 signed official-staging receipt, Ticket04 provider SMS acknowledgement, Ticket05/06 authenticated AI contract, Ticket07 deployment smoke, and optional Ticket09 privacy/error terms require external evidence or credentials/approval. No live provider calls ran.
 
 ## Done
+- 2026-09-24 [TOOL] Commit `291b745` preserves the Citizen or Staff session when eBuhay logout is unconfirmed and corrects Ticket01/08 exchange-code wording to match the supplied SSO guide; client tests/build passed.
 - 2026-09-24 [TOOL] Commit `f06795f` removes unused simulated Besu success and automatic demo anchoring; health reports staging configuration without a receipt claim. Server 95/95, client tests/build, and typechecks passed.
 - 2026-09-24 [TOOL] Commit `02eebdd` adds tracked official integration regressions to regular server suite; 95/95 passed.
 - 2026-09-24 [TOOL] Commit `fdda661` revokes Chain anchors on reverted receipts and binds receipts to their transaction hash; full server suite 61/61 and independent review passed.
 - 2026-09-24 [TOOL] Commit `925654f` labels Citizen case/pair consent proof truthfully in the UI; rendered test, typecheck, and client build passed.
 - 2026-09-24 [TOOL] Commit `759781e` covers Ticket04 HTTP authorization and provider-unavailable no-retry behavior; focused tests and typecheck passed.
 - 2026-09-24 [TOOL] Commit `5070ee1` rejects arbitrary provider error text before SMS return/audit persistence; independent focused tests 7/7, typecheck, and security review passed.
-- 2026-09-24 [TOOL] Commit `c8002e0` explicitly states production and controlled-live eGov use are unauthorized and closes Ticket07's documentation criterion.
 
 ## Decisions
 - D1 2026-09-24 [CODE] Official SSO handoff is implemented with pending identity and explicit user confirmation, without invented state/nonce; provider callback-correlation evidence and credentialed validation remain open.
