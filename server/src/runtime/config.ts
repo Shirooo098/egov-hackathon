@@ -1,3 +1,5 @@
+import { Wallet } from 'ethers';
+
 export const RUNTIME_MODES = ['synthetic', 'partner-sandbox', 'controlled-live', 'production'] as const;
 export type RuntimeMode = (typeof RUNTIME_MODES)[number];
 
@@ -32,6 +34,13 @@ const positiveInt = (name: string, value: string | undefined, fallback: number):
   if (!Number.isInteger(parsed) || parsed <= 0) throw new RuntimeConfigError(`${name} must be a positive integer`);
   return parsed;
 };
+
+function requireHttpsBase(name: string, value: string) {
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.search || parsed.hash) throw new Error();
+  } catch { throw new RuntimeConfigError(`${name} must be an HTTPS URL without embedded credentials or query parameters`); }
+}
 
 function parseOrigins(raw: string | undefined, mode: RuntimeMode): string[] {
   if (isLiveMode(mode) && raw === undefined) {
@@ -94,9 +103,26 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   if ((egovBaseUrl || egovPartnerCode || egovPartnerSecret) && !(egovBaseUrl && egovPartnerCode && egovPartnerSecret)) {
     throw new RuntimeConfigError('EGOV_BASE_URL, EGOV_PARTNER_CODE, and EGOV_PARTNER_SECRET must be configured together');
   }
-  if (egovBaseUrl) {
-    try { const parsed = new URL(egovBaseUrl); if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.search || parsed.hash) throw new Error(); }
-    catch { throw new RuntimeConfigError('EGOV_BASE_URL must be an HTTPS URL'); }
+  if (egovBaseUrl) requireHttpsBase('EGOV_BASE_URL', egovBaseUrl);
+
+  const emessageBaseUrl = env.EMESSAGE_BASE_URL?.trim();
+  const emessageToken = env.EMESSAGE_API_TOKEN?.trim();
+  if (emessageBaseUrl || emessageToken) {
+    if (!emessageBaseUrl || !emessageToken) throw new RuntimeConfigError('EMESSAGE_BASE_URL and EMESSAGE_API_TOKEN must be configured together');
+    requireHttpsBase('EMESSAGE_BASE_URL', emessageBaseUrl);
+  }
+
+  const chainMode = env.EGOVCHAIN_MODE || 'disabled';
+  if (chainMode !== 'disabled' && chainMode !== 'staging') throw new RuntimeConfigError('EGOVCHAIN_MODE must be disabled or staging');
+  if (chainMode === 'staging') {
+    if (rawMode !== 'synthetic') throw new RuntimeConfigError('EGOVCHAIN_MODE=staging requires synthetic application mode');
+    const base = env.EGOVCHAIN_RPC_BASE_URL;
+    const token = env.EGOVCHAIN_RPC_TOKEN;
+    const signer = env.EGOVCHAIN_SIGNER_PRIVATE_KEY;
+    if (!base?.trim() || !token?.trim() || !signer?.trim()) throw new RuntimeConfigError('EGOVCHAIN_RPC_BASE_URL, EGOVCHAIN_RPC_TOKEN, and EGOVCHAIN_SIGNER_PRIVATE_KEY are required for staging');
+    if (base !== base.trim() || token !== token.trim() || signer !== signer.trim()) throw new RuntimeConfigError('EGOVCHAIN staging settings must not contain surrounding whitespace');
+    requireHttpsBase('EGOVCHAIN_RPC_BASE_URL', base);
+    try { new Wallet(signer); } catch { throw new RuntimeConfigError('EGOVCHAIN_SIGNER_PRIVATE_KEY must be a valid signing key'); }
   }
   return {
     mode: rawMode as RuntimeMode,

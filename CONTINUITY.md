@@ -4,12 +4,12 @@
 - 2026-09-23 [USER] Goal: finish official eGov tickets first, then unblock synthetic hospital demo; confirmed SSO, Chain, Message, AI, and optional standalone Face Liveness; eVerify is explicitly absent from the product.
 - 2026-09-23 [USER] Work on a `{feature}` branch, commit each accomplishment, never push, and never use a `codex/*` branch.
 - 2026-09-23 [CODE] Current branch: `feature/official-egov-open-tickets`.
-- 2026-09-24 [TOOL] Latest implementation commit `f9dd815`; all scoped official-ticket changes in this milestone are committed. Unrelated staged synthetic specs and user-owned `AGENTS.md` remain untouched.
+- 2026-09-24 [TOOL] Latest implementation commit `f9dd815`; Ticket07 startup-config hardening is under scoped commit. Unrelated staged synthetic specs and user-owned `AGENTS.md` remain untouched.
 - 2026-09-24 [USER] Supplied the SSO guide again and confirmed the credential-issued URL, partner code, and secret are configured in `server/.env`; do not expose their values. The guide does not define `state`/nonce.
 - 2026-09-23 [USER] Resumed available-ticket work; include `.scratch/official-egov-integrations/issues`. Current implementation covers safe Ticket 01 work and Ticket 02; preserve external gates and all ticket scope.
 - 2026-09-23 [TOOL] Astra Ticket01 safe slice and Ticket02 correction completed; conversation `2f06993a-41e4-48d5-9038-b20b7ee11785` terminal (exit0/SUCCESS). Codex verification/review complete. No active agent or process.
 - 2026-09-23 [USER] Commit each verified accomplishment on the existing feature branch; do not push. Preserve unrelated staged specification work. This supersedes this turn's no-commit default.
-- 2026-09-24 [CODE] Now: Tickets 01/08 SSO, Ticket04 eMessage mobile consent, and Ticket03 truthful chain status are committed. Next: authenticated callback evidence, credentialed staging checks, and provider privacy/error contracts. Nothing pushed.
+- 2026-09-24 [CODE] Now: Tickets 01/08 SSO, Ticket04 eMessage mobile consent, and Ticket03 truthful chain status are committed. Ticket07 startup rejects malformed enabled SMS/Chain config; final scoped commit pending. Nothing pushed.
 - 2026-09-24 [CODE] Open: eGovPH callback correlation and partner acceptance need authenticated clarification; no provider smoke ran. Ticket 24 baseline remains unrun; isolated test DB is currently inaccessible (EACCES) in this sandbox.
 - 2026-09-24 [CODE] Open: Ticket03 signed official-staging receipt, Ticket04 provider SMS acknowledgement, Ticket05/06 authenticated AI contract, Ticket07 deployment smoke, and optional Ticket09 privacy/error terms require external evidence or credentials/approval. No live provider calls ran.
 
@@ -53,6 +53,7 @@
 - `.scratch/official-egov-integrations/issues/01-official-egov-sso-citizen-login.md`
 
 ## Receipts
+- 2026-09-24 [TOOL] Ticket07 startup config: focused runtime tests 9/9, server full suite 56/56, typecheck passed; independent review found a Chain whitespace mismatch and confirmed the fix. Local `.env` passed structural validation with SSO/SMS configured and Chain staging, without printing values. No provider call or deployment ran. Antigravity `agy models` still fails: not signed in.
 - 2026-09-24 [TOOL] Ticket03 read-state mapping: focused 5/5, server full suite 55/55, typecheck passed; independent review had no actionable findings. Database-backed joins and official-chain behavior were not exercised.
 - 2026-09-24 [TOOL] Ticket03 route removal: focused chain tests 3/3, server full suite 53/53, and server typecheck passed. No real staging transaction or isolated DB test ran.
 - 2026-09-24 [TOOL] Independent Ticket04 review found revoke-response masked-mobile UI bug; fixed, and server/client regression checks passed. Reviewer also identified stale ignored/untracked `server/tests/notifications.test.ts`; new scoped HTTP test covers current contract, while that legacy DB test remains unrun/untracked.
