@@ -4,25 +4,21 @@
 - 2026-09-23 [USER] Goal: finish official eGov tickets first, then unblock synthetic hospital demo; confirmed SSO, Chain, Message, AI, and optional standalone Face Liveness; eVerify is explicitly absent from the product.
 - 2026-09-23 [USER] Work on a `{feature}` branch, commit each accomplishment, never push, and never use a `codex/*` branch.
 - 2026-09-23 [CODE] Current branch: `feature/official-egov-open-tickets`.
-- 2026-09-24 [TOOL] Current committed HEAD `038f73b`; SSO source, tests, and ticket status changes are in the worktree for the next scoped commit. Unrelated staged synthetic specs and user-owned `AGENTS.md` are preserved.
+- 2026-09-24 [TOOL] Current committed HEAD `b7b3315`; Ticket04 SSO-mobile consent changes are in the worktree for a scoped commit. Unrelated staged synthetic specs and user-owned `AGENTS.md` are preserved.
 - 2026-09-24 [USER] Supplied the SSO guide again and confirmed the credential-issued URL, partner code, and secret are configured in `server/.env`; do not expose their values. The guide does not define `state`/nonce.
 - 2026-09-23 [USER] Resumed available-ticket work; include `.scratch/official-egov-integrations/issues`. Current implementation covers safe Ticket 01 work and Ticket 02; preserve external gates and all ticket scope.
 - 2026-09-23 [TOOL] Astra Ticket01 safe slice and Ticket02 correction completed; conversation `2f06993a-41e4-48d5-9038-b20b7ee11785` terminal (exit0/SUCCESS). Codex verification/review complete. No active agent or process.
 - 2026-09-23 [USER] Commit each verified accomplishment on the existing feature branch; do not push. Preserve unrelated staged specification work. This supersedes this turn's no-commit default.
-- 2026-09-24 [CODE] Now: Tickets 01/08 SSO handoff and widget implementation are under final verification; Ticket 02 eVerify removal is complete. Next: scoped SSO commit, then reassess remaining official tickets and external evidence gates. Nothing pushed.
+- 2026-09-24 [CODE] Now: Tickets 01/08 SSO handoff and widget are committed; Ticket04 eMessage mobile consent and narrow purposes pass focused checks and review. Next: scoped Ticket04 commit, then remaining available tickets. Nothing pushed.
 - 2026-09-24 [CODE] Open: eGovPH callback correlation and partner acceptance need authenticated clarification; no provider smoke ran. Ticket 24 baseline remains unrun; isolated test DB is currently inaccessible (EACCES) in this sandbox.
 - 2026-09-23 [CODE] Open: Tickets 03, 05, 06, and credentialed Ticket 07 checks retain documented external dependencies.
 
 ## Done
+- 2026-09-24 [TOOL] Commit `b7b3315` records official SSO handoff and widget with explicit identity confirmation; Ticket01/08 staging/callback-correlation gates remain open.
 - 2026-09-24 [TOOL] Commit `038f73b` records eMessage accepted-only progress and eGovAI success-shape documentation; external gates remain open.
 - 2026-09-24 [TOOL] Commits `fbb3f2d`, `10d5a38`, `927f51f` respectively restrict AI to fixed FAQs, correct SMS HTTP 201 acceptance, and move case choice after Citizen authentication.
 - 2026-09-23 [TOOL] Commit `b51b67a` completely deletes eVerify provider/controller/routes, UI/fixture claims and credentials; removes liveness onboarding gate. Reviewed and verified; no compatibility stubs remain.
 - 2026-09-23 [TOOL] Commit `b83601c` removes synthetic Citizen and authentication-invitation runtime login, preserves sessions/Staff; 10 focused tests plus 22 Staff tests passed and both reviews found no material issue. Nothing pushed.
-- 2026-09-23 [CODE] Commit `3ec8524` added read-only compatibility suggestions.
-- 2026-09-23 [CODE] Commit `94ba011` made official eGov SSO the runtime authority in documentation.
-- 2026-09-23 [CODE] Commit `3d89aea` enforces truthful unavailable eGov boundaries and removes runtime Citizen invitation fallback.
-- 2026-09-23 [CODE] Commit `877c4c6` enforces consented, audited, truthful eMessage delivery.
-- 2026-09-23 [CODE] Commit `c80058e` restores reproducible package checks.
 
 ## Decisions
 - D1 2026-09-24 [CODE] Official SSO handoff is implemented with pending identity and explicit user confirmation, without invented state/nonce; provider callback-correlation evidence and credentialed validation remain open.
@@ -40,27 +36,26 @@
 - D13 2026-09-23 [USER] Face Liveness is an optional post-SSO proof-of-presence demonstration, not identity or eligibility; each session needs explicit opt-in. Superseded the tentative minimal persistent outcome audit plan by D14.
 - D14 2026-09-23 [USER] Liveness completion requires provider `SUCCEEDED` and score >=95, but displays only a binary message; hosted redirect triggers server-side verification bound to a pending Citizen session; no persistent liveness-specific outcome, score, token, or image until its retention basis is approved. Runtime remains deferred pending authenticated contract, retention terms, privacy notice, and safety checks.
 - D15 2026-09-23 [USER] No eVerify feature at all: remove user-facing placeholder and runtime API/provider path/credentials; optional Face Liveness is independent. This supersedes the earlier deferred-eVerify treatment.
+- D16 2026-09-24 [CODE] Ticket04 stores only current SSO mobile, resets consent on changed/missing mobile, checks it at notification record and dispatch, and uses generic messages for three approved purposes; credentialed staging remains open.
 
 ## Working set
-- `client/src/App.tsx`
-- `client/src/features/onboarding/`
-- `client/src/services/api.ts`
-- `server/src/routes/egov-auth.ts`
+- `client/src/features/notifications/SmsPreferences.tsx`
+- `client/src/pages/DonorDashboard.tsx`
+- `client/src/pages/RecipientDashboard.tsx`
 - `server/src/auth/egov-citizen.ts`
 - `server/src/auth/egov-provider.ts`
-- `server/src/db/migrations/035_egov_sso_pending.sql`
+- `server/src/routes/platform.ts`
+- `server/src/services/notificationService.ts`
+- `server/src/services/eMessageService.ts`
+- `server/src/db/migrations/036_egov_sso_mobile.sql`
+- `.scratch/official-egov-integrations/issues/04-official-opted-in-emessage-notifications.md`
 - `.scratch/official-egov-integrations/issues/01-official-egov-sso-citizen-login.md`
-- `.scratch/official-egov-integrations/issues/08-official-web-widget-and-post-sso-journey.md`
-- `.scratch/official-egov-integrations/issues/09-optional-standalone-face-liveness.md`
-- `server/src/runtime/config.ts`
-- `server/src/middleware/v1-security.ts`
 
 ## Receipts
+- 2026-09-24 [TOOL] Independent Ticket04 review found revoke-response masked-mobile UI bug; fixed, and server/client regression checks passed. Reviewer also identified stale ignored/untracked `server/tests/notifications.test.ts`; new scoped HTTP test covers current contract, while that legacy DB test remains unrun/untracked.
+- 2026-09-24 [TOOL] Ticket04: focused server SSO/SMS tests 10/10, client preference/trust tests 9/9, server full test 52/52, server typecheck passed. Server lint exit0 with pre-existing warnings. Database migration and credentialed provider smoke remain unrun (sandbox DB EACCES/no live call).
+- 2026-09-24 [TOOL] Prior SSO package verification at `b7b3315`: server 52/52, client full suite and build, both typechecks passed; no provider or isolated DB call.
 - 2026-09-24 [TOOL] SSO provider/HTTP fixture tests 7/7, client focused SSO/onboarding tests 43/43, server/client typechecks, and isolated config assertion passed; no real provider call.
 - 2026-09-24 [TOOL] Independent SSO security review found pending-cookie identity swap, callback rate-limit bypass, and concurrent first-login race; code now binds confirmation to pending ID, throttles callback, and serializes first provisioning. Second review could not run due agent usage limit.
 - 2026-09-24 [USER][CODE] Supplied liveness portal excerpts match egov-api-documentation.md success endpoints and threshold; Ticket09 now records HTTP201 session/HTTP200 result contract. Error/expiry, provider retention/privacy approval and credentialed validation remain open. No provider call ran.
 - 2026-09-23 [TOOL] Ticket02 final: 4/4 removal HTTP, 4/4 official deferral, 12/12 API security, 4/4 SSO boundary tests and server typecheck passed after generic auth 404 fix. Independent review resolved stale onboarding copy; no remaining findings.
-- 2026-09-23 [TOOL] Earlier package baseline: server 52/52, client 77/77 Vitest and 15/15 TAP, typechecks/lint/build passed; final SSO package run remains pending.
-- 2026-09-23 [TOOL] Ticket-specific server checks via Node loader: official deferrals 5/5, eMessage service 2/2, legacy no-outbound 1/1.
-- 2026-09-23 [TOOL] Security/migration review returned no remaining P0-P2 findings after legacy pending rows were made fail-closed.
-- 2026-09-23 [TOOL] `git diff --check` passed at committed HEAD `c80058e`.

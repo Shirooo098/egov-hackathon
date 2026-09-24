@@ -11,6 +11,7 @@ import { DonorProfileTab } from "../features/donor/DonorTabComponents";
 import { ALL_ORGANS, BLOOD_TYPES } from "../services/domain";
 import { formatStatus } from "../utils/matchStatus";
 import PairCoordinationPanel from "../features/match/PairCoordinationPanel";
+import SmsPreferences from "../features/notifications/SmsPreferences";
 import {
   UserIcon,
   MatchIcon,
@@ -234,19 +235,22 @@ export default function DonorDashboard({
         <div className="container">
           {/* PROFILE TAB */}
           {tab === "profile" && (
-            <DonorProfileTab
-              avail={avail}
-              setAvail={handleAvailChange}
-              bloodType={bloodType}
-              setBloodType={setBloodType}
-              isBlood={isBlood}
-              setIsBlood={setIsBlood}
-              organs={organs}
-              toggleOrgan={toggleOrgan}
-              saveProfile={saveProfile}
-              BLOOD_TYPES={BLOOD_TYPES}
-              ALL_ORGANS={ALL_ORGANS}
-            />
+            <>
+              <DonorProfileTab
+                avail={avail}
+                setAvail={handleAvailChange}
+                bloodType={bloodType}
+                setBloodType={setBloodType}
+                isBlood={isBlood}
+                setIsBlood={setIsBlood}
+                organs={organs}
+                toggleOrgan={toggleOrgan}
+                saveProfile={saveProfile}
+                BLOOD_TYPES={BLOOD_TYPES}
+                ALL_ORGANS={ALL_ORGANS}
+              />
+              <SmsPreferences />
+            </>
           )}
 
           {/* MY MATCH TAB (Automated & Interactive Handshake, Issue #006 & #008) */}

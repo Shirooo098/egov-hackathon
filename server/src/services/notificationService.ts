@@ -9,6 +9,8 @@ import {
 export const GENERIC_NOTIFICATION_TEMPLATES: Record<string, string> = {
   coordination_update:
     "A coordination update is available for your case. Sign in to eBuhay to review your case.",
+  application_status_update:
+    "Your application status was updated. Sign in to eBuhay to review.",
   withdrawal_update:
     "A case participation status was updated. Sign in to eBuhay to review.",
   appointment_scheduled:
@@ -26,7 +28,7 @@ export const GENERIC_NOTIFICATION_TEMPLATES: Record<string, string> = {
 };
 
 export const ALLOWED_NOTIFICATION_PURPOSES = Object.freeze(
-  ["appointment_scheduled", "coordination_update", "action_required"],
+  ["appointment_scheduled", "application_status_update", "action_required"],
 );
 
 export const MAX_NOTIFICATION_ATTEMPTS = 5;
@@ -91,12 +93,15 @@ export async function recordNotification(
 
   // External channel: verify consent (default-off)
   const prefRes = await executor.query(
-    `SELECT sms_consent AS "smsConsent", phone_number AS "phoneNumber"
-     FROM notification_preferences WHERE account_id=$1`,
+    `SELECT p.sms_consent AS "smsConsent", p.phone_number AS "phoneNumber",
+       e.profile->>'mobile' AS "verifiedMobile"
+     FROM notification_preferences p LEFT JOIN egov_identities e
+       ON e.account_id=p.account_id AND e.provider='egovph'
+     WHERE p.account_id=$1`,
     [input.recipientAccountId],
   );
   const pref = prefRes.rows[0];
-  const hasConsent = Boolean(pref?.smsConsent && pref?.phoneNumber);
+  const hasConsent = Boolean(pref?.smsConsent && pref?.phoneNumber && pref.phoneNumber === pref.verifiedMobile);
 
   if (!hasConsent) {
     // Fail-safe: without consent, channel is recorded as suppressed
@@ -144,9 +149,11 @@ export async function dispatchExternalNotification(
        )
        SELECT c.id, c.recipient_account_id, c.actor_account_id, c.template, c.safe_reference, c.channel,
               c.delivery_status, c.attempts,
-              p.sms_consent, p.phone_number
+              p.sms_consent,
+              CASE WHEN e.provider='egovph' AND e.profile->>'mobile'=p.phone_number THEN p.phone_number ELSE NULL END AS phone_number
        FROM claimed c
-       LEFT JOIN notification_preferences p ON p.account_id = c.recipient_account_id`,
+       LEFT JOIN notification_preferences p ON p.account_id = c.recipient_account_id
+       LEFT JOIN egov_identities e ON e.account_id=c.recipient_account_id AND e.provider='egovph'`,
       [notificationId],
     );
 

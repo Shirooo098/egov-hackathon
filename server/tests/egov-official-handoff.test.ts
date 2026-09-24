@@ -15,10 +15,10 @@ test('official provider exchange uses documented token and profile contracts', a
   const fetchImpl = async (url: string | URL, init?: RequestInit) => {
     calls.push({ url: String(url), init });
     if (calls.length === 1) return new Response(JSON.stringify({ access_token: 'provider-token' }), { status: 200 });
-    return new Response(JSON.stringify({ status: 200, data: { uniqid: 'citizen/123', first_name: 'Test', last_name: 'Citizen' } }), { status: 200 });
+    return new Response(JSON.stringify({ status: 200, data: { uniqid: 'citizen/123', first_name: 'Test', last_name: 'Citizen', mobile: '+639171234567' } }), { status: 200 });
   };
   const identity = await verifyEgovExchange({ baseUrl: 'https://staging.example.test', partnerCode: 'partner', partnerSecret: 'secret' }, 'single-use-code', fetchImpl);
-  assert.deepEqual(identity, { uniqid: 'citizen/123', displayName: 'Test Citizen' });
+  assert.deepEqual(identity, { uniqid: 'citizen/123', displayName: 'Test Citizen', mobile: '+639171234567' });
   assert.deepEqual(JSON.parse(String(calls[0].init?.body)), { partner_code: 'partner', partner_secret: 'secret', exchange_code: 'single-use-code', scope: 'SSO_AUTHENTICATION' });
   assert.equal(calls[1].init?.headers && new Headers(calls[1].init.headers).get('authorization'), 'Bearer provider-token');
   assert.equal(String(calls[1].init?.body), '{}');
@@ -100,6 +100,8 @@ test('HTTP exchange shows identity before confirmation and consumes code and pen
   let consumed = false;
   let providerCalls = 0;
   let pendingHash = '';
+  let pendingMobile = '';
+  let identityMobile = '';
   const pendingId = '00000000-0000-4000-8000-000000000001';
   const accountId = '00000000-0000-4000-8000-000000000002';
   const query = async (sql: string, values: unknown[] = []) => {
@@ -110,17 +112,19 @@ test('HTTP exchange shows identity before confirmation and consumes code and pen
     }
     if (sql.startsWith('INSERT INTO egov_sso_pending')) {
       pendingHash = (values[0] as Buffer).toString('hex');
+      pendingMobile = String(values[4]);
       return { rowCount: 1, rows: [{ id: pendingId }] };
     }
     if (sql.startsWith('SELECT id,display_name')) return { rowCount: 1, rows: [{ id: pendingId, displayName: 'Maria Santos' }] };
     if (sql.startsWith('SELECT id,exchange_transaction_id')) {
       const valid = !consumed && pendingHash === (values[0] as Buffer).toString('hex') && values[1] === pendingId;
-      return { rowCount: valid ? 1 : 0, rows: valid ? [{ id: pendingId, exchange_transaction_id: 'transaction-1', uniqid: 'citizen-1', display_name: 'Maria Santos' }] : [] };
+      return { rowCount: valid ? 1 : 0, rows: valid ? [{ id: pendingId, exchange_transaction_id: 'transaction-1', uniqid: 'citizen-1', display_name: 'Maria Santos', mobile: pendingMobile }] : [] };
     }
     if (sql.startsWith('SELECT a.id,a.role')) return { rowCount: 0, rows: [] };
     if (sql.startsWith('INSERT INTO accounts')) return { rowCount: 1, rows: [{ id: accountId, role: 'citizen', display_name: 'Maria Santos' }] };
+    if (sql.startsWith('INSERT INTO egov_identities')) identityMobile = (JSON.parse(String(values[2])) as { mobile: string }).mobile;
     if (sql.startsWith('UPDATE egov_sso_pending SET consumed_at')) consumed = true;
-    if (sql === 'BEGIN' || sql === 'COMMIT' || sql === 'ROLLBACK' || sql.startsWith('SELECT pg_advisory_xact_lock') || sql.startsWith('UPDATE egov_exchange_transactions') || sql.startsWith('INSERT INTO egov_identities') || sql.startsWith('INSERT INTO sessions') || sql.startsWith('UPDATE egov_sso_pending') || sql.startsWith('INSERT INTO egov_verification_history')) return { rowCount: 1, rows: [] };
+    if (sql === 'BEGIN' || sql === 'COMMIT' || sql === 'ROLLBACK' || sql.startsWith('SELECT pg_advisory_xact_lock') || sql.startsWith('UPDATE egov_exchange_transactions') || sql.startsWith('INSERT INTO egov_identities') || sql.startsWith('INSERT INTO sessions') || sql.startsWith('UPDATE egov_sso_pending') || sql.startsWith('UPDATE notification_preferences') || sql.startsWith('INSERT INTO egov_verification_history')) return { rowCount: 1, rows: [] };
     throw new Error(`Unexpected database operation: ${sql.slice(0, 35)}`);
   };
   setPool({ query, connect: async () => ({ query, release() {} }), end: async () => {} } as unknown as Pool);
@@ -128,7 +132,7 @@ test('HTTP exchange shows identity before confirmation and consumes code and pen
     providerCalls++;
     return providerCalls % 2 === 1
       ? new Response(JSON.stringify({ access_token: 'server-token' }), { status: 200 })
-      : new Response(JSON.stringify({ status: 200, data: { uniqid: 'citizen-1', first_name: 'Maria', last_name: 'Santos' } }), { status: 200 });
+      : new Response(JSON.stringify({ status: 200, data: { uniqid: 'citizen-1', first_name: 'Maria', last_name: 'Santos', mobile: '+639171234567' } }), { status: 200 });
   };
   const app = express();
   app.use(express.json());
@@ -148,6 +152,7 @@ test('HTTP exchange shows identity before confirmation and consumes code and pen
     assert.equal((await pending.json() as { data: { pendingId: string } }).data.pendingId, body.data.pendingId);
     const confirmed = await fetch(`${base}/confirm`, { method: 'POST', headers: { ...headers, cookie }, body: JSON.stringify({ pendingId: body.data.pendingId }) });
     assert.equal(confirmed.status, 200);
+    assert.equal(identityMobile, '+639171234567');
     assert.equal(exchange.headers.get('set-cookie')?.includes('server-token'), false);
     assert.equal(confirmed.headers.get('set-cookie')?.includes('ebuhay_session='), true);
     const again = await fetch(`${base}/confirm`, { method: 'POST', headers: { ...headers, cookie }, body: JSON.stringify({ pendingId: body.data.pendingId }) });
@@ -185,4 +190,30 @@ test('official in-app callback redirects to pending confirmation without a sessi
     assert.doesNotMatch(await response.text(), /one-time-code|private-token/);
     assert.equal(calls, 2);
   } finally { await new Promise<void>((resolve) => server.close(() => resolve())); await closePool(); }
+});
+
+test('returning Citizen refreshes verified mobile and revokes consent for a changed destination', async () => {
+  const accountId = '00000000-0000-4000-8000-000000000002';
+  const pendingId = '00000000-0000-4000-8000-000000000003';
+  let profileMobile = '';
+  let consentReset = false;
+  const query = async (sql: string, values: unknown[] = []) => {
+    if (sql.startsWith('SELECT id,exchange_transaction_id')) return { rowCount: 1, rows: [{ id: pendingId, exchange_transaction_id: 'transaction-2', uniqid: 'citizen-1', display_name: 'Maria Newname', mobile: '+639171234567' }] };
+    if (sql.startsWith('SELECT a.id,a.role')) return { rowCount: 1, rows: [{ id: accountId, role: 'citizen', status: 'active', display_name: 'Maria Oldname' }] };
+    if (sql.startsWith('UPDATE egov_identities SET profile')) profileMobile = (JSON.parse(String(values[0])) as { mobile: string }).mobile;
+    if (sql.startsWith('UPDATE notification_preferences')) {
+      assert.match(sql, /phone_number IS DISTINCT FROM \$2/);
+      assert.equal(values[1], '+639171234567');
+      consentReset = true;
+    }
+    if (sql === 'BEGIN' || sql === 'COMMIT' || sql.startsWith('SELECT pg_advisory_xact_lock') || sql.startsWith('UPDATE egov_identities') || sql.startsWith('UPDATE accounts') || sql.startsWith('UPDATE notification_preferences') || sql.startsWith('INSERT INTO sessions') || sql.startsWith('UPDATE egov_sso_pending') || sql.startsWith('UPDATE egov_exchange_transactions') || sql.startsWith('INSERT INTO egov_verification_history')) return { rowCount: 1, rows: [] };
+    throw new Error(`Unexpected database operation: ${sql.slice(0, 35)}`);
+  };
+  setPool({ query, connect: async () => ({ query, release() {} }), end: async () => {} } as unknown as Pool);
+  try {
+    const result = await confirmPending('pending-cookie', pendingId, undefined);
+    assert.equal('account' in result ? result.account?.displayName : '', 'Maria Newname');
+    assert.equal(profileMobile, '+639171234567');
+    assert.equal(consentReset, true);
+  } finally { await closePool(); }
 });

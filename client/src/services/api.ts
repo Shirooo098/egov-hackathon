@@ -100,12 +100,4 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ prompt, category }),
     }),
-
-  // eMessage SMS
-  // number must be E.164 format, e.g. "+639090000000"
-  sendSms: (number: string, message: string) =>
-    request("/emessage/sms/push", {
-      method: "POST",
-      body: JSON.stringify({ number, message }),
-    }),
 };

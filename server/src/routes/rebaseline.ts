@@ -55,12 +55,14 @@ async function notifyPairParticipants(client: PoolClient, pairId: string, actorA
     WHERE p.id=$1::uuid AND c.account_id IS NOT NULL`, [pairId, actorAccountId]);
 
   await client.query(`INSERT INTO notifications(recipient_account_id, actor_account_id, template, safe_reference, channel, delivery_status)
-    SELECT DISTINCT c.account_id, $2::uuid, 'coordination_update', $1::text, 'external_sms', 'pending'
+    SELECT DISTINCT c.account_id, $2::uuid, 'application_status_update', $1::text, 'external_sms', 'pending'
     FROM pair_proposals p
     JOIN episodes e ON e.id IN (p.own_episode_id, p.counterpart_episode_id)
     JOIN citizen_cases c ON c.id=e.case_id
     JOIN notification_preferences pref ON pref.account_id=c.account_id
-    WHERE p.id=$1::uuid AND c.account_id IS NOT NULL AND pref.sms_consent=true AND pref.phone_number IS NOT NULL`, [pairId, actorAccountId]);
+    JOIN egov_identities ei ON ei.account_id=c.account_id AND ei.provider='egovph'
+    WHERE p.id=$1::uuid AND c.account_id IS NOT NULL AND pref.sms_consent=true
+      AND pref.phone_number=ei.profile->>'mobile'`, [pairId, actorAccountId]);
 }
 
 router.get('/hospital/candidates', requireSession, async (req, res, next) => {

@@ -251,6 +251,7 @@ const egovSsoPending = pgTable("egov_sso_pending", {
   uniqid: text("uniqid").notNull(),
   provider: text("provider").notNull().default("egovph"),
   displayName: text("display_name").notNull(),
+  mobile: text("mobile"),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   consumedAt: timestamp("consumed_at", { withTimezone: true }),
   createdAt: created(),

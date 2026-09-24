@@ -4,7 +4,7 @@ export type EgovProviderConfig = {
   partnerSecret?: string;
 };
 
-export type EgovIdentity = { uniqid: string; displayName: string };
+export type EgovIdentity = { uniqid: string; displayName: string; mobile?: string };
 export type ProviderFetch = (input: string | URL, init?: RequestInit) => Promise<Response>;
 
 export class EgovProviderError extends Error {
@@ -64,5 +64,6 @@ export async function verifyEgovExchange(
   const first = typeof data.first_name === 'string' ? data.first_name.trim() : '';
   const last = typeof data.last_name === 'string' ? data.last_name.trim() : '';
   if (!first || !last || first.length > 100 || last.length > 100) throw new EgovProviderError('invalid_response');
-  return { uniqid: data.uniqid, displayName: `${first} ${last}` };
+  const mobile = typeof data.mobile === 'string' && /^\+[1-9]\d{7,14}$/.test(data.mobile.trim()) ? data.mobile.trim() : undefined;
+  return { uniqid: data.uniqid, displayName: `${first} ${last}`, ...(mobile ? { mobile } : {}) };
 }

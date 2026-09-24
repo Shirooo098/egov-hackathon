@@ -4,14 +4,14 @@
 
 **Blocked by:** 01 — Official eGov SSO-only Citizen login.
 
-**Status:** in progress — documented `201 Created` now records accepted without a delivery claim (`10d5a38`); SSO-supplied destination and full workflow validation remain blocked by 01
+**Status:** in progress — official SSO mobile is the only SMS destination, with explicit opt-in and revocation; documented `201 Created` records accepted without a delivery claim. Credentialed staging and full workflow validation remain open.
 
-- [ ] SMS consent defaults to off, requires explicit opt-in, and can be revoked immediately.
-- [ ] A mobile number received through SSO does not itself enroll a Citizen in SMS notifications.
-- [ ] Only the opted-in mobile number supplied by official SSO is used; an unverified manually entered number is not a destination.
-- [ ] Approved purposes are limited to appointment changes, application-status updates, and document-action reminders.
-- [ ] Message bodies are generic and exclude medical or sensitive case details.
-- [ ] Only authenticated and authorized Staff or system workflows can initiate a message; no arbitrary public SMS relay exists.
+- [x] SMS consent defaults to off, requires explicit opt-in, and can be revoked immediately.
+- [x] A mobile number received through SSO does not itself enroll a Citizen in SMS notifications.
+- [x] Only the opted-in mobile number supplied by official SSO is used; an unverified manually entered number is not a destination.
+- [x] Approved purposes are limited to appointment changes, application-status updates, and document-action reminders.
+- [x] Message bodies are generic and exclude medical or sensitive case details.
+- [x] Only authenticated and authorized Staff or system workflows can initiate a message; no arbitrary public SMS relay exists.
 - [x] The documented `201 Created` response is accepted as “Accepted by eMessage,” with delivery unconfirmed; an undocumented message ID or `sent`/`delivered` field is not required for request acceptance.
 - [ ] Rejected, unavailable, malformed, and ambiguous submissions remain truthful; ambiguous submissions are reconciled rather than automatically retried or called delivered.
 - [ ] Credentials and message bodies are excluded from logs; audit metadata records the actor, purpose, internal request, time, and provider correlation identifier when supplied.
