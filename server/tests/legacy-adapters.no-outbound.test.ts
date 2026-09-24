@@ -6,7 +6,6 @@ import emessageRouter from '../src/routes/emessage.js';
 import egovRouter from '../src/routes/egov.js';
 import * as ai from '../src/services/eGovAIService.js';
 import * as sms from '../src/services/eMessageService.js';
-import * as besu from '../src/services/BesuService.js';
 
 const nativeFetch = globalThis.fetch;
 const axiosCalls: string[] = [];
@@ -22,10 +21,6 @@ globalThis.fetch = async (input, init) => {
   throw new Error('unexpected provider request');
 };
 
-assert.equal(besu.DEMO_MODE, true);
-
-
-
 await assert.rejects(
   () => ai.askLawsAndRegulations('blood'),
   (err: unknown) => {
@@ -35,8 +30,7 @@ await assert.rejects(
 );
 
 const smsResult = await sms.sendSMS('+639171234567', 'test');
-assert.ok(smsResult.status === 'unavailable' || (smsResult as { _demo?: boolean })._demo === true);
-assert.equal((await besu.getChainInfo()).demo, true);
+assert.equal(smsResult.status, 'unavailable');
 
 const app = express();
 app.use(express.json());

@@ -81,7 +81,10 @@ test('Ticket 02: Legacy eVerify HTTP endpoints fail closed with 404 and make no 
   }
 });
 
-test('Ticket 02: /api/health removes eVerify from service status', async () => {
+test('Ticket 02: /api/health reports official integration configuration without simulated success', async () => {
+  const keys = ['EBUHAY_MODE', 'EMESSAGE_BASE_URL', 'EMESSAGE_API_TOKEN', 'EGOVCHAIN_MODE', 'EGOVCHAIN_RPC_BASE_URL', 'EGOVCHAIN_RPC_TOKEN', 'EGOVCHAIN_SIGNER_PRIVATE_KEY'] as const;
+  const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
+  for (const key of keys) delete process.env[key];
   const app = createApp({ config: testConfig });
   const server = createServer(app);
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -95,8 +98,24 @@ test('Ticket 02: /api/health removes eVerify from service status', async () => {
     assert.equal('eVerify' in body.services, false);
     assert.ok('eMessage' in body.services);
     assert.ok('eGovAI' in body.services);
-    assert.ok('BesuBlockchain' in body.services);
+    assert.equal('BesuBlockchain' in body.services, false);
+    assert.equal(body.services.eGovChain, 'UNAVAILABLE');
+    assert.equal(body.services.eGovAI, 'UNAVAILABLE');
+    assert.equal(body.services.eMessage, 'UNAVAILABLE');
+    Object.assign(process.env, {
+      EBUHAY_MODE: 'synthetic', EMESSAGE_BASE_URL: 'https://sms.test', EMESSAGE_API_TOKEN: 'test-token',
+      EGOVCHAIN_MODE: 'staging', EGOVCHAIN_RPC_BASE_URL: 'https://chain.test', EGOVCHAIN_RPC_TOKEN: 'test-token',
+      EGOVCHAIN_SIGNER_PRIVATE_KEY: '0x' + '1'.repeat(64),
+    });
+    const configured = (await (await fetch(`${base}/api/health`)).json()) as { services: Record<string, unknown> };
+    assert.equal(configured.services.eMessage, 'CONFIGURED_STAGING');
+    assert.equal(configured.services.eGovChain, 'CONFIGURED_STAGING');
+    assert.equal(configured.services.eGovAI, 'UNAVAILABLE');
   } finally {
+    for (const key of keys) {
+      if (previous[key] === undefined) delete process.env[key];
+      else process.env[key] = previous[key];
+    }
     await new Promise<void>((resolve) => server.close(() => resolve()));
   }
 });

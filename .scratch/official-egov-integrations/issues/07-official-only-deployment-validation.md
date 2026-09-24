@@ -6,7 +6,7 @@
 
 **Status:** in progress — startup now rejects incomplete or malformed enabled SSO, eMessage, and eGovChain configuration; credentialed staging and the listed ticket gates remain open
 
-The local startup check verifies HTTPS URL shape and credential presence, not whether a URL or credential was actually issued by the provider. `server/.env.example` contains blank eGov credentials rather than guessed endpoints or demo tokens. The regular server test command includes the tracked SSO, eMessage, Chain, eVerify-removal, and AI-deferral regressions. A structural check of the local environment passed without printing credential values; no provider call or deployment ran.
+The local startup check verifies HTTPS URL shape and credential presence, not whether a URL or credential was actually issued by the provider. `server/.env.example` contains blank eGov credentials rather than guessed endpoints or demo tokens. The regular server test command includes the tracked SSO, eMessage, Chain, eVerify-removal, and AI-deferral regressions. `/api/health` reports configured staging, unavailable, or disabled state without claiming a provider receipt or delivery. A structural check of the local environment passed without printing credential values; no provider call or deployment ran.
 
 - [ ] Every enabled integration validates its credential-issued HTTPS base URL and required secrets during deployment startup.
 - [ ] Missing or malformed credentials prevent an enabled feature from starting; runtime provider outages produce clear unavailable responses.

@@ -30,6 +30,7 @@ import {
 } from "./middleware/v1-security.js";
 import { SESSION_COOKIE } from "./auth/service.js";
 import { createEgovCallbackRouter } from "./routes/egov-auth.js";
+import { egovchainEnabled } from "./services/EgovChainService.js";
 
 export type AppOptions = {
   config?: RuntimeConfig;
@@ -178,9 +179,7 @@ export function createApp(options: AppOptions = {}) {
   app.get("/api/health/ready", readyHealth);
 
   app.get("/api/health", (_req, res) => {
-    const integrationStatus = isLiveMode(config!.mode)
-      ? "DISABLED"
-      : "SYNTHETIC";
+    const inactiveStatus = isLiveMode(config!.mode) ? "DISABLED" : "UNAVAILABLE";
     res.status(200).json({
       success: true,
       status: "alive",
@@ -189,9 +188,9 @@ export function createApp(options: AppOptions = {}) {
       version: "1.0.0",
       timestamp: new Date().toISOString(),
       services: {
-        eMessage: integrationStatus,
-        eGovAI: integrationStatus,
-        BesuBlockchain: integrationStatus,
+        eMessage: !isLiveMode(config!.mode) && process.env.EMESSAGE_BASE_URL?.trim() && process.env.EMESSAGE_API_TOKEN?.trim() ? "CONFIGURED_STAGING" : inactiveStatus,
+        eGovAI: inactiveStatus,
+        eGovChain: !isLiveMode(config!.mode) && egovchainEnabled() ? "CONFIGURED_STAGING" : inactiveStatus,
       },
     });
   });
