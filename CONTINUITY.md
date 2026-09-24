@@ -4,23 +4,23 @@
 - 2026-09-23 [USER] Goal: finish official eGov tickets first, then unblock synthetic hospital demo; confirmed SSO, Chain, Message, AI, and optional standalone Face Liveness; eVerify is explicitly absent from the product.
 - 2026-09-23 [USER] Work on a `{feature}` branch, commit each accomplishment, never push, and never use a `codex/*` branch.
 - 2026-09-23 [CODE] Current branch: `feature/official-egov-open-tickets`.
-- 2026-09-24 [TOOL] Ticket07 deployment-authorization wording is committed (`c8002e0`); Ticket04 provider-error redaction is verified and under scoped commit. Unrelated staged synthetic specs and user-owned `AGENTS.md` remain untouched.
+- 2026-09-24 [TOOL] Latest scoped commits `c8002e0` and `5070ee1` cover Ticket07 deployment wording and Ticket04 provider-error redaction. Unrelated staged synthetic specs and user-owned `AGENTS.md` remain untouched.
 - 2026-09-24 [USER] Supplied the SSO guide again and confirmed the credential-issued URL, partner code, and secret are configured in `server/.env`; do not expose their values. The guide does not define `state`/nonce.
 - 2026-09-23 [USER] Resumed available-ticket work; include `.scratch/official-egov-integrations/issues`. Current implementation covers safe Ticket 01 work and Ticket 02; preserve external gates and all ticket scope.
 - 2026-09-23 [TOOL] Astra Ticket01 safe slice and Ticket02 correction completed; conversation `2f06993a-41e4-48d5-9038-b20b7ee11785` terminal (exit0/SUCCESS). Codex verification/review complete. No active agent or process.
 - 2026-09-23 [USER] Commit each verified accomplishment on the existing feature branch; do not push. Preserve unrelated staged specification work. This supersedes this turn's no-commit default.
-- 2026-09-24 [CODE] Now: Tickets 01/08 SSO, Ticket04 eMessage mobile consent, Ticket03 truthful chain status, and Ticket07 enabled-provider startup validation are committed. Nothing pushed.
+- 2026-09-24 [CODE] Now: Tickets 01/08 SSO, Ticket04 eMessage mobile consent/error redaction, Ticket03 truthful chain status, and Ticket07 enabled-provider startup/documentation are committed. Nothing pushed.
 - 2026-09-24 [CODE] Open: eGovPH callback correlation and partner acceptance need authenticated clarification; no provider smoke ran. Ticket 24 baseline remains unrun; isolated test DB is currently inaccessible (EACCES) in this sandbox.
 - 2026-09-24 [CODE] Open: Ticket03 signed official-staging receipt, Ticket04 provider SMS acknowledgement, Ticket05/06 authenticated AI contract, Ticket07 deployment smoke, and optional Ticket09 privacy/error terms require external evidence or credentials/approval. No live provider calls ran.
 
 ## Done
+- 2026-09-24 [TOOL] Commit `5070ee1` rejects arbitrary provider error text before SMS return/audit persistence; independent focused tests 7/7, typecheck, and security review passed.
 - 2026-09-24 [TOOL] Commit `c8002e0` explicitly states production and controlled-live eGov use are unauthorized and closes Ticket07's documentation criterion.
 - 2026-09-24 [TOOL] Commit `2616de9` adds HTTP SSO provider-failure/cancellation regressions; focused tests 10/10 passed.
 - 2026-09-24 [TOOL] Commit `26313f8` rejects malformed enabled SMS/Chain startup configuration; server suite 56/56 and typecheck passed.
 - 2026-09-24 [TOOL] Commit `f9dd815` maps unavailable/pending/verified consent proof reads without leaking outbox errors; 55/55 server suite and independent review passed.
 - 2026-09-24 [TOOL] Commit `a6390d5` removes the legacy simulated chain-info response and adds an HTTP regression check; Ticket03 still needs signed staging evidence.
 - 2026-09-24 [TOOL] Commit `56ac6b7` records SSO-mobile-only SMS opt-in, revocation, narrow generic purposes, and truthfully masked preference UX; independent review issue fixed.
-- 2026-09-24 [TOOL] Commit `b7b3315` records official SSO handoff and widget with explicit identity confirmation; Ticket01/08 staging/callback-correlation gates remain open.
 
 ## Decisions
 - D1 2026-09-24 [CODE] Official SSO handoff is implemented with pending identity and explicit user confirmation, without invented state/nonce; provider callback-correlation evidence and credentialed validation remain open.
