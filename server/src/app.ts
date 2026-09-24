@@ -29,6 +29,7 @@ import {
   v1Cors,
 } from "./middleware/v1-security.js";
 import { SESSION_COOKIE } from "./auth/service.js";
+import { createEgovCallbackRouter } from "./routes/egov-auth.js";
 
 export type AppOptions = {
   config?: RuntimeConfig;
@@ -148,6 +149,7 @@ export function createApp(options: AppOptions = {}) {
   app.use("/api/v1", createCsrfProtection(SESSION_COOKIE));
   app.use("/api/v1", redactV1Response);
   app.use("/api/v1", createV1Router(config!));
+  app.use("/egovph", throttle(config!), createEgovCallbackRouter(config!));
 
   // Health check endpoints
   const liveHealth = (_req: Request, res: Response) => {

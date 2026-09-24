@@ -88,8 +88,8 @@ describe('top-level rendered routes', () => {
     const body = renderApp();
     act(() => body.querySelector('a[href="/onboarding"]').click());
 
-    await vi.waitFor(() => expect(body.textContent).toContain('Citizen sign-in is not available yet'));
-    expect(body.textContent).toContain('Citizen sign-in is not available yet');
+    await vi.waitFor(() => expect(body.textContent).toContain('Sign in with official eGovPH'));
+    expect(body.textContent).toContain('Sign in with official eGovPH');
     expect(body.querySelector('#invitation-token')).toBeNull();
     expect(body.textContent).not.toContain('Staff demo');
     expect(body.textContent).not.toContain('Connecting recipients, donors, and coordination teams through one guided journey.');
@@ -99,7 +99,7 @@ describe('top-level rendered routes', () => {
     const body = renderApp();
     act(() => body.querySelector('a[href="/onboarding"]').click());
 
-    await vi.waitFor(() => expect(body.textContent).toContain('Citizen sign-in is not available yet'));
+    await vi.waitFor(() => expect(body.textContent).toContain('Sign in with official eGovPH'));
     expect(body.textContent).not.toContain('Donor portal');
     expect(body.querySelector('#invitation-token')).toBeNull();
     expect(body.textContent).not.toContain('Staff demo');
@@ -108,7 +108,7 @@ describe('top-level rendered routes', () => {
 
   it('returns invalid onboarding roles and the first-screen Back action to landing', async () => {
     const invalid = renderApp(['/onboarding/staff']);
-    await vi.waitFor(() => expect(invalid.textContent).toContain('Citizen sign-in is not available yet'));
+    await vi.waitFor(() => expect(invalid.textContent).toContain('Sign in with official eGovPH'));
     act(() => invalid.querySelector('button')!.click());
     expect(invalid.textContent).toContain('A clearer path');
     expect(invalid.textContent).not.toContain('Step 2 — Sign In or Sign Up');

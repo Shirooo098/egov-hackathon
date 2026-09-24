@@ -29,8 +29,8 @@ async function request(
   if (csrf) headers["x-csrf-token"] = csrf;
   const res = await fetch(`${API_BASE}${path}`, {
     credentials: "include",
-    headers,
     ...options,
+    headers,
   });
   let data: JsonObject = {};
   try {
@@ -60,6 +60,24 @@ export const api = {
       request("/auth/staff/sign-in", {
         method: "POST",
         body: JSON.stringify({ username, password, mfaCode }),
+      }),
+    csrf: () => request("/v1/csrf"),
+    egovWidgetConfig: () => request("/v1/auth/egov/widget-config"),
+    egovPending: () => request("/v1/auth/egov/pending"),
+    egovExchange: (exchangeCode: string) =>
+      request("/v1/auth/egov/exchange", {
+        method: "POST",
+        body: JSON.stringify({ exchange_code: exchangeCode }),
+      }),
+    egovConfirm: (pendingId: string) =>
+      request("/v1/auth/egov/confirm", {
+        method: "POST",
+        body: JSON.stringify({ pendingId }),
+      }),
+    egovCancel: (pendingId: string) =>
+      request("/v1/auth/egov/cancel", {
+        method: "POST",
+        body: JSON.stringify({ pendingId }),
       }),
   },
   // Operations & Admin Controls

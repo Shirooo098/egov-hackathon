@@ -62,7 +62,7 @@ const livenessResultBody = (await livenessResult.json()) as { error?: string };
 assert.equal(livenessResultBody.error, 'capability_deferred');
 
 const aiChat = await fetch(`${base}/egov/ai/chat`, {
-  method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ prompt: 'What is eBuhay?' })
+  method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ prompt: 'How does eBuhay coordination work?' })
 });
 assert.equal(aiChat.status, 503);
 const aiChatBody = (await aiChat.json()) as { error?: string; retryable?: boolean };

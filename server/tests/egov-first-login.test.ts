@@ -30,7 +30,7 @@ const base = (server: ReturnType<typeof createTestServer>) =>
 const close = (server: ReturnType<typeof createTestServer>) =>
   new Promise<void>((resolve) => server.close(() => resolve()));
 
-test('in synthetic mode, eGov exchange and callback fail closed with 503 egov_unavailable and exclude secrets/cookies', async () => {
+test('without credentials, official exchange is unavailable and obsolete callback is absent', async () => {
   process.env.SYNTHETIC_BOOTSTRAP_SECRET = 'bootstrap-secret';
   const server = createTestServer('synthetic');
   try {
@@ -46,10 +46,10 @@ test('in synthetic mode, eGov exchange and callback fail closed with 503 egov_un
         },
         body: JSON.stringify({ exchange_code: sentinel, invitation_token: sentinel }),
       });
-      assert.equal(response.status, 503, endpoint);
+      assert.equal(response.status, endpoint.endsWith('/exchange') ? 503 : 404, endpoint);
       const text = await response.text();
       assert.doesNotMatch(text, new RegExp(sentinel));
-      assert.match(text, /egov_unavailable/);
+      if (endpoint.endsWith('/exchange')) assert.match(text, /egov_unavailable/);
       assert.equal(response.headers.get('set-cookie'), null);
     }
 
@@ -103,7 +103,7 @@ test('obsolete synthetic issuance and auth invitation endpoints return 404 even 
   }
 });
 
-test('all eGov exchange and removed invitation endpoints return 404 in partner-sandbox, controlled-live, and production', async () => {
+test('unconfigured official exchange stays unavailable and removed endpoints return 404 in live modes', async () => {
   const modes: RuntimeMode[] = ['partner-sandbox', 'controlled-live', 'production'];
   for (const mode of modes) {
     const server = createTestServer(mode);
@@ -131,7 +131,7 @@ test('all eGov exchange and removed invitation endpoints return 404 in partner-s
           },
           body: JSON.stringify({ exchange_code: sentinel, invitation_token: sentinel }),
         });
-        assert.equal(response.status, 404, `${mode} ${endpoint}`);
+        assert.equal(response.status, endpoint === '/api/v1/auth/egov/exchange' ? 503 : 404, `${mode} ${endpoint}`);
         assert.doesNotMatch(await response.text(), new RegExp(sentinel));
       }
     } finally {

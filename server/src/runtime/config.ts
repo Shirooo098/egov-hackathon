@@ -14,6 +14,9 @@ export type RuntimeConfig = {
   allowedOrigins: string[];
   rateLimitMax?: number;
   rateLimitWindowMs?: number;
+  egovBaseUrl?: string;
+  egovPartnerCode?: string;
+  egovPartnerSecret?: string;
 };
 
 export class RuntimeConfigError extends Error {
@@ -85,6 +88,16 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   if (isLiveMode(rawMode as RuntimeMode) && (env.DEMO_MODE === 'true' || env.SYNTHETIC_MODE === 'true')) {
     throw new RuntimeConfigError('DEMO_MODE and SYNTHETIC_MODE are strictly prohibited in live modes');
   }
+  const egovBaseUrl = env.EGOV_BASE_URL?.trim() || undefined;
+  const egovPartnerCode = env.EGOV_PARTNER_CODE?.trim() || undefined;
+  const egovPartnerSecret = env.EGOV_PARTNER_SECRET?.trim() || undefined;
+  if ((egovBaseUrl || egovPartnerCode || egovPartnerSecret) && !(egovBaseUrl && egovPartnerCode && egovPartnerSecret)) {
+    throw new RuntimeConfigError('EGOV_BASE_URL, EGOV_PARTNER_CODE, and EGOV_PARTNER_SECRET must be configured together');
+  }
+  if (egovBaseUrl) {
+    try { const parsed = new URL(egovBaseUrl); if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.search || parsed.hash) throw new Error(); }
+    catch { throw new RuntimeConfigError('EGOV_BASE_URL must be an HTTPS URL'); }
+  }
   return {
     mode: rawMode as RuntimeMode,
     databaseUrl,
@@ -94,7 +107,10 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
     approvedService: approvedService as 'blood' | undefined,
     allowedOrigins: parseOrigins(env.ALLOWED_ORIGINS, rawMode as RuntimeMode),
     rateLimitMax: positiveInt('RATE_LIMIT_MAX', env.RATE_LIMIT_MAX, 120),
-    rateLimitWindowMs: positiveInt('RATE_LIMIT_WINDOW_MS', env.RATE_LIMIT_WINDOW_MS, 60_000)
+    rateLimitWindowMs: positiveInt('RATE_LIMIT_WINDOW_MS', env.RATE_LIMIT_WINDOW_MS, 60_000),
+    egovBaseUrl,
+    egovPartnerCode,
+    egovPartnerSecret,
   };
 }
 

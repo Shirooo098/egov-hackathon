@@ -130,7 +130,7 @@ function AppContent() {
   const location = useLocation();
   const toast = useToast();
   const { consentSigned, setConsentSigned, saveIntake } = useMatch();
-  const { session, restored, signOut } = useAuth()!;
+  const { session, restored, restoreSession, signOut } = useAuth()!;
 
   // Which portal the person is heading into, chosen before auth
   const [pendingRole, setPendingRole] = useState<PortalRole | null>(null);
@@ -409,7 +409,7 @@ function AppContent() {
                       )}
                       {restored && accountRole !== "citizen" && (
                         <Suspense fallback={<div role="status" aria-live="polite">Loading sign-in guidance…</div>}>
-                          <EgovSsoForm pendingRole={null} onBack={() => navigate("/")} />
+                          <EgovSsoForm pendingRole={null} onBack={() => navigate("/")} onConfirmed={() => { void restoreSession(); }} />
                         </Suspense>
                       )}
 

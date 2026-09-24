@@ -16,6 +16,7 @@
   "routes": [
     { "src": "/api/(.*)", "dest": "server/src/app.ts" },
     { "src": "/api", "dest": "server/src/app.ts" },
+    { "src": "/egovph/sso", "dest": "server/src/app.ts" },
     { "src": "/assets/(.*)", "dest": "client/assets/$1" },
     { "src": "/(.*\\..*)", "dest": "client/$1" },
     { "handle": "filesystem" },

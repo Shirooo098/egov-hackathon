@@ -110,7 +110,7 @@ async function enterEgovRole(role: string) {
 describe('citizen dashboard routing', () => {
   it('renders official eGovPH SSO guidance and no invitation inputs on onboarding', async () => {
     const body = renderApp(['/onboarding']);
-    await vi.waitFor(() => expect(body.textContent).toContain('Citizen sign-in is not available yet'));
+    await vi.waitFor(() => expect(body.textContent).toContain('Sign in with official eGovPH'));
     expect(body.textContent).not.toContain('Recipient portal');
     expect(body.querySelector('#invitation-token')).toBeNull();
   });
@@ -140,7 +140,7 @@ describe('citizen dashboard routing', () => {
       return { ok: true, status: 200, json: async () => ({ success: true, data: [] }) } as Response;
     };
     const body = renderApp(['/onboarding'], fetchImpl as unknown as typeof fetch);
-    await vi.waitFor(() => expect(body.textContent).toContain('Citizen sign-in is not available yet'));
+    await vi.waitFor(() => expect(body.textContent).toContain('Sign in with official eGovPH'));
     expect(body.textContent).not.toContain('Recipient Portal');
     expect(body.textContent).not.toContain('Donor Portal');
     act(() => root?.unmount());
@@ -152,7 +152,7 @@ describe('citizen dashboard routing', () => {
   it.each(['/recipient', '/donor'])('redirects a direct unauthenticated %s route to public onboarding', async (route) => {
     const body = renderApp([route]);
     await vi.waitFor(() => expect(body.querySelector('[data-testid="location"]')?.textContent).toBe('/onboarding'));
-    expect(body.textContent).toContain('Citizen sign-in is not available yet');
+    expect(body.textContent).toContain('Sign in with official eGovPH');
   });
 
   // Catches sign-out clearing state without navigating away from the protected route.
@@ -160,7 +160,7 @@ describe('citizen dashboard routing', () => {
     const body = await enterEgovRole('recipient');
     act(() => Array.from(body.querySelectorAll('button')).find((button) => button.textContent.includes('Exit Role'))!.click());
     await vi.waitFor(() => expect(body.querySelector('[data-testid="location"]')?.textContent).toBe('/onboarding'));
-    expect(body.textContent).toContain('Citizen sign-in is not available yet');
+    expect(body.textContent).toContain('Sign in with official eGovPH');
   });
 
   it('renders either portal for an authenticated citizen account', async () => {
@@ -179,7 +179,7 @@ describe('citizen dashboard routing', () => {
   it('redirects unauthenticated recipient route to public landing without unavailable banner', async () => {
     const body = renderApp(['/recipient']);
     await vi.waitFor(() => expect(body.querySelector('[data-testid="location"]')?.textContent).toBe('/onboarding'));
-    expect(body.textContent).toContain('Citizen sign-in is not available yet');
+    expect(body.textContent).toContain('Sign in with official eGovPH');
   });
 
   it('redirects unauthenticated hospital dashboard to staff sign-in without unavailable banner', async () => {

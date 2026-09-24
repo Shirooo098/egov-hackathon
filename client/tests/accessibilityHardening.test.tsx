@@ -45,7 +45,7 @@ describe('accessibility hardening', () => {
   it('moves focus across landing/onboarding boundaries', async () => {
     const { host, root } = mount(<ThemeProvider><ToastProvider><MemoryRouter><MatchProvider><App /><LocationProbe /></MatchProvider></MemoryRouter></ToastProvider></ThemeProvider>);
     act(() => host.querySelector('a[href="/onboarding"]').click());
-    await vi.waitFor(() => expect(host.textContent).toContain('Citizen sign-in is not available yet'));
+    await vi.waitFor(() => expect(host.textContent).toContain('Sign in with official eGovPH'));
     let backButton: HTMLButtonElement;
     await vi.waitFor(() => {
       backButton = [...host.querySelectorAll('button')].find((button) => button.textContent.trim() === 'Back')!;
@@ -95,7 +95,7 @@ describe('accessibility hardening', () => {
 
   it('renders official eGovPH SSO guidance and accessible status regions', () => {
     const { host, root } = mount(<EgovSsoForm onBack={() => {}} pendingRole="recipient" ssoError="Failed sign-in" ssoLoading={true} />);
-    expect(host.textContent).toContain('Open eBuhay from eGovPH to sign in');
+    expect(host.textContent).toContain('Sign in with official eGovPH');
     expect(host.querySelector('[role="status"]')).toBeTruthy();
     expect(host.querySelector('[role="alert"]')?.textContent).toContain('Failed sign-in');
     expect(host.querySelector('input')).toBeNull();
