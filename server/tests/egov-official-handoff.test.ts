@@ -217,3 +217,73 @@ test('returning Citizen refreshes verified mobile and revokes consent for a chan
     assert.equal(consentReset, true);
   } finally { await closePool(); }
 });
+
+test('HTTP provider failures leave no pending identity, session, or leaked credentials', async () => {
+  const config = { mode: 'synthetic', allowedOrigins: ['http://localhost:3000'], egovBaseUrl: 'https://example.test', egovPartnerCode: 'partner', egovPartnerSecret: 'private-secret' } as RuntimeConfig;
+  let pendingWrites = 0;
+  let calls = 0;
+  const query = async (sql: string) => {
+    if (sql.startsWith('INSERT INTO egov_exchange_transactions')) return { rowCount: 1, rows: [{ id: 'transaction-1' }] };
+    if (sql.startsWith('INSERT INTO egov_sso_pending')) pendingWrites++;
+    throw new Error(`Unexpected database operation: ${sql.slice(0, 35)}`);
+  };
+  setPool({ query, end: async () => {} } as unknown as Pool);
+  const providerFetch = async () => {
+    calls++;
+    if (calls === 1) return new Response(JSON.stringify({ access_token: 'private-token' }), { status: 200 });
+    if (calls === 2) return new Response(JSON.stringify({ status: 200, data: { first_name: 'Maria', last_name: 'Santos' } }), { status: 200 });
+    throw new Error('provider offline with private-secret');
+  };
+  const app = express(); app.use(express.json()); app.use('/egov', createEgovAuthRouter(config, { providerFetch }));
+  const server = app.listen(0);
+  try {
+    const url = `http://127.0.0.1:${(server.address() as { port: number }).port}/egov/exchange`;
+    for (const code of ['missing-uniqid', 'provider-outage']) {
+      const response = await fetch(url, { method: 'POST', headers: { origin: 'http://localhost:3000', 'content-type': 'application/json' }, body: JSON.stringify({ exchange_code: code }) });
+      assert.equal(response.status, 503);
+      const body = await response.text();
+      assert.equal((JSON.parse(body) as { error: string }).error, 'egov_unavailable');
+      assert.doesNotMatch(body, /private-secret|private-token|missing-uniqid|provider-outage/);
+      assert.equal(response.headers.get('set-cookie'), null);
+    }
+    assert.equal(pendingWrites, 0);
+  } finally { await new Promise<void>((resolve) => server.close(() => resolve())); await closePool(); }
+});
+
+test('HTTP cancellation consumes pending identity and cannot create a Citizen session', async () => {
+  const config = { mode: 'synthetic', allowedOrigins: ['http://localhost:3000'], egovBaseUrl: 'https://example.test', egovPartnerCode: 'partner', egovPartnerSecret: 'secret' } as RuntimeConfig;
+  const pendingId = '00000000-0000-4000-8000-000000000001';
+  let cancelled = false;
+  let sessionWrites = 0;
+  const query = async (sql: string) => {
+    if (sql.startsWith('INSERT INTO egov_exchange_transactions')) return { rowCount: 1, rows: [{ id: 'transaction-1' }] };
+    if (sql.startsWith('INSERT INTO egov_sso_pending')) return { rowCount: 1, rows: [{ id: pendingId }] };
+    if (sql.startsWith('UPDATE egov_exchange_transactions')) return { rowCount: 1, rows: [] };
+    if (sql.startsWith('UPDATE egov_sso_pending SET consumed_at')) { cancelled = true; return { rowCount: 1, rows: [{ id: pendingId }] }; }
+    if (sql.startsWith('SELECT id,exchange_transaction_id')) return { rowCount: 0, rows: [] };
+    if (sql.startsWith('INSERT INTO sessions')) sessionWrites++;
+    if (sql === 'BEGIN' || sql === 'ROLLBACK') return { rowCount: 0, rows: [] };
+    throw new Error(`Unexpected database operation: ${sql.slice(0, 35)}`);
+  };
+  setPool({ query, connect: async () => ({ query, release() {} }), end: async () => {} } as unknown as Pool);
+  let calls = 0;
+  const providerFetch = async () => ++calls === 1
+    ? new Response(JSON.stringify({ access_token: 'token' }), { status: 200 })
+    : new Response(JSON.stringify({ status: 200, data: { uniqid: 'citizen-1', first_name: 'Maria', last_name: 'Santos' } }), { status: 200 });
+  const app = express(); app.use(express.json()); app.use('/egov', createEgovAuthRouter(config, { providerFetch }));
+  const server = app.listen(0);
+  try {
+    const base = `http://127.0.0.1:${(server.address() as { port: number }).port}/egov`;
+    const headers = { origin: 'http://localhost:3000', 'content-type': 'application/json' };
+    const exchange = await fetch(`${base}/exchange`, { method: 'POST', headers, body: JSON.stringify({ exchange_code: 'once' }) });
+    assert.equal(exchange.status, 200);
+    const cookie = exchange.headers.get('set-cookie')!.split(';')[0];
+    const cancelledResponse = await fetch(`${base}/cancel`, { method: 'POST', headers: { ...headers, cookie }, body: JSON.stringify({ pendingId }) });
+    assert.equal(cancelledResponse.status, 204);
+    assert.equal(cancelled, true);
+    const confirmed = await fetch(`${base}/confirm`, { method: 'POST', headers: { ...headers, cookie }, body: JSON.stringify({ pendingId }) });
+    assert.equal(confirmed.status, 422);
+    assert.equal(confirmed.headers.get('set-cookie'), null);
+    assert.equal(sessionWrites, 0);
+  } finally { await new Promise<void>((resolve) => server.close(() => resolve())); await closePool(); }
+});

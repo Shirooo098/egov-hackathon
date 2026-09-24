@@ -4,7 +4,9 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** in progress — official in-app handoff, pending confirmation, `uniqid`-only session creation, replay protection, and test doubles are implemented; authenticated callback-correlation evidence and credentialed staging validation remain open
+**Status:** in progress — official in-app handoff, pending confirmation, `uniqid`-only session creation, replay protection, and HTTP failure/cancellation checks are implemented; authenticated callback-correlation evidence and credentialed staging validation remain open
+
+Local HTTP fixtures verify that malformed provider profiles and provider outages create no pending identity or session and disclose no code, token, or secret in the response. Cancellation consumes the pending identity and blocks later confirmation. These fixtures do not prove the partner's callback-correlation behavior or a real staging handoff.
 
 - [ ] A valid official staging in-app handoff exchanges its single-use code server-side and shows a pending verified identity without creating an eBuhay session yet.
 - [x] Explicit Citizen confirmation creates the HttpOnly eBuhay session; cancellation creates none, and an uncorrelated code never silently replaces an existing account session.
