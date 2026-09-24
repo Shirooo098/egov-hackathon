@@ -44,6 +44,11 @@ test('Citizen SMS opt-in uses only the current eGovPH mobile and revocation stop
   try {
     const url = `http://127.0.0.1:${(server.address() as { port: number }).port}/api/v1/notifications/preferences`;
     const headers = { origin: 'http://localhost:3000', cookie: `ebuhay_session=${'a'.repeat(43)}`, 'content-type': 'application/json' };
+    const anonymous = await fetch(url, { method: 'PUT', headers: { origin: headers.origin, 'content-type': headers['content-type'] }, body: JSON.stringify({ smsConsent: true }) });
+    assert.equal(anonymous.status, 401);
+    const crossOrigin = await fetch(url, { method: 'PUT', headers: { ...headers, origin: 'https://untrusted.example' }, body: JSON.stringify({ smsConsent: true }) });
+    assert.equal(crossOrigin.status, 403);
+    assert.equal(consent, false);
     const initial = await fetch(url, { headers });
     assert.equal((await initial.json() as { data: { smsConsent: boolean } }).data.smsConsent, false);
     const manual = await fetch(url, { method: 'PUT', headers, body: JSON.stringify({ smsConsent: true, phoneNumber: mobile }) });

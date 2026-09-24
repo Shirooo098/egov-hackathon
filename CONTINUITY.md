@@ -4,7 +4,7 @@
 - 2026-09-23 [USER] Goal: finish official eGov tickets first, then unblock synthetic hospital demo; confirmed SSO, Chain, Message, AI, and optional standalone Face Liveness; eVerify is explicitly absent from the product.
 - 2026-09-23 [USER] Work on a `{feature}` branch, commit each accomplishment, never push, and never use a `codex/*` branch.
 - 2026-09-23 [CODE] Current branch: `feature/official-egov-open-tickets`.
-- 2026-09-24 [TOOL] Latest scoped commits `c8002e0` and `5070ee1` cover Ticket07 deployment wording and Ticket04 provider-error redaction. Unrelated staged synthetic specs and user-owned `AGENTS.md` remain untouched.
+- 2026-09-24 [TOOL] Ticket04 authorization/no-retry regressions are verified in the working tree after commits `c8002e0` and `5070ee1`; unrelated staged synthetic specs and user-owned `AGENTS.md` remain untouched.
 - 2026-09-24 [USER] Supplied the SSO guide again and confirmed the credential-issued URL, partner code, and secret are configured in `server/.env`; do not expose their values. The guide does not define `state`/nonce.
 - 2026-09-23 [USER] Resumed available-ticket work; include `.scratch/official-egov-integrations/issues`. Current implementation covers safe Ticket 01 work and Ticket 02; preserve external gates and all ticket scope.
 - 2026-09-23 [TOOL] Astra Ticket01 safe slice and Ticket02 correction completed; conversation `2f06993a-41e4-48d5-9038-b20b7ee11785` terminal (exit0/SUCCESS). Codex verification/review complete. No active agent or process.
@@ -49,6 +49,7 @@
 - `.scratch/official-egov-integrations/issues/04-official-opted-in-emessage-notifications.md`
 
 ## Receipts
+- 2026-09-24 [TOOL] Ticket04 local HTTP consent/dispatch regressions: focused SMS tests 8/8 and server typecheck passed, then the 3 affected tests passed after a final audit-value assertion. Full authenticated workflow and credentialed staging checks remain open.
 - 2026-09-24 [TOOL] Ticket04 redaction: Antigravity worker `8f2253a5-969e-4c51-ae16-4545ce844fa6` exited 0/JSON SUCCESS; reproduced short secret-like error leak test-first and fixed with a safe classification allowlist. Independent focused tests 7/7 and server typecheck passed; security review found no material issue. No provider call ran.
 - 2026-09-24 [TOOL] Antigravity model/role discovery succeeded; read-only explorer `f9613dad-487c-4506-94af-ae7a2c50db8a` exited 0/JSON SUCCESS. Its broad no-local-work finding was superseded by a narrower Ticket04/Ticket07 audit that found and completed local work.
 - 2026-09-24 [TOOL] Ticket07 startup config: focused runtime tests 9/9, server full suite 56/56, typecheck passed; independent review found a Chain whitespace mismatch and confirmed the fix. Local `.env` passed structural validation with SSO/SMS configured and Chain staging, without printing values. No provider call or deployment ran.
@@ -58,4 +59,3 @@
 - 2026-09-24 [TOOL] Ticket04: focused server SSO/SMS tests 10/10, client preference/trust tests 9/9, server full test 52/52, server typecheck passed. Server lint exit0 with pre-existing warnings. Database migration and credentialed provider smoke remain unrun (sandbox DB EACCES/no live call).
 - 2026-09-24 [TOOL] Prior SSO package verification at `b7b3315`: server 52/52, client full suite and build, both typechecks passed; no provider or isolated DB call.
 - 2026-09-24 [TOOL] SSO provider/HTTP fixture tests 7/7, client focused SSO/onboarding tests 43/43, server/client typechecks, and isolated config assertion passed; no real provider call.
-- 2026-09-24 [TOOL] Independent SSO security review found pending-cookie identity swap, callback rate-limit bypass, and concurrent first-login race; code now binds confirmation to pending ID, throttles callback, and serializes first provisioning. Second review could not run due agent usage limit.
