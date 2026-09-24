@@ -53,10 +53,25 @@ router.get("/liveness/result/:sessionToken", async (_req, res) => {
 
 // POST /api/egov/ai/chat
 router.post('/ai/chat', async (req, res) => {
-  const { prompt } = req.body || {};
+  const body = req.body;
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return res.status(400).json({ success: false, message: 'Select a supported public process question' });
+  }
+
+  const allowedKeys = new Set(['prompt', 'category']);
+  if (Object.keys(body).some((k) => !allowedKeys.has(k))) {
+    return res.status(400).json({ success: false, message: 'Select a supported public process question' });
+  }
+
+  const { prompt, category } = body;
+  if (category !== undefined && category !== 'PH') {
+    return res.status(400).json({ success: false, message: 'Select a supported public process question' });
+  }
+
   if (typeof prompt !== 'string' || !PUBLIC_EGOVAI_CHOICES.has(prompt.trim())) {
     return res.status(400).json({ success: false, message: 'Select a supported public process question' });
   }
+
   return capabilityDeferred(
     res,
     "Official eGovAI public guidance is deferred pending verified contracts. Please retry later."

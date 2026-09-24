@@ -134,6 +134,7 @@ describe('Issue 05 and 06: FloatingAIChat informational and unavailable guidance
 
     expect(body.textContent).toContain('How does eBuhay coordination work?');
     expect(body.textContent).toContain('The official eGovAI service is currently unavailable or deferred (503)');
+    expect(body.textContent).toContain('Please retry later after official integration is verified.');
     expect(body.textContent).not.toContain('Republic Act');
     expect(body.textContent).not.toContain('eGovAI Legal Advisory');
   });

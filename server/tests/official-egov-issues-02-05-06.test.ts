@@ -159,3 +159,53 @@ test('Issue 05 and 06: eGovAI HTTP endpoint returns 503 capability_deferred with
     await new Promise<void>((resolve) => server.close(() => resolve()));
   }
 });
+
+test('Issue 06: eGovAI HTTP endpoint rejects requests carrying extra data or invalid category while allowing curated prompt with PH', async () => {
+  const app = express();
+  app.use(express.json());
+  app.use('/api/egov', egovRouter);
+  const server = createServer(app);
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+
+  try {
+    const validPrompt = 'How does eBuhay coordination work?';
+
+    const prohibitedPayloads = [
+      { prompt: validPrompt, case_id: 'case-001' },
+      { prompt: validPrompt, identity: { id: 'user-001' } },
+      { prompt: validPrompt, donor_id: 'donor-001' },
+      { prompt: validPrompt, recipient_id: 'recip-001' },
+      { prompt: validPrompt, clinical_data: { diagnosis: 'renal' } },
+      { prompt: validPrompt, match_id: 'match-001' },
+      { prompt: validPrompt, appointment_id: 'apt-001' },
+      { prompt: validPrompt, arbitrary_key: 'unexpected' },
+      { prompt: validPrompt, category: 'US' },
+    ];
+
+    for (const payload of prohibitedPayloads) {
+      const res = await fetch(`${base}/api/egov/ai/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      assert.equal(res.status, 400, `Expected 400 for payload with extra/invalid key: ${JSON.stringify(payload)}`);
+      const body = (await res.json()) as { success?: boolean; message?: string };
+      assert.equal(body.success, false);
+    }
+
+    const clientRes = await fetch(`${base}/api/egov/ai/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: validPrompt, category: 'PH' }),
+    });
+    assert.equal(clientRes.status, 503);
+    const clientBody = (await clientRes.json()) as { error?: string; code?: string; retryable?: boolean; retry_guidance?: string };
+    assert.equal(clientBody.error, 'capability_deferred');
+    assert.equal(clientBody.code, 'capability_deferred');
+    assert.equal(clientBody.retryable, true);
+    assert.ok(typeof clientBody.retry_guidance === 'string');
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+});
