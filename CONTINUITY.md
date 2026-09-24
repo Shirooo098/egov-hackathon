@@ -4,7 +4,7 @@
 - 2026-09-23 [USER] Goal: finish official eGov tickets first, then unblock synthetic hospital demo; confirmed SSO, Chain, Message, AI, and optional standalone Face Liveness; eVerify is explicitly absent from the product.
 - 2026-09-23 [USER] Work on a `{feature}` branch, commit each accomplishment, never push, and never use a `codex/*` branch.
 - 2026-09-23 [CODE] Current branch: `feature/official-egov-open-tickets`.
-- 2026-09-24 [TOOL] Ticket07 startup hardening and Ticket01 HTTP failure/cancellation checks are verified. Unrelated staged synthetic specs and user-owned `AGENTS.md` remain untouched.
+- 2026-09-24 [TOOL] Latest scoped commit `2616de9` covers Ticket01 HTTP failure/cancellation checks. Antigravity model discovery and a read-only explorer delegation now succeed. Unrelated staged synthetic specs and user-owned `AGENTS.md` remain untouched.
 - 2026-09-24 [USER] Supplied the SSO guide again and confirmed the credential-issued URL, partner code, and secret are configured in `server/.env`; do not expose their values. The guide does not define `state`/nonce.
 - 2026-09-23 [USER] Resumed available-ticket work; include `.scratch/official-egov-integrations/issues`. Current implementation covers safe Ticket 01 work and Ticket 02; preserve external gates and all ticket scope.
 - 2026-09-23 [TOOL] Astra Ticket01 safe slice and Ticket02 correction completed; conversation `2f06993a-41e4-48d5-9038-b20b7ee11785` terminal (exit0/SUCCESS). Codex verification/review complete. No active agent or process.
@@ -14,13 +14,13 @@
 - 2026-09-24 [CODE] Open: Ticket03 signed official-staging receipt, Ticket04 provider SMS acknowledgement, Ticket05/06 authenticated AI contract, Ticket07 deployment smoke, and optional Ticket09 privacy/error terms require external evidence or credentials/approval. No live provider calls ran.
 
 ## Done
+- 2026-09-24 [TOOL] Commit `2616de9` adds HTTP SSO provider-failure/cancellation regressions; focused tests 10/10 passed.
 - 2026-09-24 [TOOL] Commit `26313f8` rejects malformed enabled SMS/Chain startup configuration; server suite 56/56 and typecheck passed.
 - 2026-09-24 [TOOL] Commit `f9dd815` maps unavailable/pending/verified consent proof reads without leaking outbox errors; 55/55 server suite and independent review passed.
 - 2026-09-24 [TOOL] Commit `a6390d5` removes the legacy simulated chain-info response and adds an HTTP regression check; Ticket03 still needs signed staging evidence.
 - 2026-09-24 [TOOL] Commit `56ac6b7` records SSO-mobile-only SMS opt-in, revocation, narrow generic purposes, and truthfully masked preference UX; independent review issue fixed.
 - 2026-09-24 [TOOL] Commit `b7b3315` records official SSO handoff and widget with explicit identity confirmation; Ticket01/08 staging/callback-correlation gates remain open.
 - 2026-09-24 [TOOL] Commit `038f73b` records eMessage accepted-only progress and eGovAI success-shape documentation; external gates remain open.
-- 2026-09-24 [TOOL] Commits `fbb3f2d`, `10d5a38`, `927f51f` respectively restrict AI to fixed FAQs, correct SMS HTTP 201 acceptance, and move case choice after Citizen authentication.
 
 ## Decisions
 - D1 2026-09-24 [CODE] Official SSO handoff is implemented with pending identity and explicit user confirmation, without invented state/nonce; provider callback-correlation evidence and credentialed validation remain open.
@@ -48,8 +48,8 @@
 - `.scratch/official-egov-integrations/issues/04-official-opted-in-emessage-notifications.md`
 
 ## Receipts
-- 2026-09-24 [TOOL] Ticket01 HTTP provider-failure and cancellation regressions: focused SSO tests 10/10 passed after the final assertion. `agy models` exit1: sign-in required; `agy agents` lists explorer/researcher/worker. No Antigravity model delegation or provider call occurred.
-- 2026-09-24 [TOOL] Ticket07 startup config: focused runtime tests 9/9, server full suite 56/56, typecheck passed; independent review found a Chain whitespace mismatch and confirmed the fix. Local `.env` passed structural validation with SSO/SMS configured and Chain staging, without printing values. No provider call or deployment ran. Antigravity `agy models` still fails: not signed in.
+- 2026-09-24 [TOOL] `agy models` now lists `gemini-3.8-flash-high`; `agy agents` lists explorer/researcher/worker. Read-only explorer conversation `f9613dad-487c-4506-94af-ae7a2c50db8a` exited 0 with JSON `status: SUCCESS`; it found no clearly safe local eGov feature edit beyond external partner/staging gates. No files changed or provider calls made.
+- 2026-09-24 [TOOL] Ticket07 startup config: focused runtime tests 9/9, server full suite 56/56, typecheck passed; independent review found a Chain whitespace mismatch and confirmed the fix. Local `.env` passed structural validation with SSO/SMS configured and Chain staging, without printing values. No provider call or deployment ran.
 - 2026-09-24 [TOOL] Ticket03 read-state mapping: focused 5/5, server full suite 55/55, typecheck passed; independent review had no actionable findings. Database-backed joins and official-chain behavior were not exercised.
 - 2026-09-24 [TOOL] Ticket03 route removal: focused chain tests 3/3, server full suite 53/53, and server typecheck passed. No real staging transaction or isolated DB test ran.
 - 2026-09-24 [TOOL] Independent Ticket04 review found revoke-response masked-mobile UI bug; fixed, and server/client regression checks passed. Reviewer also identified stale ignored/untracked `server/tests/notifications.test.ts`; new scoped HTTP test covers current contract, while that legacy DB test remains unrun/untracked.
