@@ -148,11 +148,11 @@ export async function sendSMS(
     if (res.status === 401 || res.status === 403) return { success: false, error: 'unauthorized', status: 'failed' };
     if (res.status === 429) return { success: false, error: 'rate_limited', status: 'failed' };
     if (res.status >= 500) return { success: false, error: 'provider_unavailable', status: 'unavailable' };
-    if (res.status !== 201) {
-      return { success: false, error: 'upstream_error', status: 'failed' };
+    if (res.status === 201) return { success: true, accepted: true, status: 'accepted' };
+    if (res.status >= 200 && res.status < 300) {
+      return { success: false, error: 'delivery_unconfirmed', status: 'unavailable' };
     }
-
-    return { success: true, accepted: true, status: 'accepted' };
+    return { success: false, error: 'upstream_error', status: 'failed' };
   } catch (err: unknown) {
     const redacted =
       err instanceof DOMException && err.name === 'TimeoutError'

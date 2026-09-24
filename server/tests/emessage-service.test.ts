@@ -56,11 +56,30 @@ test('accepts a valid 201 response without relying on undocumented fields', asyn
   });
 });
 
-test('does not treat non-201 responses as accepted', async () => {
+test('treats undocumented 200 and 204 responses as unconfirmed unavailable without definitive failure', async () => {
+  await withProviderConfig(async () => {
+    for (const status of [200, 204]) {
+      const result = await sendSMS('+639171234567', 'Test SMS', {
+        fetchImpl: async () => new Response(status === 204 ? null : JSON.stringify({ data: { message: 'SMS was successfully created.' } }), {
+          status,
+          headers: status === 204 ? {} : { 'content-type': 'application/json' },
+        }),
+      });
+
+      assert.deepEqual(result, {
+        success: false,
+        error: 'delivery_unconfirmed',
+        status: 'unavailable',
+      });
+    }
+  });
+});
+
+test('does not treat non-201 non-2xx responses as accepted and reports upstream_error', async () => {
   await withProviderConfig(async () => {
     const result = await sendSMS('+639171234567', 'Test SMS', {
-      fetchImpl: async () => new Response(JSON.stringify({ data: { message: 'SMS was successfully created.' } }), {
-        status: 200,
+      fetchImpl: async () => new Response(JSON.stringify({ error: 'Not Found' }), {
+        status: 404,
         headers: { 'content-type': 'application/json' },
       }),
     });
