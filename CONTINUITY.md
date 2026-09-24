@@ -4,7 +4,7 @@
 - 2026-09-23 [USER] Goal: finish official eGov tickets first, then unblock synthetic hospital demo; confirmed SSO, Chain, Message, AI, and optional standalone Face Liveness; eVerify is explicitly absent from the product.
 - 2026-09-23 [USER] Work on a `{feature}` branch, commit each accomplishment, never push, and never use a `codex/*` branch.
 - 2026-09-23 [CODE] Current branch: `feature/official-egov-open-tickets`.
-- 2026-09-24 [TOOL] Latest scoped commit `2616de9` covers Ticket01 HTTP failure/cancellation checks. Antigravity model discovery and a read-only explorer delegation now succeed. Unrelated staged synthetic specs and user-owned `AGENTS.md` remain untouched.
+- 2026-09-24 [TOOL] Ticket07 deployment-authorization wording is committed (`c8002e0`); Ticket04 provider-error redaction is verified and under scoped commit. Unrelated staged synthetic specs and user-owned `AGENTS.md` remain untouched.
 - 2026-09-24 [USER] Supplied the SSO guide again and confirmed the credential-issued URL, partner code, and secret are configured in `server/.env`; do not expose their values. The guide does not define `state`/nonce.
 - 2026-09-23 [USER] Resumed available-ticket work; include `.scratch/official-egov-integrations/issues`. Current implementation covers safe Ticket 01 work and Ticket 02; preserve external gates and all ticket scope.
 - 2026-09-23 [TOOL] Astra Ticket01 safe slice and Ticket02 correction completed; conversation `2f06993a-41e4-48d5-9038-b20b7ee11785` terminal (exit0/SUCCESS). Codex verification/review complete. No active agent or process.
@@ -14,13 +14,13 @@
 - 2026-09-24 [CODE] Open: Ticket03 signed official-staging receipt, Ticket04 provider SMS acknowledgement, Ticket05/06 authenticated AI contract, Ticket07 deployment smoke, and optional Ticket09 privacy/error terms require external evidence or credentials/approval. No live provider calls ran.
 
 ## Done
+- 2026-09-24 [TOOL] Commit `c8002e0` explicitly states production and controlled-live eGov use are unauthorized and closes Ticket07's documentation criterion.
 - 2026-09-24 [TOOL] Commit `2616de9` adds HTTP SSO provider-failure/cancellation regressions; focused tests 10/10 passed.
 - 2026-09-24 [TOOL] Commit `26313f8` rejects malformed enabled SMS/Chain startup configuration; server suite 56/56 and typecheck passed.
 - 2026-09-24 [TOOL] Commit `f9dd815` maps unavailable/pending/verified consent proof reads without leaking outbox errors; 55/55 server suite and independent review passed.
 - 2026-09-24 [TOOL] Commit `a6390d5` removes the legacy simulated chain-info response and adds an HTTP regression check; Ticket03 still needs signed staging evidence.
 - 2026-09-24 [TOOL] Commit `56ac6b7` records SSO-mobile-only SMS opt-in, revocation, narrow generic purposes, and truthfully masked preference UX; independent review issue fixed.
 - 2026-09-24 [TOOL] Commit `b7b3315` records official SSO handoff and widget with explicit identity confirmation; Ticket01/08 staging/callback-correlation gates remain open.
-- 2026-09-24 [TOOL] Commit `038f73b` records eMessage accepted-only progress and eGovAI success-shape documentation; external gates remain open.
 
 ## Decisions
 - D1 2026-09-24 [CODE] Official SSO handoff is implemented with pending identity and explicit user confirmation, without invented state/nonce; provider callback-correlation evidence and credentialed validation remain open.
@@ -41,14 +41,16 @@
 - D16 2026-09-24 [CODE] Ticket04 stores only current SSO mobile, resets consent on changed/missing mobile, checks it at notification record and dispatch, and uses generic messages for three approved purposes; credentialed staging remains open.
 
 ## Working set
-- `server/tests/egov-official-handoff.test.ts`
-- `server/src/routes/egovAuth.ts`
-- `.scratch/official-egov-integrations/issues/01-official-egov-sso-citizen-login.md`
+- `server/src/services/eMessageService.ts`
+- `server/tests/emessage-service.test.ts`
+- `server/src/services/notificationService.ts`
+- `.scratch/official-egov-integrations/issues/07-official-only-deployment-validation.md`
 - `.scratch/official-egov-integrations/issues/03-official-egovchain-consent-proof.md`
 - `.scratch/official-egov-integrations/issues/04-official-opted-in-emessage-notifications.md`
 
 ## Receipts
-- 2026-09-24 [TOOL] `agy models` now lists `gemini-3.8-flash-high`; `agy agents` lists explorer/researcher/worker. Read-only explorer conversation `f9613dad-487c-4506-94af-ae7a2c50db8a` exited 0 with JSON `status: SUCCESS`; it found no clearly safe local eGov feature edit beyond external partner/staging gates. No files changed or provider calls made.
+- 2026-09-24 [TOOL] Ticket04 redaction: Antigravity worker `8f2253a5-969e-4c51-ae16-4545ce844fa6` exited 0/JSON SUCCESS; reproduced short secret-like error leak test-first and fixed with a safe classification allowlist. Independent focused tests 7/7 and server typecheck passed; security review found no material issue. No provider call ran.
+- 2026-09-24 [TOOL] Antigravity model/role discovery succeeded; read-only explorer `f9613dad-487c-4506-94af-ae7a2c50db8a` exited 0/JSON SUCCESS. Its broad no-local-work finding was superseded by a narrower Ticket04/Ticket07 audit that found and completed local work.
 - 2026-09-24 [TOOL] Ticket07 startup config: focused runtime tests 9/9, server full suite 56/56, typecheck passed; independent review found a Chain whitespace mismatch and confirmed the fix. Local `.env` passed structural validation with SSO/SMS configured and Chain staging, without printing values. No provider call or deployment ran.
 - 2026-09-24 [TOOL] Ticket03 read-state mapping: focused 5/5, server full suite 55/55, typecheck passed; independent review had no actionable findings. Database-backed joins and official-chain behavior were not exercised.
 - 2026-09-24 [TOOL] Ticket03 route removal: focused chain tests 3/3, server full suite 53/53, and server typecheck passed. No real staging transaction or isolated DB test ran.
@@ -57,4 +59,3 @@
 - 2026-09-24 [TOOL] Prior SSO package verification at `b7b3315`: server 52/52, client full suite and build, both typechecks passed; no provider or isolated DB call.
 - 2026-09-24 [TOOL] SSO provider/HTTP fixture tests 7/7, client focused SSO/onboarding tests 43/43, server/client typechecks, and isolated config assertion passed; no real provider call.
 - 2026-09-24 [TOOL] Independent SSO security review found pending-cookie identity swap, callback rate-limit bypass, and concurrent first-login race; code now binds confirmation to pending ID, throttles callback, and serializes first provisioning. Second review could not run due agent usage limit.
-- 2026-09-24 [USER][CODE] Supplied liveness portal excerpts match egov-api-documentation.md success endpoints and threshold; Ticket09 now records HTTP201 session/HTTP200 result contract. Error/expiry, provider retention/privacy approval and credentialed validation remain open. No provider call ran.

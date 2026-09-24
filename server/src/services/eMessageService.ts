@@ -44,6 +44,23 @@ export function maskPhoneNumber(phone?: string | null): string {
   return `${prefix}****${suffix}`;
 }
 
+const KNOWN_SAFE_CLASSIFICATIONS = new Set([
+  'invalid_number',
+  'invalid_payload',
+  'unauthorized',
+  'rate_limited',
+  'upstream_error',
+  'network_error',
+  'provider_timeout',
+  'provider_unavailable',
+  'delivery_unconfirmed',
+  'delivery_failed',
+  'disallowed_purpose',
+  'audit_context_required',
+  'consent_revoked',
+  'max_attempts_exceeded',
+]);
+
 export function redactErrorMessage(err: unknown): string {
   if (typeof err === 'string') {
     if (err.includes('400') || err.includes('bad request') || err.includes('invalid_number')) return 'invalid_number';
@@ -52,7 +69,7 @@ export function redactErrorMessage(err: unknown): string {
     if (err.includes('429') || err.includes('rate')) return 'rate_limited';
     if (err.includes('500') || err.includes('502') || err.includes('503') || err.includes('upstream')) return 'upstream_error';
     if (err.includes('ECONN') || err.includes('ETIMEDOUT') || err.includes('network') || err.includes('fetch failed')) return 'network_error';
-    if (/^[a-z0-9_:-]{1,80}$/.test(err)) return err;
+    if (KNOWN_SAFE_CLASSIFICATIONS.has(err)) return err;
     return 'delivery_failed';
   }
   if (err instanceof Error) return redactErrorMessage(err.message);

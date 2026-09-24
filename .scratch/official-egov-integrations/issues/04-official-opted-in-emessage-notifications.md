@@ -4,7 +4,7 @@
 
 **Blocked by:** 01 — Official eGov SSO-only Citizen login.
 
-**Status:** in progress — official SSO mobile is the only SMS destination, with explicit opt-in and revocation; documented `201 Created` records accepted without a delivery claim. Credentialed staging and full workflow validation remain open.
+**Status:** in progress — official SSO mobile is the only SMS destination, with explicit opt-in and revocation; documented `201 Created` records accepted without a delivery claim. Arbitrary short provider exception text is redacted to a generic error before return or audit persistence. Credentialed staging and full workflow validation remain open.
 
 - [x] SMS consent defaults to off, requires explicit opt-in, and can be revoked immediately.
 - [x] A mobile number received through SSO does not itself enroll a Citizen in SMS notifications.

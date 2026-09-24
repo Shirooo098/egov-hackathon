@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { sendSMS } from '../src/services/eMessageService.js';
+import { redactErrorMessage, sendSMS } from '../src/services/eMessageService.js';
 
 const withProviderConfig = async (run: () => Promise<void>) => {
   const previousUrl = process.env.EMESSAGE_BASE_URL;
@@ -93,5 +93,27 @@ test('bounds a stalled provider call', async () => {
       error: 'provider_timeout',
       status: 'unavailable',
     });
+  });
+});
+
+test('redacts short lowercase and hyphenated secret-like provider exception', async () => {
+  const secretError = 'secret-token-xyz-123';
+  assert.equal(redactErrorMessage(secretError), 'delivery_failed');
+  assert.equal(redactErrorMessage(new Error(secretError)), 'delivery_failed');
+
+  await withProviderConfig(async () => {
+    const result = await sendSMS('+639171234567', 'Test SMS', {
+      fetchImpl: async () => {
+        throw new Error(secretError);
+      },
+    });
+
+    assert.deepEqual(result, {
+      success: false,
+      error: 'delivery_failed',
+      status: 'unavailable',
+    });
+    assert.equal(result.error.includes(secretError), false);
+    assert.equal(JSON.stringify(result).includes(secretError), false);
   });
 });
