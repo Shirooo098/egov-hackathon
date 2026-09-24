@@ -10,7 +10,7 @@
     "dev": "tsx watch src/start.ts",
     "migrate": "tsx src/db/migrate.ts",
     "seed:synthetic": "tsx src/db/seeds/synthetic.ts",
-    "test": "tsx --test tests/runtime.test.ts tests/api-security.test.ts tests/foundation.test.ts tests/release-evidence-contract.test.ts tests/hospital-events.test.ts tests/synthetic-hospital-events.test.ts tests/reconciliation.test.ts tests/appointments-outbox.test.ts tests/rebaseline-027-030.test.ts tests/egovchain-consent.test.ts tests/egovchain-sweep.test.ts tests/legacy-adapters.no-outbound.test.ts",
+    "test": "tsx --test tests/runtime.test.ts tests/api-security.test.ts tests/foundation.test.ts tests/release-evidence-contract.test.ts tests/hospital-events.test.ts tests/synthetic-hospital-events.test.ts tests/reconciliation.test.ts tests/appointments-outbox.test.ts tests/rebaseline-027-030.test.ts tests/egov-first-login.test.ts tests/egov-official-handoff.test.ts tests/egov-returning-sessions.test.ts tests/egov-sms-consent.test.ts tests/egovchain-consent.test.ts tests/egovchain-sweep.test.ts tests/emessage-service.test.ts tests/emessage-accepted-dispatch.test.ts tests/official-egov-issues-02-05-06.test.ts tests/ticket-02-remove-everify.test.ts tests/legacy-adapters.no-outbound.test.ts",
     "test:synthetic-baseline": "tsx --test tests/release-verification.test.ts tests/synthetic-hospital-demo.test.ts tests/synthetic-seed-reset.test.ts tests/synthetic-hospital-events.test.ts tests/hospital-events.test.ts tests/reconciliation.test.ts tests/api-security.test.ts tests/foundation.test.ts tests/appointments-outbox.test.ts tests/platform-workflows-http.test.ts tests/release-evidence-contract.test.ts",
     "release:evidence": "tsx src/cli/release-evidence.ts",
     "typecheck": "tsc --noEmit",
