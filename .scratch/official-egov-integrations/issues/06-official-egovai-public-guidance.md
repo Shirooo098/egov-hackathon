@@ -4,10 +4,10 @@
 
 **Blocked by:** 05 — Capture the authenticated eGovAI contract.
 
-**Status:** blocked by 05 — authenticated provider contract not yet validated
+**Status:** in progress — fixed public FAQ choices and server allowlist implemented (`fbb3f2d`); provider answers remain blocked by Ticket 05's authenticated contract
 
 - [ ] The assistant uses only the verified official staging contract and has no generated or local-answer fallback.
-- [ ] Only fixed public FAQ selections can be submitted; free-text prompts and identity, case, donor, recipient, clinical, matching, and appointment data cannot cross the provider boundary.
+- [x] Only fixed public FAQ selections can be submitted; free-text prompts and identity, case, donor, recipient, clinical, matching, and appointment data cannot cross the provider boundary.
 - [ ] Responses are visibly informational and are never presented as clinical, legal, eligibility, clearance, matching, ranking, treatment, or scheduling decisions.
 - [ ] Provider failures return a clear unavailable state with retry guidance instead of a fabricated answer.
 - [ ] Credentials and provider tokens remain server-side and are excluded from persistence and logs.
