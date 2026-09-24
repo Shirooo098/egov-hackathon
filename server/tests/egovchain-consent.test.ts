@@ -37,7 +37,7 @@ test('consent writes enqueue one durable anchor and never fabricate simulated pr
   assert.match(platform, /Idempotency key payload mismatch/);
   assert.match(pair, /counts\.coordination.*counts\.information_sharing/);
   const worker = fs.readFileSync(new URL('../src/worker.ts', import.meta.url), 'utf8');
-  assert.match(worker, /verifyReceipt\(txHash!, row\.commitment\)/);
+  assert.match(worker, /verifyReceipt\(txHash!, row\.commitment, true\)/);
   assert.ok(worker.indexOf('const current = await verifyReceipt') < worker.indexOf('await broadcast(raw!)'));
 });
 

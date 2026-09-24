@@ -57,9 +57,19 @@ export async function runConsentAnchorBatch(options: { batchSize?: number; worke
           await client.query('COMMIT');
         } catch (error) { await client.query('ROLLBACK').catch(() => {}); throw error; } finally { client.release(); }
       }
-      const current = await verifyReceipt(txHash!, row.commitment);
-      if (!current) await broadcast(raw!);
-      const proof = current ?? await verifyReceipt(txHash!, row.commitment);
+      const current = await verifyReceipt(txHash!, row.commitment, true);
+      if (!current) {
+        const known = await rpc('eth_getTransactionByHash', [txHash!]) as { hash?: string } | null;
+        if (known === null) {
+          const sentHash = await broadcast(raw!);
+          if (!sentHash || sentHash.toLowerCase() !== txHash!.toLowerCase()) {
+            throw new Error('egovchain_hash_mismatch');
+          }
+        } else if (!known || typeof known !== 'object' || typeof known.hash !== 'string' || known.hash.toLowerCase() !== txHash!.toLowerCase()) {
+          throw new Error('egovchain_invalid_transaction');
+        }
+      }
+      const proof = current ?? await verifyReceipt(txHash!, row.commitment, true);
       if (!proof) throw new Error('egovchain_receipt_pending');
       const status = proof.status === '0x1' ? 'verified' : 'failed';
       const table = row.episode_consent_id ? 'episode_consents' : 'pair_consents';
@@ -87,7 +97,7 @@ export async function runConsentAnchorBatch(options: { batchSize?: number; worke
     } catch (error) {
       failed++;
       const code = error instanceof Error && /^egovchain_[a-z0-9_]+$/.test(error.message) ? error.message : 'anchor_failed';
-      await pool.query(`UPDATE consent_anchor_outbox SET status=CASE WHEN attempts>=8 THEN 'dead_letter' ELSE 'failed' END,last_error_code=$1,available_at=now()+interval '30 seconds',lease_owner=NULL,leased_at=NULL,updated_at=now() WHERE id=$2 AND lease_owner=$3`, [code, row.id, owner]);
+      await pool.query(`UPDATE consent_anchor_outbox SET status=CASE WHEN attempts>=8 AND $1 <> 'egovchain_receipt_pending' THEN 'dead_letter' ELSE 'failed' END,last_error_code=$1,available_at=now()+interval '30 seconds',lease_owner=NULL,leased_at=NULL,updated_at=now() WHERE id=$2 AND lease_owner=$3`, [code, row.id, owner]);
     }
   }
   let reorged = 0;

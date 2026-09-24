@@ -76,14 +76,16 @@ export async function broadcast(raw: string) { return String(await rpc('eth_send
 
 export async function receipt(txHash: string) { return await rpc('eth_getTransactionReceipt', [txHash]) as { status?: string; blockHash?: string; blockNumber?: string; transactionHash?: string } | null; }
 
-export async function verifyReceipt(txHash: string, commitment: string) {
+export async function verifyReceipt(txHash: string, commitment: string, strict = false) {
   const r = await receipt(txHash);
-  if (!r || !['0x1', '0x0'].includes(r.status ?? '') || !r.blockHash || !r.blockNumber || r.transactionHash?.toLowerCase() !== txHash.toLowerCase()) return null;
+  if (!r) return null;
+  const invalid = () => { if (strict) throw new Error('egovchain_invalid_receipt'); return null; };
+  if (!['0x1', '0x0'].includes(r.status ?? '') || !r.blockHash || !r.blockNumber || r.transactionHash?.toLowerCase() !== txHash.toLowerCase()) return invalid();
   const [tx, block] = await Promise.all([
     rpc('eth_getTransactionByHash', [txHash]) as Promise<{ from?: string; to?: string; value?: string; input?: string; chainId?: string; hash?: string } | null>,
     rpc('eth_getBlockByNumber', [r.blockNumber, false]) as Promise<{ hash?: string; transactions?: string[] } | null>,
   ]);
   const address = signerAddress().toLowerCase();
-  if (!tx || !block || block.hash?.toLowerCase() !== r.blockHash.toLowerCase() || !block.transactions?.some((hash) => hash.toLowerCase() === txHash.toLowerCase()) || tx.hash?.toLowerCase() !== txHash.toLowerCase() || tx.from?.toLowerCase() !== address || tx.to?.toLowerCase() !== address || BigInt(tx.value ?? '0x0') !== 0n || tx.input?.toLowerCase() !== `0x${commitment}`.toLowerCase() || Number(BigInt(tx.chainId ?? '0x0')) !== EGOVCHAIN_CHAIN_ID) return null;
+  if (!tx || !block || block.hash?.toLowerCase() !== r.blockHash.toLowerCase() || !block.transactions?.some((hash) => hash.toLowerCase() === txHash.toLowerCase()) || tx.hash?.toLowerCase() !== txHash.toLowerCase() || tx.from?.toLowerCase() !== address || tx.to?.toLowerCase() !== address || BigInt(tx.value ?? '0x0') !== 0n || tx.input?.toLowerCase() !== `0x${commitment}`.toLowerCase() || Number(BigInt(tx.chainId ?? '0x0')) !== EGOVCHAIN_CHAIN_ID) return invalid();
   return r;
 }
