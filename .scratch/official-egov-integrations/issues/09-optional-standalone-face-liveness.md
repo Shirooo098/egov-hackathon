@@ -17,6 +17,8 @@ The user-supplied Face Liveness portal excerpt agrees with the Face Liveness sec
 
 Ticket 02 is complete. Ticket 01's authenticated Citizen session and the remaining gates above are still prerequisites for runtime activation.
 
+The unused browser-side session/polling prototype was removed on 2026-09-25. It accepted an arbitrary callback URL and would have returned raw provider result fields to client code; the deferred backend endpoints remain unavailable. A future implementation must bind the hosted return to a pending Citizen session and return only the approved binary result.
+
 ## Acceptance
 
 - [ ] Until every external gate is approved, runtime remains unavailable and creates no fabricated session or result.

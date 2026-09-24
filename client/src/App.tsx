@@ -16,7 +16,6 @@ import {
 } from "react-router-dom";
 import Navbar from "./components/ui/Navbar";
 import PublicLanding from "./pages/PublicLanding";
-import { egovApi } from "./services/egovApi";
 import { useToast } from "./context/ToastContext";
 import { useMatch } from "./context/MatchContext";
 import { AuthProvider, sessionRole, useAuth } from "./context/AuthContext";
