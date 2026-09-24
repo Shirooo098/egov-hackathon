@@ -6,7 +6,7 @@ import { requireSession, requireRole } from '../middleware/auth.js';
 import { requireSameOrigin } from '../middleware/origin.js';
 import type { Account } from '../auth/service.js';
 import { sanitizeMessageBody } from './platform.js';
-import { consentCommitment } from '../services/EgovChainService.js';
+import { consentCommitment, egovchainEnabled, publicConsentEvent } from '../services/EgovChainService.js';
 import { CONSENT_PURPOSES, CONSENT_VERSION, latestConsentState, pairConsentScope } from '../services/ConsentPolicy.js';
 
 const router = express.Router();
@@ -564,7 +564,7 @@ router.get('/pairs/:id/consent', requireSession, async (req, res, next) => {
       WHERE p.id=$1`, [req.params.id, requireAccount(req).id]);
     if (!access.rowCount) return fail(res, 404, 'not_found', 'Pair not found');
     if (!access.rows[0].is_participant && !access.rows[0].is_reviewer) return fail(res, 403, 'forbidden', 'Access denied');
-    const consents = await getPool().query(`SELECT id, episode_id AS "episodeId", consent_version AS version, purpose, scope, commitment, action, anchor_status AS "anchorStatus", anchor_tx_hash AS "txHash", anchor_block_hash AS "blockHash", anchor_block_number AS "blockNumber", created_at AS "createdAt" FROM pair_consents WHERE pair_id=$1 ORDER BY created_at DESC,id DESC`, [req.params.id]);
+    const consents = await getPool().query(`SELECT pc.id, pc.episode_id AS "episodeId", pc.consent_version AS version, pc.purpose, pc.scope, pc.commitment, pc.action, pc.anchor_status AS "anchorStatus", pc.anchor_tx_hash AS "txHash", pc.anchor_block_hash AS "blockHash", pc.anchor_block_number AS "blockNumber", pc.created_at AS "createdAt", o.status AS "outboxStatus", o.last_error_code AS "outboxErrorCode" FROM pair_consents pc LEFT JOIN consent_anchor_outbox o ON o.pair_consent_id=pc.id WHERE pc.pair_id=$1 ORDER BY pc.created_at DESC,pc.id DESC`, [req.params.id]);
     const pairScope = pairConsentScope(String(req.params.id), access.rows[0].consent_scope_version, String(access.rows[0].own_episode_id), access.rows[0].recipient_hospital_id, String(access.rows[0].counterpart_episode_id), access.rows[0].donor_hospital_id);
     const byEpisode = new Map<string, string>();
     for (const item of consents.rows) if (item.scope === pairScope && !byEpisode.has(`${item.episodeId}:${item.purpose}`)) byEpisode.set(`${item.episodeId}:${item.purpose}`, item.action === 'grant' ? 'granted' : 'withdrawn');
@@ -578,7 +578,7 @@ router.get('/pairs/:id/consent', requireSession, async (req, res, next) => {
       const item = consents.rows.find((row) => row.scope === pairScope && row.purpose === purpose && row.episodeId !== ownEpisode);
       if (item) counterpart[purpose] = item.action === 'grant' ? 'granted' : 'withdrawn';
     }
-    const events = ownEpisode ? consents.rows.filter((item) => item.episodeId === ownEpisode) : [];
+    const events = ownEpisode ? consents.rows.filter((item) => item.episodeId === ownEpisode).map((row) => publicConsentEvent(row, egovchainEnabled())) : [];
     return ok(res, { requirements: { consentVersion: CONSENT_VERSION, scope: pairScope, purposes: CONSENT_PURPOSES.map((id) => ({ id, text: id === 'coordination' ? 'Allow coordination for this proposed pair.' : 'Allow coordination information sharing for this proposed pair.' })) }, current: latestConsentState(consents.rows.filter((item) => item.episodeId === ownEpisode), pairScope), events, counterpart, pairVersion: access.rows[0].version, pairState: access.rows[0].state });
   } catch (error) { return next(error); }
 });

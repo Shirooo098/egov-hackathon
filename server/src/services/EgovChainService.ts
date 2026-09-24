@@ -26,6 +26,12 @@ function configured() {
 }
 
 export function egovchainEnabled() { return configured(); }
+export function publicConsentEvent(row: Record<string, unknown>, enabled: boolean) {
+  const { outboxStatus, outboxErrorCode, ...event } = row;
+  const anchorStatus = event.anchorStatus === 'pending' && (!enabled || !outboxStatus || outboxStatus === 'dead_letter' || (outboxStatus === 'failed' && outboxErrorCode !== 'egovchain_receipt_pending'))
+    ? 'unavailable' : event.anchorStatus;
+  return { ...event, anchorStatus };
+}
 export function signerAddress() {
   if (!process.env.EGOVCHAIN_SIGNER_PRIVATE_KEY) throw new Error('egovchain_disabled');
   return new Wallet(process.env.EGOVCHAIN_SIGNER_PRIVATE_KEY).address;

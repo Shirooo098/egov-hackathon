@@ -9,7 +9,7 @@ import type { RuntimeMode } from '../runtime/config.js';
 import { maskPhoneNumber } from '../services/eMessageService.js';
 import { GENERIC_NOTIFICATION_TEMPLATES } from '../services/notificationService.js';
 import { requireWorkflowActive } from './operations.js';
-import { consentCommitment } from '../services/EgovChainService.js';
+import { consentCommitment, egovchainEnabled, publicConsentEvent } from '../services/EgovChainService.js';
 import { caseConsentScope, latestConsentState, CONSENT_VERSION, CONSENT_PURPOSES } from '../services/ConsentPolicy.js';
 
 const router = express.Router();
@@ -249,8 +249,8 @@ router.get('/episodes/:id/consent', async (req, res, next) => {
     if (!episode.rowCount) return fail(res, 404, 'Episode not found', 'not_found');
     const hospitalId = episode.rows[0].hospitalId ? String(episode.rows[0].hospitalId) : null;
     const scope = caseConsentScope(String(req.params.id), hospitalId);
-    const result = await db().execute(sql`SELECT ec.id, ec.episode_id AS "episodeId", ec.consent_version AS "version", ec.purpose, ec.scope, ec.commitment, ec.action, ec.anchor_status AS "anchorStatus", ec.anchor_tx_hash AS "txHash", ec.anchor_block_hash AS "blockHash", ec.anchor_block_number AS "blockNumber", ec.created_at AS "createdAt"
-      FROM episode_consents ec WHERE ec.episode_id=${req.params.id} ORDER BY ec.created_at DESC,ec.id DESC`);
+    const result = await db().execute(sql`SELECT ec.id, ec.episode_id AS "episodeId", ec.consent_version AS "version", ec.purpose, ec.scope, ec.commitment, ec.action, ec.anchor_status AS "anchorStatus", ec.anchor_tx_hash AS "txHash", ec.anchor_block_hash AS "blockHash", ec.anchor_block_number AS "blockNumber", ec.created_at AS "createdAt", o.status AS "outboxStatus", o.last_error_code AS "outboxErrorCode"
+      FROM episode_consents ec LEFT JOIN consent_anchor_outbox o ON o.episode_consent_id=ec.id WHERE ec.episode_id=${req.params.id} ORDER BY ec.created_at DESC,ec.id DESC`);
     const current = latestConsentState(result.rows.filter((row) => (row as any).version === CONSENT_VERSION) as Array<{ purpose: string; action: string; scope: string }>, scope);
     return json(res, {
       requirements: {
@@ -262,7 +262,7 @@ router.get('/episodes/:id/consent', async (req, res, next) => {
         }))
       },
       current,
-      events: result.rows
+      events: result.rows.map((row) => publicConsentEvent(row as Record<string, unknown>, egovchainEnabled()))
     });
   } catch (e) { return next(e); }
 });
