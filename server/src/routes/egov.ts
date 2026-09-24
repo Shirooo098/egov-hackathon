@@ -28,6 +28,13 @@ const capabilityDeferred = (res: express.Response, message: string) =>
     retry_guidance: 'Official integration is unverified or deferred. Please retry later.',
   });
 
+const PUBLIC_EGOVAI_CHOICES = new Set([
+  'How does eBuhay coordination work?',
+  'What are the steps to become a donor?',
+  'What are the steps to become a recipient?',
+  'How can I contact the coordination team?',
+]);
+
 // POST /api/egov/liveness/session
 router.post("/liveness/session", async (_req, res) => {
   return capabilityDeferred(
@@ -47,8 +54,8 @@ router.get("/liveness/result/:sessionToken", async (_req, res) => {
 // POST /api/egov/ai/chat
 router.post('/ai/chat', async (req, res) => {
   const { prompt } = req.body || {};
-  if (!prompt || !String(prompt).trim()) {
-    return res.status(400).json({ success: false, message: 'prompt is required' });
+  if (typeof prompt !== 'string' || !PUBLIC_EGOVAI_CHOICES.has(prompt.trim())) {
+    return res.status(400).json({ success: false, message: 'Select a supported public process question' });
   }
   return capabilityDeferred(
     res,

@@ -14,14 +14,20 @@ const GREETING = {
   time: "",
 };
 
+export const PUBLIC_EGOVAI_CHOICES = [
+  "How does eBuhay coordination work?",
+  "What are the steps to become a donor?",
+  "What are the steps to become a recipient?",
+  "How can I contact the coordination team?",
+] as const;
+
 export default function FloatingAIChat() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([GREETING as Message]);
-  const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const launcherRef = useRef<HTMLButtonElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLButtonElement>(null);
   const closeChat = () => {
     setOpen(false);
     launcherRef.current?.focus();
@@ -47,15 +53,13 @@ export default function FloatingAIChat() {
   const timeNow = () =>
     new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-  const send = async () => {
-    const prompt = text.trim();
-    if (!prompt || loading) return;
+  const send = async (prompt: string) => {
+    if (loading) return;
 
     setMessages((p) => [
       ...p,
       { id: Date.now(), sender: "user", text: prompt, time: timeNow() },
     ]);
-    setText("");
     setLoading(true);
 
     try {
@@ -169,30 +173,19 @@ export default function FloatingAIChat() {
 
           {/* Input */}
           <div className="floating-ai-input">
-            <textarea
-              ref={inputRef}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  send();
-                }
-              }}
-              placeholder="Ask a public process question…"
-              rows={1}
-              disabled={loading}
-              className="input floating-ai-textarea"
-              aria-label="AI chat message input"
-            />
-            <button
-              onClick={send}
-              disabled={!text.trim() || loading}
-              className="btn btn-primary btn-icon floating-ai-send"
-              aria-label="Send message"
-            >
-              <SendIcon />
-            </button>
+            <div className="floating-ai-choice-list" role="group" aria-label="Public eBuhay process questions">
+              {PUBLIC_EGOVAI_CHOICES.map((choice, index) => (
+                <button
+                  key={choice}
+                  ref={index === 0 ? inputRef : undefined}
+                  onClick={() => void send(choice)}
+                  disabled={loading}
+                  className="btn btn-secondary floating-ai-choice"
+                >
+                  {choice}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -212,23 +205,5 @@ export default function FloatingAIChat() {
         {open ? "✕" : "💬"}
       </button>
     </div>
-  );
-}
-
-function SendIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="22" y1="2" x2="11" y2="13" />
-      <polygon points="22 2 15 22 11 13 2 9 22 2" />
-    </svg>
   );
 }

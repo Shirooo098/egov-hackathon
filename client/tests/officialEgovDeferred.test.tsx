@@ -11,13 +11,6 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 let root: ReturnType<typeof createRoot> | undefined;
 
-function setTestTextareaValue(textarea: Element | null, value: string) {
-  if (!(textarea instanceof HTMLTextAreaElement)) throw new Error('Expected textarea element');
-  const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')?.set;
-  if (!setter) throw new Error('Textarea value setter unavailable');
-  setter.call(textarea, value);
-}
-
 function render(node: React.ReactNode) {
   document.body.innerHTML = '<div id="root"></div>';
   root = createRoot(document.getElementById('root')!);
@@ -100,26 +93,23 @@ describe('Issue 05 and 06: FloatingAIChat informational and unavailable guidance
     expect(body.textContent).toContain('Welcome to eGovAI guidance');
   });
 
-  it('fails closed with truthful unavailable message on send error without fabricated fallback', async () => {
+  it('offers only fixed public process choices and fails closed on send error', async () => {
     vi.spyOn(egovApi, 'askAI').mockRejectedValue(new Error('503 Service Unavailable'));
 
     const body = render(<FloatingAIChat />);
     const launcher = body.querySelector('button.floating-ai-launcher');
     act(() => (launcher as HTMLButtonElement).click());
 
-    const textarea = body.querySelector('textarea');
-    expect(textarea).not.toBeNull();
-    act(() => {
-      setTestTextareaValue(textarea, 'How does organ donation work?');
-      textarea!.dispatchEvent(new Event('input', { bubbles: true }));
-    });
-
-    const sendBtn = body.querySelector('button.floating-ai-send');
+    expect(body.querySelector('textarea')).toBeNull();
+    const choice = Array.from(body.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('How does eBuhay coordination work?'),
+    );
+    expect(choice).not.toBeNull();
     await act(async () => {
-      (sendBtn as HTMLButtonElement).click();
+      (choice as HTMLButtonElement).click();
     });
 
-    expect(body.textContent).toContain('How does organ donation work?');
+    expect(body.textContent).toContain('How does eBuhay coordination work?');
     expect(body.textContent).toContain('The official eGovAI service is currently unavailable or deferred (503)');
     expect(body.textContent).not.toContain('Republic Act');
     expect(body.textContent).not.toContain('eGovAI Legal Advisory');

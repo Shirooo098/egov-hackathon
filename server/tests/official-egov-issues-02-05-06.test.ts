@@ -137,17 +137,17 @@ test('Issue 05 and 06: eGovAI HTTP endpoint returns 503 capability_deferred with
   const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
 
   try {
-    const emptyChat = await fetch(`${base}/api/egov/ai/chat`, {
+    const unsupportedChat = await fetch(`${base}/api/egov/ai/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: '' }),
+      body: JSON.stringify({ prompt: 'What is my eligibility for a transplant?' }),
     });
-    assert.equal(emptyChat.status, 400);
+    assert.equal(unsupportedChat.status, 400);
 
     const chatRes = await fetch(`${base}/api/egov/ai/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: 'What are the donation procedures?' }),
+      body: JSON.stringify({ prompt: 'How does eBuhay coordination work?' }),
     });
     assert.equal(chatRes.status, 503);
     const chatBody = (await chatRes.json()) as { error?: string; code?: string; retryable?: boolean; retry_guidance?: string };
