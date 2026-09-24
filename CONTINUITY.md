@@ -4,16 +4,17 @@
 - 2026-09-23 [USER] Goal: finish official eGov tickets first, then unblock synthetic hospital demo; confirmed SSO, Chain, Message, AI, and optional standalone Face Liveness; eVerify is explicitly absent from the product.
 - 2026-09-23 [USER] Work on a `{feature}` branch, commit each accomplishment, never push, and never use a `codex/*` branch.
 - 2026-09-23 [CODE] Current branch: `feature/official-egov-open-tickets`.
-- 2026-09-24 [TOOL] Current committed HEAD `b7b3315`; Ticket04 SSO-mobile consent changes are in the worktree for a scoped commit. Unrelated staged synthetic specs and user-owned `AGENTS.md` are preserved.
+- 2026-09-24 [TOOL] Current committed HEAD `56ac6b7`; Ticket03 chain-info removal is in the worktree for a scoped commit. Unrelated staged synthetic specs and user-owned `AGENTS.md` are preserved.
 - 2026-09-24 [USER] Supplied the SSO guide again and confirmed the credential-issued URL, partner code, and secret are configured in `server/.env`; do not expose their values. The guide does not define `state`/nonce.
 - 2026-09-23 [USER] Resumed available-ticket work; include `.scratch/official-egov-integrations/issues`. Current implementation covers safe Ticket 01 work and Ticket 02; preserve external gates and all ticket scope.
 - 2026-09-23 [TOOL] Astra Ticket01 safe slice and Ticket02 correction completed; conversation `2f06993a-41e4-48d5-9038-b20b7ee11785` terminal (exit0/SUCCESS). Codex verification/review complete. No active agent or process.
 - 2026-09-23 [USER] Commit each verified accomplishment on the existing feature branch; do not push. Preserve unrelated staged specification work. This supersedes this turn's no-commit default.
-- 2026-09-24 [CODE] Now: Tickets 01/08 SSO handoff and widget are committed; Ticket04 eMessage mobile consent and narrow purposes pass focused checks and review. Next: scoped Ticket04 commit, then remaining available tickets. Nothing pushed.
+- 2026-09-24 [CODE] Now: Tickets 01/08 SSO and Ticket04 eMessage mobile consent are committed. Ticket03 legacy simulated chain-info route is removed and under final check. Next: scoped Ticket03 commit; external gates remain. Nothing pushed.
 - 2026-09-24 [CODE] Open: eGovPH callback correlation and partner acceptance need authenticated clarification; no provider smoke ran. Ticket 24 baseline remains unrun; isolated test DB is currently inaccessible (EACCES) in this sandbox.
 - 2026-09-23 [CODE] Open: Tickets 03, 05, 06, and credentialed Ticket 07 checks retain documented external dependencies.
 
 ## Done
+- 2026-09-24 [TOOL] Commit `56ac6b7` records SSO-mobile-only SMS opt-in, revocation, narrow generic purposes, and truthfully masked preference UX; independent review issue fixed.
 - 2026-09-24 [TOOL] Commit `b7b3315` records official SSO handoff and widget with explicit identity confirmation; Ticket01/08 staging/callback-correlation gates remain open.
 - 2026-09-24 [TOOL] Commit `038f73b` records eMessage accepted-only progress and eGovAI success-shape documentation; external gates remain open.
 - 2026-09-24 [TOOL] Commits `fbb3f2d`, `10d5a38`, `927f51f` respectively restrict AI to fixed FAQs, correct SMS HTTP 201 acceptance, and move case choice after Citizen authentication.
@@ -39,19 +40,19 @@
 - D16 2026-09-24 [CODE] Ticket04 stores only current SSO mobile, resets consent on changed/missing mobile, checks it at notification record and dispatch, and uses generic messages for three approved purposes; credentialed staging remains open.
 
 ## Working set
-- `client/src/features/notifications/SmsPreferences.tsx`
-- `client/src/pages/DonorDashboard.tsx`
-- `client/src/pages/RecipientDashboard.tsx`
-- `server/src/auth/egov-citizen.ts`
-- `server/src/auth/egov-provider.ts`
+- `server/src/routes/blockchain.ts`
+- `server/src/controllers/blockchainController.ts`
+- `server/tests/egovchain-consent.test.ts`
+- `server/src/services/EgovChainService.ts`
+- `server/src/worker.ts`
 - `server/src/routes/platform.ts`
-- `server/src/services/notificationService.ts`
-- `server/src/services/eMessageService.ts`
-- `server/src/db/migrations/036_egov_sso_mobile.sql`
+- `server/src/routes/rebaseline.ts`
+- `.scratch/official-egov-integrations/issues/03-official-egovchain-consent-proof.md`
 - `.scratch/official-egov-integrations/issues/04-official-opted-in-emessage-notifications.md`
 - `.scratch/official-egov-integrations/issues/01-official-egov-sso-citizen-login.md`
 
 ## Receipts
+- 2026-09-24 [TOOL] Ticket03 route removal: focused chain tests 3/3, server full suite 53/53, and server typecheck passed. No real staging transaction or isolated DB test ran.
 - 2026-09-24 [TOOL] Independent Ticket04 review found revoke-response masked-mobile UI bug; fixed, and server/client regression checks passed. Reviewer also identified stale ignored/untracked `server/tests/notifications.test.ts`; new scoped HTTP test covers current contract, while that legacy DB test remains unrun/untracked.
 - 2026-09-24 [TOOL] Ticket04: focused server SSO/SMS tests 10/10, client preference/trust tests 9/9, server full test 52/52, server typecheck passed. Server lint exit0 with pre-existing warnings. Database migration and credentialed provider smoke remain unrun (sandbox DB EACCES/no live call).
 - 2026-09-24 [TOOL] Prior SSO package verification at `b7b3315`: server 52/52, client full suite and build, both typechecks passed; no provider or isolated DB call.

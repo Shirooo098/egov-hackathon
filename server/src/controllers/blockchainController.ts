@@ -1,5 +1,4 @@
 import type { Request, Response, NextFunction } from "express";
-import { getChainInfo } from "../services/BesuService.js";
 
 async function anchor(req: Request, res: Response, next: NextFunction) {
   try {
@@ -22,13 +21,4 @@ async function getReceipt(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-async function chainInfo(req: Request, res: Response, next: NextFunction) {
-  try {
-    const info = await getChainInfo();
-    res.json({ success: true, data: info });
-  } catch (err) {
-    next(err);
-  }
-}
-
-export { anchor, getReceipt, chainInfo };
+export { anchor, getReceipt };
