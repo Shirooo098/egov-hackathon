@@ -86,7 +86,7 @@ describe('runtime mode configuration', () => {
   });
 });
 
-async function enterEgovRole(role: string) {
+async function enterEgovRole(role: string, logoutFails = false) {
   const fetchImpl = async (url: string | Request | URL) => {
     const href = String(url);
     if (href.endsWith('/auth/session')) {
@@ -97,7 +97,9 @@ async function enterEgovRole(role: string) {
       } as Response;
     }
     if (href.endsWith('/v1/csrf')) return { ok: true, status: 200, json: async () => ({ success: true }) } as Response;
-    if (href.endsWith('/auth/logout')) return { ok: true, status: 204, json: async () => null } as Response;
+    if (href.endsWith('/auth/logout')) return logoutFails
+      ? { ok: false, status: 503, json: async () => ({ success: false, error: 'unavailable' }) } as Response
+      : { ok: true, status: 204, json: async () => null } as Response;
     return { ok: true, status: 200, json: async () => ({ success: true, data: [] }) };
   };
   const body = renderApp(['/onboarding'], fetchImpl as unknown as typeof fetch);
@@ -161,6 +163,14 @@ describe('citizen dashboard routing', () => {
     act(() => Array.from(body.querySelectorAll('button')).find((button) => button.textContent.includes('Exit Role'))!.click());
     await vi.waitFor(() => expect(body.querySelector('[data-testid="location"]')?.textContent).toBe('/onboarding'));
     expect(body.textContent).toContain('Sign in with official eGovPH');
+  });
+
+  it('keeps the Citizen session when eBuhay cannot confirm sign-out', async () => {
+    const body = await enterEgovRole('recipient', true);
+    act(() => Array.from(body.querySelectorAll('button')).find((button) => button.textContent.includes('Exit Role'))!.click());
+    await vi.waitFor(() => expect(body.textContent).toContain('Could not sign out. Please try again.'));
+    expect(body.querySelector('[data-testid="location"]')?.textContent).toBe('/recipient');
+    expect(body.textContent).not.toContain('Signed out successfully');
   });
 
   it('renders either portal for an authenticated citizen account', async () => {

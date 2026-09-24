@@ -12,7 +12,7 @@ Local HTTP fixtures verify that malformed provider profiles and provider outages
 - [x] Explicit Citizen confirmation creates the HttpOnly eBuhay session; cancellation creates none, and an uncorrelated code never silently replaces an existing account session.
 - [x] Citizen accounts are created or linked only by provider plus stable `uniqid`; names, email addresses, and mobile numbers never trigger automatic merging.
 - [ ] Authentication fails closed when `uniqid` is missing, the provider response is malformed, or the provider is unavailable.
-- [ ] Exchange codes, partner secrets, and access tokens never reach the browser, persistence, or application logs.
+- [ ] Partner secrets and access tokens remain server-side. The short-lived exchange code is exposed only by the documented eGovPH launch URL or widget callback and is redeemed promptly by the backend; it is absent from eBuhay responses, persistence, and application logs.
 - [x] Runtime synthetic invitation login and generated Citizen identities are removed; provider doubles remain test-only.
 - [x] Citizen SSO never grants Hospital Staff authority.
 - [x] The callback rejects replay and handles initial session restoration without overwriting a successful login.

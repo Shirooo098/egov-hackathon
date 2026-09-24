@@ -110,11 +110,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     try {
       await api.auth.logout();
-    } catch (cause) {
-      setError(cause);
-    } finally {
       setSession(null);
       setStatus("anonymous");
+      setError(null);
+    } catch (cause) {
+      setError(cause);
+      throw cause;
     }
   }, []);
 

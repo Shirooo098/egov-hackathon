@@ -67,6 +67,7 @@ const STEPS = {
 
 function HospitalRoute() {
   const navigate = useNavigate();
+  const toast = useToast();
   const { session, restored, signOut } = useAuth()!;
   const account = session?.account;
   const staffRoles = [
@@ -106,8 +107,12 @@ function HospitalRoute() {
         tier={`${typeof account.displayName === "string" ? account.displayName : "Invited hospital staff"} · synthetic records`}
         userProfile={null}
         onSignOut={async () => {
-          await signOut();
-          navigate("/staff-sign-in", { replace: true });
+          try {
+            await signOut();
+            navigate("/staff-sign-in", { replace: true });
+          } catch {
+            toast.error("Could not sign out. Please try again.", { title: "Sign-out failed" });
+          }
         }}
       />
       <Suspense
@@ -289,14 +294,18 @@ function AppContent() {
   };
 
   const handleSignOut = async () => {
-    await signOut();
-    setRole(null);
-    setPendingRole(null);
-    setStep(STEPS.ROLE_SELECT);
-    setVerified(false);
-    setUserProfile(null);
-    navigate("/", { replace: true });
-    toast.info("Signed out successfully", { title: "Signed Out" });
+    try {
+      await signOut();
+      setRole(null);
+      setPendingRole(null);
+      setStep(STEPS.ROLE_SELECT);
+      setVerified(false);
+      setUserProfile(null);
+      navigate("/", { replace: true });
+      toast.info("Signed out successfully", { title: "Signed Out" });
+    } catch {
+      toast.error("Could not sign out. Please try again.", { title: "Sign-out failed" });
+    }
   };
 
   const goBackTo = (targetStep: string) => setStep(targetStep);
