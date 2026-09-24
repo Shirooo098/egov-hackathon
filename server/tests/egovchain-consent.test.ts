@@ -57,18 +57,28 @@ test('legacy chain-info paths cannot return simulated provider evidence', async 
   }
 });
 
-test('Citizen consent HTTP view reports unavailable without a chain provider or leaked errors', async () => {
+test('Citizen consent HTTP view distinguishes pending, verified proof, and unavailable without leaking provider errors', async () => {
   const episodeId = '00000000-0000-4000-8000-000000000001';
   const accountId = '00000000-0000-4000-8000-000000000002';
   const savedMode = process.env.EBUHAY_MODE;
   const savedChainMode = process.env.EGOVCHAIN_MODE;
+  const savedRpcBase = process.env.EGOVCHAIN_RPC_BASE_URL;
+  const savedRpcToken = process.env.EGOVCHAIN_RPC_TOKEN;
+  const savedSigner = process.env.EGOVCHAIN_SIGNER_PRIVATE_KEY;
   process.env.EBUHAY_MODE = 'synthetic';
   delete process.env.EGOVCHAIN_MODE;
+  let consentRow: Record<string, unknown> = { id: 'consent-1', episodeId, version: 'v1.0', purpose: 'coordination', scope: `case:${episodeId}:hospital:unassigned:v1.0`, action: 'grant', anchorStatus: 'pending', outboxStatus: 'failed', outboxErrorCode: 'egovchain_wrong_chain' };
   const query = async (statement: string | { text: string }, _values?: unknown[]) => {
     const sql = typeof statement === 'string' ? statement : statement.text;
     if (sql.startsWith('UPDATE sessions s SET last_seen_at')) return { rowCount: 1, rows: [{ id: accountId, role: 'citizen', display_name: 'Test Citizen', service_scope: [], hospital_id: null }] };
     if (sql.includes('SELECT c.hospital_id AS "hospitalId"')) return { rowCount: 1, rows: [{ hospitalId: null }] };
-    if (sql.includes('FROM episode_consents ec LEFT JOIN consent_anchor_outbox')) return { rowCount: 1, rows: [{ id: 'consent-1', episodeId, version: 'v1.0', purpose: 'coordination', scope: `case:${episodeId}:hospital:unassigned:v1.0`, action: 'grant', anchorStatus: 'pending', outboxStatus: 'failed', outboxErrorCode: 'egovchain_wrong_chain' }] };
+    if (sql.includes('FROM episode_consents ec LEFT JOIN consent_anchor_outbox')) {
+      assert.match(sql, /ec\.anchor_tx_hash AS "txHash"/);
+      assert.match(sql, /ec\.anchor_block_hash AS "blockHash"/);
+      assert.match(sql, /ec\.anchor_block_number AS "blockNumber"/);
+      assert.doesNotMatch(sql, /ec\.(?:evidence|commitment_salt)/);
+      return { rowCount: 1, rows: [consentRow] };
+    }
     throw new Error(`Unexpected database operation: ${sql.slice(0, 60)}`);
   };
   setPool({ query, end: async () => {} } as unknown as Pool);
@@ -76,15 +86,45 @@ test('Citizen consent HTTP view reports unavailable without a chain provider or 
   app.use('/api/v1', createCitizenPlatformRouter('synthetic'));
   const server = app.listen(0);
   try {
-    const response = await fetch(`http://127.0.0.1:${(server.address() as { port: number }).port}/api/v1/episodes/${episodeId}/consent`, { headers: { cookie: `ebuhay_session=${'a'.repeat(43)}` } });
+    const url = `http://127.0.0.1:${(server.address() as { port: number }).port}/api/v1/episodes/${episodeId}/consent`;
+    const headers = { cookie: `ebuhay_session=${'a'.repeat(43)}` };
+    const response = await fetch(url, { headers });
     assert.equal(response.status, 200);
     const payload = await response.json() as { data: { events: Array<Record<string, unknown>> } };
     assert.equal(payload.data.events[0].anchorStatus, 'unavailable');
     assert.equal('outboxErrorCode' in payload.data.events[0], false);
+
+    process.env.EGOVCHAIN_MODE = 'staging';
+    process.env.EGOVCHAIN_RPC_BASE_URL = 'https://egovchain.example.test';
+    process.env.EGOVCHAIN_RPC_TOKEN = 'synthetic-test-token';
+    process.env.EGOVCHAIN_SIGNER_PRIVATE_KEY = 'synthetic-test-key';
+    consentRow = { ...consentRow, outboxErrorCode: 'egovchain_receipt_pending' };
+    const pending = await fetch(url, { headers });
+    assert.equal(pending.status, 200);
+    const pendingEvent = (await pending.json() as { data: { events: Array<Record<string, unknown>> } }).data.events[0];
+    assert.equal(pendingEvent.anchorStatus, 'pending');
+    assert.equal('outboxStatus' in pendingEvent, false);
+    assert.equal('outboxErrorCode' in pendingEvent, false);
+
+    const txHash = `0x${'1'.repeat(64)}`;
+    const blockHash = `0x${'2'.repeat(64)}`;
+    consentRow = { ...consentRow, anchorStatus: 'verified', outboxStatus: 'verified', outboxErrorCode: null, txHash, blockHash, blockNumber: 256 };
+    const verified = await fetch(url, { headers });
+    assert.equal(verified.status, 200);
+    const verifiedEvent = (await verified.json() as { data: { events: Array<Record<string, unknown>> } }).data.events[0];
+    assert.equal(verifiedEvent.anchorStatus, 'verified');
+    assert.equal(verifiedEvent.txHash, txHash);
+    assert.equal(verifiedEvent.blockHash, blockHash);
+    assert.equal(verifiedEvent.blockNumber, 256);
+    assert.equal('outboxStatus' in verifiedEvent, false);
+    assert.equal('outboxErrorCode' in verifiedEvent, false);
   } finally {
     await new Promise<void>((resolve) => server.close(() => resolve()));
     await closePool();
     if (savedMode === undefined) delete process.env.EBUHAY_MODE; else process.env.EBUHAY_MODE = savedMode;
     if (savedChainMode === undefined) delete process.env.EGOVCHAIN_MODE; else process.env.EGOVCHAIN_MODE = savedChainMode;
+    if (savedRpcBase === undefined) delete process.env.EGOVCHAIN_RPC_BASE_URL; else process.env.EGOVCHAIN_RPC_BASE_URL = savedRpcBase;
+    if (savedRpcToken === undefined) delete process.env.EGOVCHAIN_RPC_TOKEN; else process.env.EGOVCHAIN_RPC_TOKEN = savedRpcToken;
+    if (savedSigner === undefined) delete process.env.EGOVCHAIN_SIGNER_PRIVATE_KEY; else process.env.EGOVCHAIN_SIGNER_PRIVATE_KEY = savedSigner;
   }
 });
