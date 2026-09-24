@@ -11,12 +11,12 @@ if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
 
 const actions = [
   {
-    to: "/onboarding/recipient",
+    to: "/onboarding",
     label: "I need transplant support",
     variant: "recipient",
   },
   {
-    to: "/onboarding/donor",
+    to: "/onboarding",
     label: "I want to become a donor",
     variant: "donor",
   },
@@ -55,7 +55,7 @@ const roleCards = [
       "Review milestones with your coordinator",
       "Receive updates directly from hospital care teams",
     ],
-    to: "/onboarding/recipient",
+    to: "/onboarding",
     link: "Start as a recipient →",
   },
   {
@@ -69,7 +69,7 @@ const roleCards = [
       "Coordinate preliminary health screenings",
       "Hospital clinical teams guide medical evaluation",
     ],
-    to: "/onboarding/donor",
+    to: "/onboarding",
     link: "Start as a donor →",
   },
 ];
@@ -216,7 +216,7 @@ export default function PublicLanding({ role }: PublicLandingProps) {
             >
               {actions.map((action) => (
                 <Link
-                  key={action.to}
+                  key={action.label}
                   to={action.to}
                   className={`landing-button landing-button-${action.variant}`}
                 >
@@ -439,13 +439,13 @@ export default function PublicLanding({ role }: PublicLandingProps) {
             >
               <Link
                 className="landing-button landing-button-recipient"
-                to="/onboarding/recipient"
+                to="/onboarding"
               >
                 I need transplant support
               </Link>
               <Link
                 className="landing-button landing-button-donor"
-                to="/onboarding/donor"
+                to="/onboarding"
               >
                 I want to become a donor
               </Link>

@@ -1,7 +1,6 @@
 import "../../styles/components/onboarding/EgovSsoForm.css";
 import Stepper, {
   ONBOARDING_SIGNIN_STEPS,
-  ONBOARDING_SIGNUP_STEPS,
 } from "./Stepper";
 
 type Props = {
@@ -9,8 +8,6 @@ type Props = {
   ssoError?: string;
   ssoLoading?: boolean;
   onBack: () => void;
-  authMode?: "signin" | "signup";
-  setAuthMode?: (mode: "signin" | "signup") => void;
 };
 
 export default function EgovSsoForm({
@@ -18,61 +15,33 @@ export default function EgovSsoForm({
   ssoError,
   ssoLoading,
   onBack,
-  authMode = "signin",
-  setAuthMode,
 }: Props) {
-  const steps =
-    authMode === "signin" ? ONBOARDING_SIGNIN_STEPS : ONBOARDING_SIGNUP_STEPS;
-
   return (
     <div className="anim-in">
-      <Stepper steps={steps} active={3} />
-      <div className="portal-status-bar migrated-2f55da8d">
-        <span>
-          {pendingRole === "recipient" ? "Recipient" : "Donor"} portal —{" "}
-          eGovPH sign-in
-        </span>
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm portal-change-btn migrated-6dac5f26"
-          onClick={onBack}
-          aria-label="Change portal"
-        >
-          Change
-        </button>
-      </div>
-
-      {setAuthMode && (
-        <div
-          className="sso-mode-selector"
-          role="group"
-          aria-label="Onboarding mode"
-        >
+      {pendingRole && <Stepper steps={ONBOARDING_SIGNIN_STEPS} active={3} />}
+      {pendingRole && (
+        <div className="portal-status-bar migrated-2f55da8d">
+          <span>
+            {pendingRole === "recipient" ? "Recipient" : "Donor"} portal — eGovPH sign-in
+          </span>
           <button
             type="button"
-            className={`btn btn-xs ${authMode === "signin" ? "btn-primary" : "btn-outline"}`}
-            onClick={() => setAuthMode("signin")}
-            aria-pressed={authMode === "signin"}
+            className="btn btn-ghost btn-sm portal-change-btn migrated-6dac5f26"
+            onClick={onBack}
+            aria-label="Change portal"
           >
-            Sign In (3-step access)
-          </button>
-          <button
-            type="button"
-            className={`btn btn-xs ${authMode === "signup" ? "btn-primary" : "btn-outline"}`}
-            onClick={() => setAuthMode("signup")}
-            aria-pressed={authMode === "signup"}
-          >
-            Sign Up (4-step walkthrough)
+            Change
           </button>
         </div>
       )}
 
-      <h3 className="migrated-1f2c3427">Open eBuhay from eGovPH to sign in</h3>
+      <h3 className="migrated-1f2c3427">
+        {pendingRole ? "Open eBuhay from eGovPH to sign in" : "Citizen sign-in is not available yet"}
+      </h3>
 
       <div role="status" aria-live="polite" className="migrated-78d8b799">
         <p>
-          Official eGov Single Sign-On staging is the only supported Citizen login method.
-          Citizen sign-in must start from eGovPH and secure callback completion awaits the verified provider correlation contract.
+          Official eGov Single Sign-On staging is the only supported Citizen login method. Citizen sign-in must start from eGovPH and secure callback completion awaits the verified provider correlation contract.
         </p>
         {ssoLoading && <p>Checking sign-in status…</p>}
       </div>

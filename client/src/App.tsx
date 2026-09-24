@@ -23,7 +23,6 @@ import { AuthProvider, sessionRole, useAuth } from "./context/AuthContext";
 import { MatchProvider } from "./context/MatchContext";
 import {
   RoleSelectCard,
-  AuthChoiceCard,
 } from "./features/onboarding/OnboardingStepCards";
 import StaffSignIn from "./features/hospital/StaffSignIn";
 import "./styles/global.css";
@@ -137,30 +136,13 @@ function AppContent() {
   const [pendingRole, setPendingRole] = useState<PortalRole | null>(null);
   const [role, setRole] = useState<PortalRole | null>(null);
   const [step, setStep] = useState(STEPS.ROLE_SELECT);
-  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
 
-  const onboardingRole = location.pathname.match(
-    /^\/onboarding\/([^/]+)$/,
-  )?.[1];
   const previousPathRef = useRef(location.pathname);
-  useEffect(() => {
-    if (onboardingRole === "recipient" || onboardingRole === "donor") {
-      setPendingRole(onboardingRole);
-      const searchParams = new URLSearchParams(location.search);
-      const modeParam = searchParams.get("mode");
-      if (modeParam === "signup") {
-        setAuthMode("signup");
-      } else if (modeParam === "signin") {
-        setAuthMode("signin");
-      }
-      setStep(STEPS.SSO_PENDING);
-    }
-  }, [onboardingRole, location.search]);
   useLayoutEffect(() => {
-    if (onboardingRole && step !== STEPS.ROLE_SELECT) {
+    if (location.pathname === "/onboarding") {
       document.getElementById("onboarding-heading")?.focus();
     }
-  }, [onboardingRole, step]);
+  }, [location.pathname, step]);
   useLayoutEffect(() => {
     const previousPath = previousPathRef.current;
     previousPathRef.current = location.pathname;
@@ -175,7 +157,6 @@ function AppContent() {
   };
 
   const [verified, setVerified] = useState(false);
-  const [ssoLoading, setSsoLoading] = useState(false);
   const [tier, setTier] = useState("");
   const [userProfile, setUserProfile] = useState<Record<
     string,
@@ -187,23 +168,12 @@ function AppContent() {
   const accountRole = sessionRole(session);
 
   useEffect(() => {
-    if (
-      restored &&
-      accountRole === "citizen" &&
-      (onboardingRole === "recipient" || onboardingRole === "donor")
-    ) {
-      finishRole(onboardingRole);
-    }
-  }, [restored, accountRole, onboardingRole]);
-
-  useEffect(() => {
     if (restored && accountRole === "citizen" && !role) {
       if (location.pathname === "/recipient") setRole("recipient");
       else if (location.pathname === "/donor") setRole("donor");
     }
   }, [restored, accountRole, role, location.pathname]);
 
-  const [ssoError, setSsoError] = useState("");
 
   // Recipient Health Form States
   const [recipientHealth, setRecipientHealth] = useState<RecipientHealth>({
@@ -273,8 +243,11 @@ function AppContent() {
   // ---------- STEP 1: Role selection ----------
   const choosePortal = (portalId: PortalRole) => {
     setPendingRole(portalId);
-    setStep(STEPS.AUTH_CHOICE);
-    navigate(`/onboarding/${portalId}`);
+    if (accountRole === "citizen") {
+      finishRole(portalId);
+      return;
+    }
+    navigate("/onboarding");
   };
 
 
@@ -322,7 +295,6 @@ function AppContent() {
     setStep(STEPS.ROLE_SELECT);
     setVerified(false);
     setUserProfile(null);
-    setSsoError("");
     navigate("/", { replace: true });
     toast.info("Signed out successfully", { title: "Signed Out" });
   };
@@ -342,12 +314,8 @@ function AppContent() {
         </main>
       );
     }
-    const hasCitizenAccount = accountRole === "citizen";
-    const selectedRole =
-      role || (hasCitizenAccount ? expectedRole : accountRole);
-    if (!selectedRole) return <Navigate to="/" replace />;
-    if (selectedRole !== expectedRole)
-      return <Navigate to={`/${selectedRole}`} replace />;
+    if (accountRole !== "citizen") return <Navigate to="/onboarding" replace />;
+    const selectedRole = expectedRole;
 
     return (
       <>
@@ -397,11 +365,8 @@ function AppContent() {
         />
         <Route path="/" element={<PublicLanding role={role} />} />
         <Route
-          path="/onboarding/:role"
+          path="/onboarding"
           element={
-            onboardingRole !== "recipient" && onboardingRole !== "donor" ? (
-              <Navigate to="/" replace />
-            ) : (
               <>
                 <a href="#main-content" className="skip-link">
                   Skip to main content
@@ -412,7 +377,7 @@ function AppContent() {
                   tier={tier}
                   userProfile={userProfile}
                   onSignOut={handleSignOut}
-                  showStaffEntry={!role && step === STEPS.ROLE_SELECT}
+                  showStaffEntry={false}
                 />
                 <main
                   id="main-content"
@@ -421,7 +386,7 @@ function AppContent() {
                 >
                   <div className="container onboarding-container">
                     <div className="card anim-up onboarding-card">
-                      {step !== STEPS.ROLE_SELECT && (
+                      {accountRole !== "citizen" && (
                           <div className="onboarding-heading">
                             <div className="onboarding-mark">e</div>
                             <h1 id="onboarding-heading" tabIndex={-1}>
@@ -435,54 +400,18 @@ function AppContent() {
                         )}
 
                       {/* STEP 1: ROLE SELECT */}
-                      {step === STEPS.ROLE_SELECT && (
+                      {restored && accountRole === "citizen" && step === STEPS.ROLE_SELECT && (
                         <RoleSelectCard choosePortal={choosePortal} />
                       )}
 
-                      {/* STEP 2: AUTH CHOICE */}
-                      {step === STEPS.AUTH_CHOICE && (
-                        <AuthChoiceCard
-                          pendingRole={pendingRole}
-                          chooseAuthMode={(mode) => {
-                            setAuthMode(mode);
-                            setStep(STEPS.SSO_PENDING);
-                          }}
-                          onBack={() => {
-                            navigate("/");
-                            setPendingRole(null);
-                            setStep(STEPS.ROLE_SELECT);
-                          }}
-                        />
+                      {!restored && (
+                        <div role="status" aria-live="polite">Restoring your secure session…</div>
                       )}
-
-                      {/* STEP 3: SSO EXCHANGE */}
-                      {step === STEPS.SSO_PENDING && (
-                        <Suspense
-                          fallback={
-                            <div role="status" aria-live="polite">
-                              Loading sign-in…
-                            </div>
-                          }
-                        >
-                          <EgovSsoForm
-                            pendingRole={pendingRole}
-                            ssoError={ssoError}
-                            ssoLoading={ssoLoading}
-                            authMode={authMode}
-                            setAuthMode={setAuthMode}
-                            onBack={() => {
-                              if (authMode === "signup") {
-                                setStep(STEPS.AUTH_CHOICE);
-                              } else {
-                                navigate("/");
-                                setPendingRole(null);
-                                setStep(STEPS.ROLE_SELECT);
-                              }
-                            }}
-                          />
+                      {restored && accountRole !== "citizen" && (
+                        <Suspense fallback={<div role="status" aria-live="polite">Loading sign-in guidance…</div>}>
+                          <EgovSsoForm pendingRole={null} onBack={() => navigate("/")} />
                         </Suspense>
                       )}
-
 
                       {/* STEP 5a: RECIPIENT HEALTH DECLARATION (sign-up only) */}
                       {step === STEPS.RECIPIENT_HEALTH && (
@@ -530,9 +459,9 @@ function AppContent() {
                   </div>
                 </main>
               </>
-            )
           }
         />
+        <Route path="/onboarding/:role" element={<Navigate to="/onboarding" replace />} />
       </Routes>
       <FloatingAIChat />
     </>
