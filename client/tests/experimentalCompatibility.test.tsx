@@ -233,6 +233,7 @@ describe("hospital dashboard integration for experimental compatibility suggesti
     expect(buttonLabels.some((l) => /^Approve$/i.test(l))).toBe(false);
     expect(buttonLabels.some((l) => /^Decline$/i.test(l))).toBe(false);
     expect(buttonLabels.some((l) => /Re-evaluate/i.test(l))).toBe(false);
+    expect(buttonLabels).not.toContain("PH Health Laws AI");
   });
 
   it("does not mutate workflow state or call provider services from the experimental panel", async () => {

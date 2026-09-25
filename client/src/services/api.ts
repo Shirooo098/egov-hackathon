@@ -94,10 +94,4 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
-  // eGovAI Laws
-  askLaws: (prompt: string, category = "PH") =>
-    request("/egovai/laws", {
-      method: "POST",
-      body: JSON.stringify({ prompt, category }),
-    }),
 };

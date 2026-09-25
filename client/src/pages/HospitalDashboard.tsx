@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useMatch } from "../context/MatchContext";
-import EGovAIWidget from "../features/hospital/EGovAIWidget";
 import OrganAnalytics from "../features/hospital/OrganAnalytics";
 import { useToast } from "../context/ToastContext";
 import { useAuth } from "../context/AuthContext";
@@ -11,7 +10,6 @@ import {
 } from "../services/domain";
 import {
   ClipIcon,
-  ScaleIcon,
   AnalyticsIcon,
   HospitalIcon,
 } from "../components/ui/Icons";
@@ -137,7 +135,6 @@ export default function HospitalDashboard() {
   }, []);
   const TABS = [
     { id: "matches", label: "Hospital Demo Review", icon: <ClipIcon /> },
-    { id: "laws", label: "PH Health Laws AI", icon: <ScaleIcon /> },
     {
       id: "analytics",
       label: "Demo Workflow Analytics",
@@ -377,13 +374,6 @@ export default function HospitalDashboard() {
                 <ExperimentalCompatibilityPanel />
               </div>
             </>
-          )}
-
-          {/* TAB 2: LAWS AI */}
-          {tab === "laws" && (
-            <div className="dashboard-narrow-800">
-              <EGovAIWidget />
-            </div>
           )}
 
           {/* TAB 3: ANALYTICS */}

@@ -14,6 +14,8 @@ The user-provided `egov-api-documentation.md` supplies success examples for the 
 - `POST /api/v1/egov/integration/ai_assistant/generate` sends a bearer token and JSON `prompt` plus `category: "PH"`; the example response contains text `data` and `session_id`.
 - The document does not establish the authenticated error shapes, quota behavior, provider prompt or response retention, or a validated credential-issued base URL. These remain required before completing this ticket or enabling Ticket 06.
 
+On 2026-09-25 the user confirmed that eGovAI configuration is present in the local environment; a key-name-only check found `EGOV_AI_BASE_URL` and `EGOV_ACCESS_CODE` without reading or disclosing their values. Configuration alone does not supply the missing error, quota, or privacy/retention contract, and no provider call has been authorized or run.
+
 - [ ] The team supplies the official token and inference request and response schemas with every credential and personal value removed.
 - [ ] The contract records credential-issued base URL semantics, HTTP methods, authentication placement, required fields, response states, and documented error behavior.
 - [ ] The team records documented provider privacy/retention behavior for public FAQ prompts without storing or publishing credentials.

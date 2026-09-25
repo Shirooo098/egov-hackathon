@@ -9,7 +9,6 @@ import platformRouter from "./routes/platform.js";
 import matchRouter from "./routes/match.js";
 import scheduleRouter from "./routes/schedule.js";
 import blockchainRouter from "./routes/blockchain.js";
-import egovaiRouter from "./routes/egovai.js";
 import egovRouter from "./routes/egov.js";
 import emessageRouter from "./routes/emessage.js";
 import { getPool } from "./db/pool.js";
@@ -212,7 +211,6 @@ export function createApp(options: AppOptions = {}) {
     app.use("/api/matches", matchRouter);
     app.use("/api/schedule", scheduleRouter);
     app.use("/api/blockchain", blockchainRouter);
-    app.use("/api/egovai", egovaiRouter);
   }
   if (config!.mode === "partner-sandbox") {
     app.use("/api/platform", platformRouter);

@@ -3,9 +3,11 @@ import test from 'node:test';
 import express from 'express';
 import { createServer } from 'node:http';
 import { createApp } from '../src/app.js';
+import { setPool, closePool } from '../src/db/pool.js';
 import egovRouter from '../src/routes/egov.js';
 import * as eGovAI from '../src/services/eGovAIService.js';
 import type { RuntimeConfig } from '../src/runtime/config.js';
+import type { Pool } from 'pg';
 
 const testConfig = {
   mode: 'synthetic',
@@ -157,6 +159,36 @@ test('Issue 05 and 06: eGovAI HTTP endpoint returns 503 capability_deferred with
     assert.ok(typeof chatBody.retry_guidance === 'string');
   } finally {
     await new Promise<void>((resolve) => server.close(() => resolve()));
+  }
+});
+
+test('Issue 06: synthetic runtime has no free-text laws API', async () => {
+  setPool({
+    query: async (statement: string) => {
+      assert.match(statement, /UPDATE sessions s SET last_seen_at/);
+      return { rowCount: 1, rows: [{ id: '00000000-0000-4000-8000-000000000001', role: 'citizen', display_name: 'Test', service_scope: [], hospital_id: null }] };
+    },
+    end: async () => {},
+  } as unknown as Pool);
+  const server = createServer(createApp({ config: testConfig }));
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  try {
+    const csrfResponse = await fetch(`${base}/api/v1/auth/csrf`, { headers: { origin: 'https://client.test' } });
+    const csrf = (await csrfResponse.json() as { data: { csrfToken: string } }).data.csrfToken;
+    const csrfCookie = csrfResponse.headers.get('set-cookie')?.split(';')[0];
+    assert.ok(csrfCookie);
+    for (const path of ['/api/egovai/laws', '/api/v1/egovai/laws']) {
+      const response = await fetch(`${base}${path}`, {
+        method: 'POST',
+        headers: { origin: 'https://client.test', 'content-type': 'application/json', cookie: `ebuhay_session=${'a'.repeat(43)}; ${csrfCookie}`, 'x-csrf-token': csrf },
+        body: JSON.stringify({ prompt: 'Give me clinical advice about my case' }),
+      });
+      assert.equal(response.status, 404, path);
+    }
+  } finally {
+    await new Promise<void>((resolve) => server.close(() => resolve()));
+    await closePool();
   }
 });
 

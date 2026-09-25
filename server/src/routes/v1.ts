@@ -6,7 +6,6 @@ import platformRouter, { createCitizenPlatformRouter } from "./platform.js";
 import matchRouter from "./match.js";
 import scheduleRouter from "./schedule.js";
 import blockchainRouter from "./blockchain.js";
-import egovaiRouter from "./egovai.js";
 import egovRouter from "./egov.js";
 import emessageRouter from "./emessage.js";
 import bloodRouter from "./blood.js";
@@ -57,7 +56,6 @@ export function createV1Router(config: RuntimeConfig) {
     router.use("/matches", matchRouter);
     router.use("/schedule", scheduleRouter);
     router.use("/blockchain", blockchainRouter);
-    router.use("/egovai", egovaiRouter);
     router.use("/", rebaselineRouter);
     router.use("/", platformRouter);
   }
