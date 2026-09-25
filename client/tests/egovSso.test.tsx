@@ -95,6 +95,25 @@ describe('Official eGov SSO boundary and guidance', () => {
     await vi.waitFor(() => expect(body.textContent).toContain('Maria Santos'));
   });
 
+  it('rejects a malformed widget callback without contacting the backend', async () => {
+    vi.spyOn(api.auth, 'egovWidgetConfig').mockResolvedValue({ success: true, data: { partnerCode: 'partner', baseUrl: 'https://staging.e.gov.ph' } });
+    vi.spyOn(api.auth, 'egovPending').mockRejectedValue(Object.assign(new Error('missing'), { status: 404 }));
+    const csrf = vi.spyOn(api.auth, 'csrf');
+    const exchange = vi.spyOn(api.auth, 'egovExchange');
+    let onSuccess: ((value: unknown) => void) | undefined;
+    window.EgovLogin = { render: (options) => { onSuccess = options.onSuccess; } };
+    const body = render(<EgovSsoForm pendingRole={null} onBack={() => {}} />);
+
+    await vi.waitFor(() => expect(document.head.querySelector('script[src="https://widgets.e.gov.ph/v1.0.0/egov-login.min.js"]')).not.toBeNull());
+    await act(async () => { document.head.querySelector('script[src="https://widgets.e.gov.ph/v1.0.0/egov-login.min.js"]')!.dispatchEvent(new Event('load')); });
+    await act(async () => { await onSuccess?.({}); });
+
+    expect(csrf).not.toHaveBeenCalled();
+    expect(exchange).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(body.querySelector('[role="alert"]')?.textContent).toContain('eGovPH did not return a valid sign-in response. Please retry.'));
+    expect(body.textContent).not.toContain('Confirm your verified eGovPH identity');
+  });
+
   it('EgovSsoForm displays callback errors in an accessible alert region', () => {
     const onBack = vi.fn();
     const body = render(
