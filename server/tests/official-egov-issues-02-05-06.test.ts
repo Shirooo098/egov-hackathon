@@ -179,7 +179,7 @@ test('Issue 06: synthetic runtime has no free-text laws API', async () => {
     const csrfCookie = csrfResponse.headers.get('set-cookie')?.split(';')[0];
     assert.ok(csrfCookie);
     for (const path of ['/api/egovai/laws', '/api/v1/egovai/laws']) {
-      const response = await fetch(`${base}${path}`, {
+      const response: Response = await fetch(`${base}${path}`, {
         method: 'POST',
         headers: { origin: 'https://client.test', 'content-type': 'application/json', cookie: `ebuhay_session=${'a'.repeat(43)}; ${csrfCookie}`, 'x-csrf-token': csrf },
         body: JSON.stringify({ prompt: 'Give me clinical advice about my case' }),
