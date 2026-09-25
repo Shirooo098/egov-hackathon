@@ -13,6 +13,7 @@
 - 2026-09-25 [USER] eGovAI base URL and access code are configured in `server/.env`; key-name-only inspection confirmed `EGOV_AI_BASE_URL` and `EGOV_ACCESS_CODE`. The supplied documentation has success examples but no authenticated error/quota or prompt/response retention contract, so Ticket05/06 provider integration stays gated.
 - 2026-09-24 [CODE] Open: eGovPH callback correlation and partner acceptance need authenticated clarification; no provider smoke ran. Ticket 24 baseline remains unrun; isolated test DB is currently inaccessible (EACCES) in this sandbox.
 - 2026-09-25 [CODE] Open: Ticket03 signed official-staging receipt; Ticket04 provider SMS acknowledgement and ambiguous-send reconciliation path; Ticket05/06 authenticated AI contract; Ticket07 deployment smoke; optional Ticket09 privacy/error terms. No live provider calls ran.
+- 2026-09-25 [TOOL] Agy read-only Ticket01/08 audit found no further material local SSO gap in its scoped paths. It does not establish partner callback correlation or credentialed staging behavior; those remain open.
 
 ## Done
 - 2026-09-25 [TOOL] Ticket03 verified-proof reorg sweep now rotates successfully checked rows so a bounded batch reaches later receipts. A two-row regression failed before and passed after the fix; focused 5/5, full server 108/108, and typecheck passed. Actual signed staging receipt remains open.
@@ -43,11 +44,11 @@
 - D17 2026-09-24 [USER] The supplied SSO guide exposes the short-lived exchange code in the eGovPH launch URL or official widget callback. Ticket01/08 now require prompt server redemption and exclusion from eBuhay responses, persistence, and logs, rather than impossible browser non-exposure. A failed local logout preserves the session until server revocation is confirmed.
 
 ## Working set
-- `server/src/worker.ts`
-- `server/tests/egovchain-sweep.test.ts`
-- `.scratch/official-egov-integrations/issues/03-official-egovchain-consent-proof.md`
+- `.scratch/official-egov-integrations/issues/01-official-egov-sso-citizen-login.md`
+- `.scratch/official-egov-integrations/issues/08-official-web-widget-and-post-sso-journey.md`
 
 ## Receipts
+- 2026-09-25 [TOOL] `agy models` and `agy agents` exited 0 with `gemini-3.8-flash-high` and explorer/researcher/worker. Read-only SSO explorer `5d15e5a7-49d9-4dae-a566-da7ae9549e16` exited 0/JSON SUCCESS and cited code/tests for no further material local Ticket01/08 gap. It made no edit or provider call; external partner correlation and staging validation remain unproven.
 - 2026-09-25 [TOOL] Ticket03 sweep fairness regression showed the oldest proof checked twice before the fix and both proofs checked afterward. Focused 5/5, server typecheck, and root-run full server 108/108 passed. Independent reviewer found no material issue; independent tester's full-suite start hit host `uv_os_get_passwd` ENOMEM before tests. PostgreSQL timestamp/concurrent-worker behavior remains unverified. No provider call or push ran.
 - 2026-09-25 [TOOL] Ticket01 UUID guard: the added HTTP regression failed with 500 before the fix; after the fix, focused SSO 10/10 and typecheck passed. Independent reviewer found no material issue. Tester full-suite attempt stopped before tests with host `uv_os_get_passwd` ENOMEM; root reran serial full server suite 108/108. No provider call or push ran.
 - 2026-09-25 [TOOL] Astra explorer `2e60234a-4777-4fd6-9751-c102f1b0b125` exited 0/SUCCESS and found the missing runtime malformed-widget callback test. Initial focused run failed because the new test used unawaited `act`, causing cascading failures; root corrected it. Focused SSO 9/9, full client test command exit0 (Node segment 15/15), production build, and diff check passed. A fresh Agy model check later exited 1: sign-in required and sandbox log/database writes denied. No provider call or push ran.
@@ -56,4 +57,3 @@
 - 2026-09-25 [TOOL] Astra prerequisites restored: `agy models` lists `gemini-3.8-flash-high`, `agy agents` lists explorer/worker/researcher. Read-only explorer `4677d33f-cdeb-41c4-be0b-9cc5801191cb` and bounded worker `fac988e2-a3d1-4bf7-9b00-489528ba0307` exited 0/SUCCESS. Worker reported focused SMS tests 9/9, typecheck, lint; root independently ran focused 9/9 and full server 106/106. Codex tester typecheck passed but focused test startup hit transient `uv_os_get_passwd` ENOMEM. No provider call or push ran.
 - 2026-09-25 [TOOL] Ticket04 audit outcome focused dispatch 2/2, server typecheck exit0, and full server suite 106/106 after the one-statement refinement. Independent reviewer usage-limited. SQL writes no SMS body or phone into `audit_events`; actual PostgreSQL check remains open.
 - 2026-09-25 [TOOL] Codex explorer traced Ticket04 notification dispatch and found no operator SMS reconciliation route or `audit_events` insert. Codex worker added the recent-status UI, root tightened malformed-response and false-delivery handling, independent tester passed focused 2/2 and typecheck, root ran full client 85 Vitest + 15 Node and production build/typecheck; reviewer found no material issue. No provider call ran.
-- 2026-09-25 [TOOL] Codex explorer identified missing active-session HTTP coverage for Ticket01/08. Independent tester found the first harness stopped at 403 due missing configured origin middleware; after adding it, focused 5/5 and server typecheck passed. Root ran full server suite 106/106; independent reviewer found no material issue. Test runner required a temporary Node userInfo shim for this host's `uv_os_get_passwd` ENOMEM; no provider call ran.

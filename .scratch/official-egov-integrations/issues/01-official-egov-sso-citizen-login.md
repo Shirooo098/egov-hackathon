@@ -12,6 +12,8 @@ A local HTTP regression also verifies that an active Citizen session blocks widg
 
 Malformed pending confirmation and cancellation IDs now return `422` before reaching PostgreSQL's UUID parser; the HTTP regression also verifies that a malformed cancellation cannot consume the valid pending identity.
 
+A 2026-09-25 read-only Agy explorer audit found no further material local gap in the scoped in-app exchange, pending confirmation, account-linking, and test paths. This does not establish the partner's callback-correlation behavior or a credentialed staging handoff.
+
 - [ ] A valid official staging in-app handoff exchanges its single-use code server-side and shows a pending verified identity without creating an eBuhay session yet.
 - [x] Explicit Citizen confirmation creates the HttpOnly eBuhay session; cancellation creates none, and an uncorrelated code never silently replaces an existing account session.
 - [x] Citizen accounts are created or linked only by provider plus stable `uniqid`; names, email addresses, and mobile numbers never trigger automatic merging.
