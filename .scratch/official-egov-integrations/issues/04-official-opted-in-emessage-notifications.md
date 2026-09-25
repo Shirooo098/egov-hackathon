@@ -8,7 +8,7 @@
 
 Local regression checks now reject anonymous and cross-origin SMS consent writes and prove that an unavailable provider attempt is recorded without a second automatic send or secret-bearing audit value. The full authenticated workflow and staging acceptance gate remains open.
 
-A 2026-09-25 source audit found no operator route for resolving an ambiguous or interrupted `sending` notification: the current reconciliation routes cover hospital events and appointment outbox items only. Notification and delivery-attempt rows retain metadata, but dispatch writes no `audit_events` record. These acceptance checks remain open; provider status/reconciliation behavior or an approved manual-evidence workflow is needed before a submission can be resolved without risking a duplicate send.
+A 2026-09-25 source audit found no operator route for resolving an ambiguous or interrupted `sending` notification: the current reconciliation routes cover hospital events and appointment outbox items only. Dispatch now writes the notification outcome, delivery attempt, and a metadata-only `audit_events` record in one database statement. Provider status/reconciliation behavior or an approved manual-evidence workflow is still needed before a submission can be resolved without risking a duplicate send. Real-database and credentialed staging checks remain open.
 
 - [x] SMS consent defaults to off, requires explicit opt-in, and can be revoked immediately.
 - [x] A mobile number received through SSO does not itself enroll a Citizen in SMS notifications.

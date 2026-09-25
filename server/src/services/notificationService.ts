@@ -257,20 +257,27 @@ export async function dispatchExternalNotification(
 
     if (result.success) {
       const finalStatus = result.status;
-      await client.query(
-        `UPDATE notifications
-         SET delivery_status=$4, provider_reference=$2,
-             delivered_at=CASE WHEN $4='delivered' THEN now() ELSE NULL END,
-             last_error=NULL, next_retry_at=NULL, attempts=$3, updated_at=now()
-         WHERE id=$1`,
+      const outcome = await client.query(
+        `WITH updated AS (
+           UPDATE notifications
+           SET delivery_status=$4, provider_reference=$2,
+               delivered_at=CASE WHEN $4='delivered' THEN now() ELSE NULL END,
+               last_error=NULL, next_retry_at=NULL, attempts=$3, updated_at=now()
+           WHERE id=$1 AND delivery_status='sending'
+           RETURNING actor_account_id, template
+         ), attempt AS (
+           INSERT INTO notification_delivery_attempts(notification_id, attempt_number, status, provider_reference)
+           SELECT $1, $3, $4, $2 FROM updated
+           RETURNING notification_id
+         )
+         INSERT INTO audit_events(actor_account_id, action, target_reference, source, request_reference, details)
+         SELECT actor_account_id, 'notification.provider_result', $1, 'egov.emessage', $1,
+                jsonb_strip_nulls(jsonb_build_object('feature', 'emessage', 'purpose', template,
+                  'providerStatus', $4, 'providerCorrelationId', $2))
+         FROM updated JOIN attempt ON attempt.notification_id=$1`,
         [notificationId, result.message_id ?? null, nextAttempt, finalStatus],
       );
-      await client.query(
-        `INSERT INTO notification_delivery_attempts(notification_id, attempt_number, status, provider_reference)
-         VALUES ($1, $2, $4, $3)
-         ON CONFLICT (notification_id, attempt_number) DO NOTHING`,
-        [notificationId, nextAttempt, result.message_id ?? null, finalStatus],
-      );
+      if (outcome.rowCount !== 1) throw new Error("notification outcome was not recorded");
       return {
         success: true,
         accepted: finalStatus === "accepted",
@@ -289,18 +296,24 @@ export async function dispatchExternalNotification(
       const status = isUnavailable ? "unavailable" : "failed";
 
       // Never auto-retry failed, unavailable, or ambiguous outcomes.
-      await client.query(
-        `UPDATE notifications
-         SET delivery_status=$4, last_error=$2, next_retry_at=NULL, attempts=$3, updated_at=now()
-         WHERE id=$1`,
+      const outcome = await client.query(
+        `WITH updated AS (
+           UPDATE notifications
+           SET delivery_status=$4, last_error=$2, next_retry_at=NULL, attempts=$3, updated_at=now()
+           WHERE id=$1 AND delivery_status='sending'
+           RETURNING actor_account_id, template
+         ), attempt AS (
+           INSERT INTO notification_delivery_attempts(notification_id, attempt_number, status, error_code)
+           SELECT $1, $3, $4, $2 FROM updated
+           RETURNING notification_id
+         )
+         INSERT INTO audit_events(actor_account_id, action, target_reference, source, request_reference, details)
+         SELECT actor_account_id, 'notification.provider_result', $1, 'egov.emessage', $1,
+                jsonb_build_object('feature', 'emessage', 'purpose', template, 'providerStatus', $4)
+         FROM updated JOIN attempt ON attempt.notification_id=$1`,
         [notificationId, redacted, nextAttempt, status],
       );
-      await client.query(
-        `INSERT INTO notification_delivery_attempts(notification_id, attempt_number, status, error_code)
-         VALUES ($1, $2, $3, $4)
-         ON CONFLICT (notification_id, attempt_number) DO NOTHING`,
-        [notificationId, nextAttempt, status, redacted],
-      );
+      if (outcome.rowCount !== 1) throw new Error("notification outcome was not recorded");
       return { success: false, error: redacted, status, attempts: nextAttempt };
     }
   } finally {
