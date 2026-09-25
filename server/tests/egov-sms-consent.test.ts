@@ -14,11 +14,13 @@ test('Citizen SMS opt-in uses only the current eGovPH mobile and revocation stop
   assert.ok(Object.values(GENERIC_SMS_TEMPLATES).every((body) => body.startsWith('[eBuhay demo]') && body.includes('simulated')));
   const accountId = '00000000-0000-4000-8000-000000000001';
   const acceptedId = '00000000-0000-4000-8000-000000000002';
+  const unavailableId = '00000000-0000-4000-8000-000000000003';
   const mobile = '+639171234567';
   let consent = false;
   let preferredPhone: string | null = null;
   let smsCalls = 0;
-  let accepted = false;
+  let latestId = acceptedId;
+  let latestStatus: string | null = null;
   const query = async (statement: string | { text: string; values: unknown[] }, values: unknown[] = []) => {
     const sql = typeof statement === 'string' ? statement : statement.text;
     if (typeof statement !== 'string') values = statement.values ?? values;
@@ -35,16 +37,17 @@ test('Citizen SMS opt-in uses only the current eGovPH mobile and revocation stop
       return { rowCount: 1, rows: [{ id: values[0], recipient_account_id: accountId, actor_account_id: accountId, template: 'appointment_scheduled', safe_reference: 'case-1', channel: 'external_sms', attempts: 0, sms_consent: consent, phone_number: preferredPhone }] };
     }
     if (sql.startsWith('WITH updated AS')) {
-      accepted = values[3] === 'accepted';
+      latestId = values[0] as string;
+      latestStatus = values[3] as string;
       return { rowCount: 1, rows: [] };
     }
     if (sql.includes('FROM notifications WHERE recipient_account_id=')) {
       assert.equal(values[0], accountId);
-      return { rowCount: accepted ? 1 : 0, rows: accepted ? [{ id: acceptedId, template: 'appointment_scheduled', channel: 'external_sms', deliveryStatus: 'accepted', createdAt: '2026-09-25T00:00:00.000Z' }] : [] };
+      return { rowCount: latestStatus ? 1 : 0, rows: latestStatus ? [{ id: latestId, template: 'appointment_scheduled', channel: 'external_sms', deliveryStatus: latestStatus, createdAt: '2026-09-25T00:00:00.000Z' }] : [] };
     }
     if (sql.includes('FROM notifications WHERE id=')) {
-      assert.deepEqual(values, [acceptedId, accountId]);
-      return { rowCount: 1, rows: [{ id: acceptedId, template: 'appointment_scheduled', channel: 'external_sms', deliveryStatus: 'accepted' }] };
+      assert.deepEqual(values, [latestId, accountId]);
+      return { rowCount: 1, rows: [{ id: latestId, template: 'appointment_scheduled', channel: 'external_sms', deliveryStatus: latestStatus }] };
     }
     if (sql.startsWith('UPDATE notifications SET delivery_status') || sql.startsWith('INSERT INTO notification_delivery_attempts')) return { rowCount: 1, rows: [] };
     throw new Error(`Unexpected database operation: ${sql.slice(0, 60)}`);
@@ -98,6 +101,22 @@ test('Citizen SMS opt-in uses only the current eGovPH mobile and revocation stop
     const detailBody = await detail.json() as { data: { deliveryStatus: string; summary: string } };
     assert.equal(detailBody.data.deliveryStatus, 'accepted');
     assert.match(detailBody.data.summary, /simulated/i);
+    const publicSend = await fetch(url.replace('/preferences', '/dispatch'), { method: 'POST', headers, body: '{}' });
+    assert.equal(publicSend.status, 404);
+    setMockSmsHandler(async () => { smsCalls++; return { success: false, status: 'unavailable', error: 'provider-secret-token' }; });
+    const failed = await dispatchExternalNotification(unavailableId, pool);
+    assert.equal(failed.status, 'unavailable');
+    assert.equal(smsCalls, 2);
+    const failedHistory = await fetch(url.replace('/preferences', '?format=page'), { headers });
+    assert.equal(failedHistory.status, 200);
+    const failedHistoryBody = await failedHistory.json() as { data: { items: Array<{ deliveryStatus: string }> } };
+    assert.equal(failedHistoryBody.data.items[0]?.deliveryStatus, 'unavailable');
+    assert.doesNotMatch(JSON.stringify(failedHistoryBody), /provider-secret-token|deliveredAt/i);
+    const failedDetail = await fetch(url.replace('/preferences', `/${unavailableId}`), { headers });
+    assert.equal(failedDetail.status, 200);
+    const failedDetailBody = await failedDetail.json() as { data: { deliveryStatus: string } };
+    assert.equal(failedDetailBody.data.deliveryStatus, 'unavailable');
+    assert.doesNotMatch(JSON.stringify(failedDetailBody), /provider-secret-token|deliveredAt/i);
   } finally {
     await new Promise<void>((resolve) => server.close(() => resolve()));
     resetMockSmsHandler();
