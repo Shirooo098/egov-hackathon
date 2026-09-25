@@ -124,6 +124,8 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
     requireHttpsBase('EGOVCHAIN_RPC_BASE_URL', base);
     try { new Wallet(signer); } catch { throw new RuntimeConfigError('EGOVCHAIN_SIGNER_PRIVATE_KEY must be a valid signing key'); }
   }
+  if (env.DB_POOL_MAX !== undefined && !env.DB_POOL_MAX.trim()) throw new RuntimeConfigError('DB_POOL_MAX must be a positive integer');
+  positiveInt('DB_POOL_MAX', env.DB_POOL_MAX, 10);
   return {
     mode: rawMode as RuntimeMode,
     databaseUrl,
@@ -160,10 +162,7 @@ export function isMainModule(metaUrl: string, modulePath: string): boolean {
 
 /** Keep provider/database credentials out of process logs and HTTP responses. */
 export function redactedErrorMessage(error: unknown): string {
-  const message = error instanceof Error ? error.message : String(error);
-  return message
-    .replace(/(postgres(?:ql)?:\/\/)[^\s"']+/gi, '$1[redacted]')
-    .replace(/([?&](?:password|pass|secret|token|key)=)[^&\s]+/gi, '$1[redacted]');
+  return error instanceof RuntimeConfigError ? error.message : 'Runtime startup failed';
 }
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';

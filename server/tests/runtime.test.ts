@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { isMainModule, loadRuntimeConfig, isServiceAllowed, type RuntimeConfig } from '../src/runtime/config.js';
+import { isMainModule, loadRuntimeConfig, isServiceAllowed, redactedErrorMessage, RuntimeConfigError, type RuntimeConfig } from '../src/runtime/config.js';
 import { createApp } from '../src/app.js';
 import { withDeadline } from '../src/runtime/shutdown.js';
 import { startWorker } from '../src/worker.js';
@@ -28,6 +28,18 @@ test('runtime configuration requires a supported mode and database URL', () => {
   assert.throws(() => loadRuntimeConfig({ ...env, EBUHAY_MODE: 'production', APPROVED_SERVICE: 'blood', ALLOWED_ORIGINS: 'https://example.test/path' }), /ALLOWED_ORIGINS/);
   assert.throws(() => loadRuntimeConfig({ ...env, EBUHAY_MODE: 'production', ALLOWED_ORIGINS: 'https://example.test' }), /APPROVED_SERVICE/);
   assert.equal(loadRuntimeConfig({ ...env, EBUHAY_MODE: 'production', APPROVED_SERVICE: 'blood', ALLOWED_ORIGINS: 'https://example.test' }).approvedService, 'blood');
+});
+
+test('process error messages exclude arbitrary provider and database secrets', () => {
+  assert.equal(redactedErrorMessage(new RuntimeConfigError('EGOV_BASE_URL must be an HTTPS URL')), 'EGOV_BASE_URL must be an HTTPS URL');
+  for (const value of ['invalid', '', ' ']) {
+    let invalidPoolError: unknown;
+    try { loadRuntimeConfig({ ...env, DB_POOL_MAX: value }); } catch (error) { invalidPoolError = error; }
+    assert.equal(redactedErrorMessage(invalidPoolError), 'DB_POOL_MAX must be a positive integer');
+  }
+  const canary = 'Bearer secret-token exchange_code=secret-code postgres://user:secret@db.test';
+  assert.equal(redactedErrorMessage(new Error(canary)), 'Runtime startup failed');
+  assert.equal(redactedErrorMessage(canary), 'Runtime startup failed');
 });
 
 test('enabled official SMS and Chain providers require complete HTTPS startup configuration', () => {
