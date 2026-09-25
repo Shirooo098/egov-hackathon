@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { redactErrorMessage, sendSMS } from '../src/services/eMessageService.js';
+import {
+  redactErrorMessage,
+  resetMockSmsHandler,
+  sendSMS,
+  setMockSmsHandler,
+} from '../src/services/eMessageService.js';
 
 const withProviderConfig = async (run: () => Promise<void>) => {
   const previousUrl = process.env.EMESSAGE_BASE_URL;
@@ -135,4 +140,44 @@ test('redacts short lowercase and hyphenated secret-like provider exception', as
     assert.equal(result.error.includes(secretError), false);
     assert.equal(JSON.stringify(result).includes(secretError), false);
   });
+});
+
+test('rejects unsupported mock delivered and sent statuses as delivery_unconfirmed unavailable regardless of message_id', async () => {
+  try {
+    for (const status of ['delivered', 'sent'] as const) {
+      setMockSmsHandler(async () => ({
+        success: true,
+        message_id: `msg-${status}`,
+        status,
+      }));
+
+      const result = await sendSMS('+639171234567', 'Test SMS');
+      assert.deepEqual(result, {
+        success: false,
+        error: 'delivery_unconfirmed',
+        status: 'unavailable',
+      });
+    }
+  } finally {
+    resetMockSmsHandler();
+  }
+});
+test('preserves documented mock accepted status as successful accepted', async () => {
+  try {
+    setMockSmsHandler(async () => ({
+      success: true,
+      message_id: 'msg-accepted',
+      status: 'accepted',
+    }));
+
+    const result = await sendSMS('+639171234567', 'Test SMS');
+    assert.deepEqual(result, {
+      success: true,
+      accepted: true,
+      message_id: 'msg-accepted',
+      status: 'accepted',
+    });
+  } finally {
+    resetMockSmsHandler();
+  }
 });

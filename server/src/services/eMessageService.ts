@@ -101,13 +101,11 @@ export async function sendSMS(
     const mockRes = await mockSmsHandler(number, message);
     if (mockRes.success) {
       if (mockRes.status === 'accepted') return { ...mockRes, accepted: true };
-      if (!mockRes.message_id || (mockRes.status !== 'sent' && mockRes.status !== 'delivered')) {
-        return {
-          success: false,
-          error: 'delivery_unconfirmed',
-          status: 'unavailable',
-        };
-      }
+      return {
+        success: false,
+        error: 'delivery_unconfirmed',
+        status: 'unavailable',
+      };
     }
     return mockRes;
   }
