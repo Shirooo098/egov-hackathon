@@ -17,6 +17,7 @@ interface FakeOutboxRow {
   attempts: number;
   nonce: number | null;
   raw_transaction: string | null;
+  checkedOrder?: number;
 }
 
 interface FakeConsentRow {
@@ -34,6 +35,7 @@ const testBlockHash = '0xabcdef0123456789abcdef0123456789abcdef0123456789abcdef0
 const testBlockNumber = '0x100';
 
 function createFakePool(outboxRows: FakeOutboxRow[], consentRows: FakeConsentRow[]) {
+  let nextCheckedOrder = Math.max(0, ...outboxRows.map((row) => row.checkedOrder ?? 0));
   const queryHandler = async (statement: string | { text: string }, values: unknown[] = []) => {
     const sql = typeof statement === 'string' ? statement : statement.text;
     const params = values ?? [];
@@ -50,7 +52,9 @@ function createFakePool(outboxRows: FakeOutboxRow[], consentRows: FakeConsentRow
     }
 
     if (sql.includes("FROM consent_anchor_outbox WHERE status='verified'")) {
-      const verified = outboxRows.filter((r) => r.status === 'verified');
+      const verified = outboxRows.filter((r) => r.status === 'verified')
+        .sort((a, b) => (a.checkedOrder ?? 0) - (b.checkedOrder ?? 0))
+        .slice(0, Number(params[0]));
       return {
         rowCount: verified.length,
         rows: verified.map((r) => ({
@@ -61,6 +65,12 @@ function createFakePool(outboxRows: FakeOutboxRow[], consentRows: FakeConsentRow
           tx_hash: r.tx_hash,
         })),
       };
+    }
+
+    if (sql.includes("UPDATE consent_anchor_outbox SET updated_at=now() WHERE id=$1 AND status='verified'")) {
+      const row = outboxRows.find((r) => r.id === params[0] && r.status === 'verified');
+      if (row) row.checkedOrder = ++nextCheckedOrder;
+      return { rowCount: row ? 1 : 0, rows: [] };
     }
 
     if (sql.includes("UPDATE consent_anchor_outbox SET status='failed',last_error_code='receipt_reorged'")) {
@@ -225,6 +235,7 @@ test('verified-consent reorg sweep and initial reverted receipt handling', async
       attempts: 1,
       nonce: 1,
       raw_transaction: null,
+      checkedOrder: 0,
     };
     const consentRow: FakeConsentRow = {
       id: 'consent-sweep-0x1',
@@ -235,11 +246,16 @@ test('verified-consent reorg sweep and initial reverted receipt handling', async
       anchor_block_number: 256,
     };
 
-    setPool(createFakePool([outboxRow], [consentRow]));
-    setupMockFetch([outboxRow], () => '0x1');
+    const secondOutboxRow = { ...outboxRow, id: 'outbox-sweep-next', episode_consent_id: 'consent-sweep-next', commitment: '5'.repeat(64), tx_hash: '0x' + 'c'.repeat(64), checkedOrder: 1 };
+    const secondConsentRow = { ...consentRow, id: 'consent-sweep-next', anchor_tx_hash: secondOutboxRow.tx_hash };
+    const checked: string[] = [];
+    setPool(createFakePool([outboxRow, secondOutboxRow], [consentRow, secondConsentRow]));
+    setupMockFetch([outboxRow, secondOutboxRow], (txHash) => { checked.push(txHash); return '0x1'; });
 
-    const result = await runConsentAnchorBatch({ batchSize: 10 });
+    const result = await runConsentAnchorBatch({ batchSize: 1 });
+    await runConsentAnchorBatch({ batchSize: 1 });
     assert.equal(result.reorged, 0, 'No reorg should be recorded for 0x1 receipt');
+    assert.deepEqual(checked, [outboxRow.tx_hash, secondOutboxRow.tx_hash], 'Successive batches must check both verified proofs');
     assert.equal(outboxRow.status, 'verified', 'Outbox status must remain verified');
     assert.equal(outboxRow.last_error_code, null);
     assert.equal(consentRow.anchor_status, 'verified', 'Consent anchor status must remain verified');

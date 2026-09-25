@@ -104,7 +104,10 @@ export async function runConsentAnchorBatch(options: { batchSize?: number; worke
   const sweep = await pool.query(`SELECT id,episode_consent_id,pair_consent_id,commitment,tx_hash FROM consent_anchor_outbox WHERE status='verified' ORDER BY updated_at ASC LIMIT $1`, [options.batchSize ?? 25]);
   for (const row of sweep.rows) {
     const proof = await verifyReceipt(row.tx_hash, row.commitment);
-    if (proof?.status === '0x1') continue;
+    if (proof?.status === '0x1') {
+      await pool.query("UPDATE consent_anchor_outbox SET updated_at=now() WHERE id=$1 AND status='verified'", [row.id]);
+      continue;
+    }
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
