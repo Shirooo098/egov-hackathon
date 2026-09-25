@@ -6,7 +6,7 @@ import { requireSession, requireRole } from '../middleware/auth.js';
 import { requireSameOrigin } from '../middleware/origin.js';
 import type { Account } from '../auth/service.js';
 import type { RuntimeMode } from '../runtime/config.js';
-import { maskPhoneNumber } from '../services/eMessageService.js';
+import { maskPhoneNumber, GENERIC_SMS_TEMPLATES } from '../services/eMessageService.js';
 import { GENERIC_NOTIFICATION_TEMPLATES } from '../services/notificationService.js';
 import { requireWorkflowActive } from './operations.js';
 import { consentCommitment, egovchainEnabled, publicConsentEvent } from '../services/EgovChainService.js';
@@ -541,7 +541,10 @@ router.get('/notifications', async (req, res, next) => {
     const rawItems = hasMore ? result.rows.slice(0, limit) : result.rows;
     const items = rawItems.map((row: any) => ({
       ...row,
-      summary: GENERIC_NOTIFICATION_TEMPLATES[row.template] ?? 'A coordination update is available for your case.',
+      summary:
+        (row.channel === 'external_sms' || row.channel === 'emessage') && GENERIC_SMS_TEMPLATES[row.template]
+          ? GENERIC_SMS_TEMPLATES[row.template]
+          : (GENERIC_NOTIFICATION_TEMPLATES[row.template] ?? 'A coordination update is available for your case.'),
     }));
     const last = items[items.length - 1];
     const nextCursor = (hasMore && last) ? `${new Date(last.createdAt).toISOString()}_${last.id}` : null;
@@ -599,7 +602,10 @@ router.get('/notifications/:id', async (req, res, next) => {
     const row = result.rows[0] as any;
     return json(res, {
       ...row,
-      summary: GENERIC_NOTIFICATION_TEMPLATES[row.template] ?? 'A coordination update is available for your case.',
+      summary:
+        (row.channel === 'external_sms' || row.channel === 'emessage') && GENERIC_SMS_TEMPLATES[row.template]
+          ? GENERIC_SMS_TEMPLATES[row.template]
+          : (GENERIC_NOTIFICATION_TEMPLATES[row.template] ?? 'A coordination update is available for your case.'),
     });
   } catch (e) { return next(e); }
 });
