@@ -117,6 +117,7 @@ test('HTTP exchange shows identity before confirmation and consumes code and pen
     }
     if (sql.startsWith('SELECT id,display_name')) return { rowCount: 1, rows: [{ id: pendingId, displayName: 'Maria Santos' }] };
     if (sql.startsWith('SELECT id,exchange_transaction_id')) {
+      if (values[1] !== pendingId) throw new Error('Invalid pending UUID reached PostgreSQL');
       const valid = !consumed && pendingHash === (values[0] as Buffer).toString('hex') && values[1] === pendingId;
       return { rowCount: valid ? 1 : 0, rows: valid ? [{ id: pendingId, exchange_transaction_id: 'transaction-1', uniqid: 'citizen-1', display_name: 'Maria Santos', mobile: pendingMobile }] : [] };
     }
@@ -150,6 +151,12 @@ test('HTTP exchange shows identity before confirmation and consumes code and pen
     const cookie = exchange.headers.get('set-cookie')!.split(';')[0];
     const pending = await fetch(`${base}/pending`, { headers: { cookie } });
     assert.equal((await pending.json() as { data: { pendingId: string } }).data.pendingId, body.data.pendingId);
+    const malformedId = '-'.repeat(36);
+    const malformedConfirm = await fetch(`${base}/confirm`, { method: 'POST', headers: { ...headers, cookie }, body: JSON.stringify({ pendingId: malformedId }) });
+    assert.equal(malformedConfirm.status, 422);
+    const malformedCancel = await fetch(`${base}/cancel`, { method: 'POST', headers: { ...headers, cookie }, body: JSON.stringify({ pendingId: malformedId }) });
+    assert.equal(malformedCancel.status, 422);
+    assert.equal(consumed, false);
     const confirmed = await fetch(`${base}/confirm`, { method: 'POST', headers: { ...headers, cookie }, body: JSON.stringify({ pendingId: body.data.pendingId }) });
     assert.equal(confirmed.status, 200);
     assert.equal(identityMobile, '+639171234567');

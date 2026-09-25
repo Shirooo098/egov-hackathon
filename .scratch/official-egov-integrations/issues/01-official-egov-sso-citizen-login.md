@@ -10,6 +10,8 @@ Local HTTP fixtures verify that malformed provider profiles and provider outages
 
 A local HTTP regression also verifies that an active Citizen session blocks widget exchange, in-app callback, and pending confirmation before provider use or identity writes. This does not replace the authenticated partner or staging checks.
 
+Malformed pending confirmation and cancellation IDs now return `422` before reaching PostgreSQL's UUID parser; the HTTP regression also verifies that a malformed cancellation cannot consume the valid pending identity.
+
 - [ ] A valid official staging in-app handoff exchanges its single-use code server-side and shows a pending verified identity without creating an eBuhay session yet.
 - [x] Explicit Citizen confirmation creates the HttpOnly eBuhay session; cancellation creates none, and an uncorrelated code never silently replaces an existing account session.
 - [x] Citizen accounts are created or linked only by provider plus stable `uniqid`; names, email addresses, and mobile numbers never trigger automatic merging.

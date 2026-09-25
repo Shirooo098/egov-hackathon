@@ -6,6 +6,7 @@ import { cookieOptions, clearCookie } from './cookie.js';
 export const PENDING_COOKIE = 'ebuhay_egov_pending';
 const hash = (value: string) => crypto.createHash('sha256').update(value).digest();
 const token = () => crypto.randomBytes(32).toString('base64url');
+const validPendingId = (value: string | undefined) => Boolean(value && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value));
 const pendingCookie = (value: string) => `${PENDING_COOKIE}=${value}; ${cookieOptions.replace(/Max-Age=\d+/, 'Max-Age=600')}`;
 const clearPendingCookie = `${PENDING_COOKIE}=; ${clearCookie}`;
 
@@ -32,7 +33,7 @@ export async function pendingIdentity(cookie: string | undefined) {
 
 export async function confirmPending(cookie: string | undefined, pendingId: string | undefined, activeSession: string | undefined) {
   if (!cookie) return { error: 'pending_missing' as const };
-  if (!pendingId || !/^[0-9a-f-]{36}$/i.test(pendingId)) return { error: 'pending_missing' as const };
+  if (!validPendingId(pendingId)) return { error: 'pending_missing' as const };
   if (activeSession && await currentSession(activeSession)) return { error: 'session_exists' as const };
   const client = await getPool().connect();
   try {
@@ -66,7 +67,7 @@ export async function confirmPending(cookie: string | undefined, pendingId: stri
 }
 
 export async function cancelPending(cookie: string | undefined, pendingId: string | undefined) {
-  if (!cookie || !pendingId) return false;
+  if (!cookie || !validPendingId(pendingId)) return false;
   const result = await getPool().query(`UPDATE egov_sso_pending SET consumed_at=now() WHERE cookie_hash=$1 AND id=$2 AND consumed_at IS NULL RETURNING id`, [hash(cookie), pendingId]);
   return Boolean(result.rowCount);
 }
