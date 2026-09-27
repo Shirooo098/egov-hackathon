@@ -4,6 +4,8 @@
 
 **Blocked by:** 01 — Official eGov SSO-only Citizen login.
 
+**Signer clarification — 2026-09-27:** The supplied provider documentation issues only the RPC base URL and token, not a wallet private key. `EGOVCHAIN_SIGNER_PRIVATE_KEY` is this implementation's separate project-controlled Ethereum wallet signing configuration. Generate or provision a dedicated project staging wallet locally and store its key server-side; never substitute the RPC token or request a provider-issued signing key. The documentation does not establish wallet registration or allowlisting requirements; confirm them if the provider rejects the project's signer.
+
 **Status:** blocked-external — the obsolete simulated Besu service and automatic demo anchor trigger are removed; consent reads and Citizen UI distinguish pending, unavailable, and verified evidence. Local HTTP tests cover all three Citizen proof states and recorded transaction/block fields without exposing outbox errors or raw consent evidence. The worker retains a signed transaction through delayed mining without rebroadcasting a transaction visible to the node, rejects invalid receipts, and the verified-proof sweep rejects reverted receipts. An actual signed staging write and validated receipt remain unproven.
 
 The verified-proof sweep now advances the check order after a valid receipt. A local two-batch regression shows that proofs beyond the batch limit are reached instead of repeatedly checking the oldest proof.
