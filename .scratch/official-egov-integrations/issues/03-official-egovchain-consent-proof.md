@@ -8,6 +8,8 @@
 
 The verified-proof sweep now advances the check order after a valid receipt. A local two-batch regression shows that proofs beyond the batch limit are reached instead of repeatedly checking the oldest proof.
 
+On 2026-09-27, an injected-RPC reproduction showed that the shared receipt verifier accepted a transaction missing `value` by defaulting it to zero. The verifier now requires an explicit nonblank string that parses to zero; missing, non-string, malformed, and nonzero values return no proof or the existing strict invalid-receipt error. Valid zero-value transactions and reverted receipt evidence remain supported. Independent focused receipt, sweep, pending, and consent tests passed 24/24, typecheck and diff check passed, and independent review found no material issue. Tests used intercepted synthetic RPC responses and a temporary host `os.userInfo` startup shim, removed afterward. These checks do not establish an official staging receipt or real-PostgreSQL sweep concurrency behavior.
+
 - [ ] Consent anchoring uses the credential-issued official staging endpoint, chain ID `13371`, the project-controlled signer, and zero-gas validation.
 - [ ] On-chain payloads contain commitments or hashes and non-identifying metadata only; they exclude names, contact information, medical information, case content, and raw consent documents.
 - [ ] A real signed transaction anchors only synthetic consent data on the actual official staging chain; no simulated-success runtime is used.

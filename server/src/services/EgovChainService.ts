@@ -86,6 +86,14 @@ export async function verifyReceipt(txHash: string, commitment: string, strict =
     rpc('eth_getBlockByNumber', [r.blockNumber, false]) as Promise<{ hash?: string; transactions?: string[] } | null>,
   ]);
   const address = signerAddress().toLowerCase();
-  if (!tx || !block || block.hash?.toLowerCase() !== r.blockHash.toLowerCase() || !block.transactions?.some((hash) => hash.toLowerCase() === txHash.toLowerCase()) || tx.hash?.toLowerCase() !== txHash.toLowerCase() || tx.from?.toLowerCase() !== address || tx.to?.toLowerCase() !== address || BigInt(tx.value ?? '0x0') !== 0n || tx.input?.toLowerCase() !== `0x${commitment}`.toLowerCase() || Number(BigInt(tx.chainId ?? '0x0')) !== EGOVCHAIN_CHAIN_ID) return invalid();
+  if (!tx || !block || block.hash?.toLowerCase() !== r.blockHash.toLowerCase() || !block.transactions?.some((hash) => hash.toLowerCase() === txHash.toLowerCase()) || tx.hash?.toLowerCase() !== txHash.toLowerCase() || tx.from?.toLowerCase() !== address || tx.to?.toLowerCase() !== address || tx.input?.toLowerCase() !== `0x${commitment}`.toLowerCase() || Number(BigInt(tx.chainId ?? '0x0')) !== EGOVCHAIN_CHAIN_ID) return invalid();
+  let value: bigint;
+  try {
+    if (typeof tx.value !== 'string' || !tx.value.trim()) return invalid();
+    value = BigInt(tx.value);
+  } catch {
+    return invalid();
+  }
+  if (value !== 0n) return invalid();
   return r;
 }
