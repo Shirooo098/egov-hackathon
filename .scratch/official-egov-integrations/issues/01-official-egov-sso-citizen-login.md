@@ -4,6 +4,8 @@
 
 **Blocked by:** Authenticated partner callback-correlation/acceptance evidence and approved credentialed staging validation. Local implementation and fixture checks are already recorded below.
 
+**Provider evidence — 2026-09-27:** The existing backend `verifyEgovExchange` successfully redeemed a user-supplied fresh test code and retrieved its profile, both HTTP 200. The verifier accepted required identity/name fields and a valid mobile. [Redacted evidence](../evidence/sso-provider-smoke-2026-09-27.json) records this limited provider check at source `863e4d5`; no account, pending identity or app session was created. It does not establish deployed callback/widget/confirmation behavior or partner correlation. The redeemed code and profile values are not retained.
+
 **Status:** blocked-external — official in-app handoff, pending confirmation, `uniqid`-only session creation, replay protection, and HTTP failure/cancellation checks are implemented; authenticated callback-correlation evidence and credentialed staging validation remain open
 
 Local HTTP fixtures verify that malformed provider profiles and provider outages create no pending identity or session and disclose no code, token, or secret in the response. An unmatched callback URL also cannot echo its exchange code through the generic 404 response or request log. Cancellation consumes the pending identity and blocks later confirmation. These fixtures do not prove the partner's callback-correlation behavior or a real staging handoff.

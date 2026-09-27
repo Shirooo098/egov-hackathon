@@ -17,7 +17,7 @@ implemented work or passing local checks; it means the full acceptance gate is o
 | [09 — Optional Face Liveness](09-optional-standalone-face-liveness.md) | **Blocked — optional** | Depends on 01 and provider error/expiry/binding/retention terms, privacy approval and safety review; then implement and validate the optional hosted flow. Does not block 07. |
 
 Individual ticket acceptance checklists remain authoritative. No unchecked item is
-declared complete by this summary. Provider calls and deployment have not run.
+declared complete by this summary. A limited [local-backend SSO provider check](../evidence/sso-provider-smoke-2026-09-27.json) passed token/profile operations; its mobile did not match the approved SMS destination. Complete deployed staging smoke checks have not run.
 Follow the [staging smoke runbook](../../../docs/OFFICIAL_EGOV_STAGING_SMOKE.md)
 when its approved inputs and contracts are available; keep credentials in the
 server environment, not in tickets or evidence.

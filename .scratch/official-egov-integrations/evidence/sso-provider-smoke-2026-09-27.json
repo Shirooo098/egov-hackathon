@@ -1,0 +1,28 @@
+{
+  "recordedAtUtc": "2026-09-27T14:19:19Z",
+  "sourceRevision": "863e4d5e1875609023ca15a73e7c0f27482ffb05",
+  "authorization": "User supplied a fresh SSO test exchange code for verification in this thread.",
+  "scope": "Existing local backend verifyEgovExchange against the configured official provider; not a deployed application or browser journey.",
+  "result": "passed",
+  "observations": [
+    { "operation": "token_exchange", "httpStatus": 200 },
+    { "operation": "profile_retrieval", "httpStatus": 200 }
+  ],
+  "profileContractAccepted": true,
+  "stableIdPresent": true,
+  "displayNamePresent": true,
+  "validMobilePresent": true,
+  "approvedSmsDestinationMatches": false,
+  "exchangeCodeRedeemed": true,
+  "appAccountCreated": false,
+  "appSessionCreated": false,
+  "smsSent": false,
+  "databaseOperations": false,
+  "temporaryFilesRemoved": true,
+  "limitations": [
+    "Does not prove deployed in-app or widget callback, confirmation, session creation or account linking.",
+    "Does not resolve partner callback-correlation or acceptance gates.",
+    "Returned SSO mobile differs from the approved personal SMS destination; no routing override was performed."
+  ],
+  "privacy": "No exchange code, token, credential, provider URL, identity value, name or mobile retained. Temporary startup userInfo preload removed."
+}
