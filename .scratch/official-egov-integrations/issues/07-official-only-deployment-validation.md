@@ -2,7 +2,7 @@
 
 **What to build:** Validate that the Vercel staging deployment enables only correctly configured official eGov integrations, reports real provider state truthfully, and preserves synthetic healthcare-data boundaries.
 
-**Blocked by:** 01 — Official in-app SSO; 02 — Remove eVerify and keep Face Liveness fail-closed; 03 — Official eGovChain consent proof; 04 — Official opted-in eMessage notifications; 06 — Official eGovAI public guidance (which requires 05); 08 — Official web-widget and post-SSO journey. Ticket 09 is optional and does not block this core gate.
+**Blocked by:** 01 — Official in-app SSO; 02 — Remove eVerify and keep Face Liveness fail-closed; 03 — Documented read-only eGovChain staging integration; 04 — Official opted-in eMessage notifications; 06 — Official eGovAI public guidance (which requires 05); 08 — Official web-widget and post-SSO journey. Ticket 09 is optional and does not block this core gate.
 
 **Status:** blocked-external — startup now rejects incomplete or malformed enabled SSO, eMessage, and eGovChain configuration; shared 404 and error logging exclude untrusted URL and exception content. Process startup and worker failures preserve static configuration diagnostics while suppressing arbitrary exception text, including provider tokens and exchange codes. Credentialed staging and the listed ticket gates remain open.
 
@@ -21,9 +21,11 @@ The local startup check verifies HTTPS URL shape and credential presence, not wh
 - [ ] Every enabled integration validates its credential-issued HTTPS base URL and required secrets during deployment startup.
 - [ ] Missing or malformed credentials prevent an enabled feature from starting; runtime provider outages produce clear unavailable responses.
 - [ ] Audit logs include only feature, internal request, provider status, time, actor, and provider correlation metadata and exclude credentials, tokens, exchange codes, message bodies, and unnecessary personal data.
-- [ ] UI labels verified SSO identity, accepted SMS request, and anchored consent only with their respective official evidence; SMS acceptance is never called delivery.
-- [ ] Credentialed staging smoke checks cover both official SSO entry paths, confirmation, an actual eGovChain receipt, an opted-in eMessage `201 Created` acknowledgement, and a curated public eGovAI FAQ.
+- [ ] UI labels verified SSO identity and accepted SMS requests only with their respective official evidence; read-only Chain connectivity is never consent proof; SMS acceptance is never called delivery.
+- [ ] Credentialed staging smoke checks cover both official SSO entry paths, confirmation, documented read-only eGovChain network results, an opted-in eMessage `201 Created` acknowledgement, and a curated public eGovAI FAQ.
 - [ ] No eVerify feature or provider call is present; Face Liveness remains unavailable unless separately enabled through Ticket 09.
 - [ ] Smoke checks use approved staging identities and synthetic healthcare records, never print secrets, and remain separate from ordinary CI.
 - [x] Server and client typechecks, targeted provider-boundary tests, and the production client build pass locally; deployed-revision and credentialed smoke evidence remain open.
 - [x] Deployment documentation states that production or controlled-live use is not authorized.
+
+2026-09-27 scope update: ADR0016 replaces the signed-anchor deployment gate with read-only RPC validation. Startup must not require a Chain signer, workers must not submit consent transactions, and UI must not claim new anchors. Runtime alignment remains open. The standalone SMS test returned HTTP201 and the recipient confirmed receipt; the full opted-in Citizen workflow remains unverified.

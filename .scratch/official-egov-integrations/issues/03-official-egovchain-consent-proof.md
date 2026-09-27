@@ -1,21 +1,28 @@
-# 03 — Official eGovChain consent proof
+# 03 — Documented read-only eGovChain staging integration
 
-**What to build:** Let an authenticated Citizen anchor a privacy-preserving consent commitment through official eGovChain staging and see truthful pending, confirmed, or unavailable status.
+**What to build:** Validate official staging JSON-RPC with the credential-issued base URL/token: read chain ID, gas price and a block. Report connection results without claiming consent was anchored.
 
-**Blocked by:** 01 — Official eGov SSO-only Citizen login.
+**Status:** open — user revised scope on 2026-09-27; runtime alignment and revision-specific read-only evidence remain. Non-identifying network metadata does not depend on Citizen SSO; existing application authorization stays intact.
 
-**Signer clarification — 2026-09-27:** The supplied provider documentation issues only the RPC base URL and token, not a wallet private key. `EGOVCHAIN_SIGNER_PRIVATE_KEY` is this implementation's separate project-controlled Ethereum wallet signing configuration. Generate or provision a dedicated project staging wallet locally and store its key server-side; never substitute the RPC token or request a provider-issued signing key. The documentation does not establish wallet registration or allowlisting requirements; confirm them if the provider rejects the project's signer.
+## Scope and documentation basis
 
-**Status:** blocked-external — the obsolete simulated Besu service and automatic demo anchor trigger are removed; consent reads and Citizen UI distinguish pending, unavailable, and verified evidence. Local HTTP tests cover all three Citizen proof states and recorded transaction/block fields without exposing outbox errors or raw consent evidence. The worker retains a signed transaction through delayed mining without rebroadcasting a transaction visible to the node, rejects invalid receipts, and the verified-proof sweep rejects reverted receipts. An actual signed staging write and validated receipt remain unproven.
+The supplied `egov-api-documentation.md` issues `base_url` and `token`, documents POST JSON-RPC at `base_url/token`, chain `13371` (`0x343b`), zero gas price (`0x0`), `eth_blockNumber` and `eth_getBlockByNumber`. It does not issue a signer private key.
 
-The verified-proof sweep now advances the check order after a valid receipt. A local two-batch regression shows that proofs beyond the batch limit are reached instead of repeatedly checking the oldest proof.
+The user rejected a project-generated signer and approved read-only integration. [ADR0016](../../../docs/adr/0016-limit-egovchain-to-documented-read-only-staging.md) supersedes signed consent anchoring and wallet provisioning. This is a scope reduction, not a claim that the network prohibits signed transactions.
 
-On 2026-09-27, an injected-RPC reproduction showed that the shared receipt verifier accepted a transaction missing `value` by defaulting it to zero. The verifier now requires an explicit nonblank string that parses to zero; missing, non-string, malformed, and nonzero values return no proof or the existing strict invalid-receipt error. Valid zero-value transactions and reverted receipt evidence remain supported. Independent focused receipt, sweep, pending, and consent tests passed 24/24, typecheck and diff check passed, and independent review found no material issue. Tests used intercepted synthetic RPC responses and a temporary host `os.userInfo` startup shim, removed afterward. These checks do not establish an official staging receipt or real-PostgreSQL sweep concurrency behavior.
+Consent signing/submission, smart-contract deployment and anchoring are deferred. Read-only results are not consent proof. Preserve local consent recording, access controls and historical evidence.
 
-- [ ] Consent anchoring uses the credential-issued official staging endpoint, chain ID `13371`, the project-controlled signer, and zero-gas validation.
-- [ ] On-chain payloads contain commitments or hashes and non-identifying metadata only; they exclude names, contact information, medical information, case content, and raw consent documents.
-- [ ] A real signed transaction anchors only synthetic consent data on the actual official staging chain; no simulated-success runtime is used.
-- [ ] Submission remains pending until a successful canonical receipt for the expected transaction and chain is validated and retained as staging evidence.
-- [ ] The UI displays anchored only after that receipt validation and otherwise shows pending or unavailable truthfully; a local request ID is never called a receipt.
-- [ ] Chain mismatch, provider rejection, malformed responses, and outages fail closed without a locally fabricated receipt.
-- [ ] HTTP-level tests cover privacy boundaries, pending and confirmed states, chain validation, upstream failure, receipt evidence, and no legal or clinical consent claim.
+## Remaining work
+
+- [ ] Base URL/token suffice for read-only startup and requests; no signer key required.
+- [ ] Prevent runtime consent signing/broadcast and anchor-queue processing; preserve local consent without misleading pending anchors.
+- [ ] Use documented `eth_chainId`, `eth_gasPrice`, `eth_blockNumber` and `eth_getBlockByNumber`.
+- [ ] Require chain13371 and zero gas price; validate JSON-RPC envelopes/block fields. Wrong chain, malformed results, authentication failure and outages fail visibly.
+- [ ] Keep credential-bearing RPC URLs/tokens server-side; no personal, consent or healthcare content in requests/logs.
+- [ ] Labels distinguish configured, verified read-only connection and unavailable; no connectivity-as-anchor or legal/clinical proof claim.
+- [ ] Focused checks verify no signer requirement, no signing/broadcast, failure handling and privacy.
+- [ ] Retain authorized actual read-only staging observations with UTC time, source revision, chain ID, gas price and public block reference. No new provider call is claimed by this revision.
+
+## Historical work
+
+Previous receipt/delayed-mining/reorg/Citizen-state fixture checks passed focused24/24, typecheck and review on 2026-09-27. They do not prove the revised read-only runtime or an actual anchor. Existing signing/configuration/worker code still needs alignment; this ticket edit does not remove it.
