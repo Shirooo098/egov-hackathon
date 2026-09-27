@@ -21,3 +21,5 @@ declared complete by this summary. A limited [local-backend SSO provider check](
 Follow the [staging smoke runbook](../../../docs/OFFICIAL_EGOV_STAGING_SMOKE.md)
 when its approved inputs and contracts are available; keep credentials in the
 server environment, not in tickets or evidence.
+
+A separately authorized [standalone local SMS provider test](../evidence/emessage-provider-smoke-2026-09-27.json) returned HTTP201/accepted for the controlled destination ending4218. Delivery and the complete opted-in Citizen workflow remain unverified; this does not close Ticket04.
