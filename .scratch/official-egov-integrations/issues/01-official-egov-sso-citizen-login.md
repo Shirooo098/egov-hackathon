@@ -2,9 +2,9 @@
 
 **What to build:** Complete the official in-app `exchange_code` handoff as the only Citizen session authority, with server-side exchange, minimal identity, `uniqid`-only linking, and explicit verified-identity confirmation before a local session. The official web-widget entry and post-login case choice are Ticket 08.
 
-**Blocked by:** None — can start immediately.
+**Blocked by:** Authenticated partner callback-correlation/acceptance evidence and approved credentialed staging validation. Local implementation and fixture checks are already recorded below.
 
-**Status:** in progress — official in-app handoff, pending confirmation, `uniqid`-only session creation, replay protection, and HTTP failure/cancellation checks are implemented; authenticated callback-correlation evidence and credentialed staging validation remain open
+**Status:** blocked-external — official in-app handoff, pending confirmation, `uniqid`-only session creation, replay protection, and HTTP failure/cancellation checks are implemented; authenticated callback-correlation evidence and credentialed staging validation remain open
 
 Local HTTP fixtures verify that malformed provider profiles and provider outages create no pending identity or session and disclose no code, token, or secret in the response. An unmatched callback URL also cannot echo its exchange code through the generic 404 response or request log. Cancellation consumes the pending identity and blocks later confirmation. These fixtures do not prove the partner's callback-correlation behavior or a real staging handoff.
 

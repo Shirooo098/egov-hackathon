@@ -2,7 +2,7 @@
 
 **What to build:** Remove eVerify as a product feature, including its UI entry points, placeholder, runtime provider/API path, and credential dependency. Keep optional standalone Face Liveness unavailable until its separate provider/privacy gates pass in Ticket 09; never generate a liveness result.
 
-**Blocked by:** None — can start immediately.
+**Blocked by:** None — complete.
 
 **Status:** complete — verified at commit b51b67a (2026-09-23); eVerify removed entirely, Face Liveness remains unavailable
 

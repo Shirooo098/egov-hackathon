@@ -4,7 +4,7 @@
 
 **Blocked by:** 01 — Official in-app SSO; 02 — Remove eVerify and keep Face Liveness fail-closed; 03 — Official eGovChain consent proof; 04 — Official opted-in eMessage notifications; 06 — Official eGovAI public guidance (which requires 05); 08 — Official web-widget and post-SSO journey. Ticket 09 is optional and does not block this core gate.
 
-**Status:** in progress — startup now rejects incomplete or malformed enabled SSO, eMessage, and eGovChain configuration; shared 404 and error logging exclude untrusted URL and exception content. Process startup and worker failures preserve static configuration diagnostics while suppressing arbitrary exception text, including provider tokens and exchange codes. Credentialed staging and the listed ticket gates remain open.
+**Status:** blocked-external — startup now rejects incomplete or malformed enabled SSO, eMessage, and eGovChain configuration; shared 404 and error logging exclude untrusted URL and exception content. Process startup and worker failures preserve static configuration diagnostics while suppressing arbitrary exception text, including provider tokens and exchange codes. Credentialed staging and the listed ticket gates remain open.
 
 The [staging smoke runbook](../../../docs/OFFICIAL_EGOV_STAGING_SMOKE.md) records required inputs, operator actions, evidence for each core integration, privacy rules, and a result template. It does not authorize or claim a completed provider call. Deployment URL, approved identities/SMS destination, partner acceptance evidence, and the authenticated AI contract remain execution inputs; configured local credentials do not replace them.
 

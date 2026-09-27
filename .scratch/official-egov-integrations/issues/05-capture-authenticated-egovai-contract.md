@@ -2,7 +2,7 @@
 
 **What to build:** Produce a redacted, credential-free contract fixture from the authenticated official portal so eBuhay can integrate eGovAI without guessing private endpoints, request fields, or response fields.
 
-**Blocked by:** None — requires the team's redacted authenticated portal schema before completion.
+**Blocked by:** The team's redacted authenticated provider schema, documented error/quota behavior, and applicable prompt/response privacy and retention terms.
 
 **Status:** blocked-external — local documentation exists, but authenticated error/privacy behavior and validated staging contract are not yet evidenced
 

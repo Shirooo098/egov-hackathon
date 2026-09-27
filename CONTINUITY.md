@@ -16,6 +16,7 @@
 - 2026-09-27 [TOOL] Now: Ticket03 missing-value receipt bug repaired; independent final focused24/24, typecheck, diff check, and review passed. All current delegations terminal. Agy wrongly started then cancelled unrelated DB test; root guarded exact-fixture cleanup restored zero accounts/hospitals/services. Restrict future workers to explicit check manifests; staging receipt and SQL sweep concurrency remain open.
 - 2026-09-27 [CODE] Next: Ticket07 staging runbook prepared and independently reviewed; no execution claimed. Need deployed URL/revision, approved test identities/SMS destination, explicit staging-call authorization, partner SSO acceptance/correlation and authenticated AI terms. ADR0013 now states eVerify removed, standalone liveness separately gated.
 - 2026-09-27 [TOOL] Blocked handoff: unchanged external gates persisted through runbook/structural handoffs and two subsequent revalidations; no new smoke evidence directory or pending agent result. Full scope remains incomplete. Resume when staging inputs/authorization or required partner contracts arrive; do not repeat green local checks or infer approval from elapsed time.
+- 2026-09-27 [USER] Requested explicit ticket marking. Issues index now shows02 complete and01/03/04/05/06/07/08/09 blocked with remaining deliverables; individual statuses aligned without changing acceptance scope or erasing local evidence.09 remains optional and does not block07.
 - 2026-09-25 [CODE] Open: Ticket03 signed official-staging receipt; Ticket04 provider SMS acknowledgement and ambiguous-send reconciliation path; Ticket05/06 authenticated AI contract; Ticket07 deployment smoke; optional Ticket09 privacy/error terms. No live provider calls ran.
 - 2026-09-25 [TOOL] Agy read-only Ticket01/08 audit found no further material local SSO gap in its scoped paths. The authoritative integration spec and overview now describe the documented browser-visible exchange-code handoff; partner callback correlation and credentialed staging behavior remain open.
 
@@ -57,7 +58,7 @@
 - `server/tests/ticket-04-staff-sms-postgres.test.ts`
 - `server/package.json`
 - `.scratch/official-egov-integrations/issues/04-official-opted-in-emessage-notifications.md`
-- `server/tests/egov-sms-consent.test.ts`
+- `.scratch/official-egov-integrations/issues/README.md`
 - `.scratch/official-egov-integrations/issues/05-capture-authenticated-egovai-contract.md`
 - `.scratch/official-egov-integrations/issues/06-official-egovai-public-guidance.md`
 

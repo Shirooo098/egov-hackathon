@@ -4,7 +4,7 @@
 
 **Blocked by:** 05 — Capture the authenticated eGovAI contract.
 
-**Status:** in progress — fixed public FAQ choices and server allowlist implemented (`fbb3f2d`); the local HTTP boundary rejects extra request data and invalid categories, and UI tests confirm informational and retry guidance. Provider answers remain blocked by Ticket 05's authenticated contract.
+**Status:** blocked-external — fixed public FAQ choices and server allowlist implemented (`fbb3f2d`); the local HTTP boundary rejects extra request data and invalid categories, and UI tests confirm informational and retry guidance. Provider answers remain blocked by Ticket 05's authenticated contract.
 
 On 2026-09-25, the obsolete Staff-facing free-text "PH Health Laws AI" prototype and its synthetic-only `/api/egovai/laws` and `/api/v1/egovai/laws` routes were removed. Both legacy paths now return 404 in the synthetic runtime; the fixed-choice Citizen FAQ endpoint remains deferred until Ticket 05 is complete.
 

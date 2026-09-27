@@ -4,7 +4,7 @@
 
 **Blocked by:** 01 — Official in-app SSO identity and session boundary.
 
-**Status:** in progress — documented widget and post-authentication case choice are implemented; local sign-out now retains the session when server revocation is unconfirmed; the in-app SSO evidence gate in Ticket 01 and credentialed validation remain open
+**Status:** blocked-external — documented widget and post-authentication case choice are implemented; local sign-out now retains the session when server revocation is unconfirmed; the in-app SSO evidence gate in Ticket 01 and credentialed validation remain open
 
 Local HTTP coverage now rejects widget exchange and in-app callback during an active Citizen session with `409 session_exists`, and rejects pending confirmation without replacing that session. This is local fixture evidence only.
 
