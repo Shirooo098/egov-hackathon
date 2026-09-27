@@ -60,7 +60,7 @@ const aiChat = await fetch(`${base}/egov/ai/chat`, {
 });
 assert.equal(aiChat.status, 503);
 const aiChatBody = (await aiChat.json()) as { error?: string; retryable?: boolean };
-assert.equal(aiChatBody.error, 'capability_deferred');
+assert.equal(aiChatBody.error, 'provider_unavailable');
 assert.equal(aiChatBody.retryable, true);
 
 const emessagePush = await fetch(`${base}/emessage/sms/push`, {

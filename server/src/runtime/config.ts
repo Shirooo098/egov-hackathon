@@ -1,4 +1,3 @@
-import { Wallet } from 'ethers';
 
 export const RUNTIME_MODES = ['synthetic', 'partner-sandbox', 'controlled-live', 'production'] as const;
 export type RuntimeMode = (typeof RUNTIME_MODES)[number];
@@ -113,16 +112,21 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   }
 
   const chainMode = env.EGOVCHAIN_MODE || 'disabled';
+  const aiBase = env.EGOV_AI_BASE_URL?.trim();
+  const aiAccess = env.EGOV_ACCESS_CODE?.trim();
+  if (aiBase || aiAccess) {
+    if (!aiBase || !aiAccess) throw new RuntimeConfigError('EGOV_AI_BASE_URL and EGOV_ACCESS_CODE must be configured together');
+    if (rawMode !== 'synthetic') throw new RuntimeConfigError('EGOV_AI_BASE_URL requires synthetic application mode');
+    requireHttpsBase('EGOV_AI_BASE_URL', aiBase);
+  }
   if (chainMode !== 'disabled' && chainMode !== 'staging') throw new RuntimeConfigError('EGOVCHAIN_MODE must be disabled or staging');
   if (chainMode === 'staging') {
     if (rawMode !== 'synthetic') throw new RuntimeConfigError('EGOVCHAIN_MODE=staging requires synthetic application mode');
     const base = env.EGOVCHAIN_RPC_BASE_URL;
     const token = env.EGOVCHAIN_RPC_TOKEN;
-    const signer = env.EGOVCHAIN_SIGNER_PRIVATE_KEY;
-    if (!base?.trim() || !token?.trim() || !signer?.trim()) throw new RuntimeConfigError('EGOVCHAIN_RPC_BASE_URL, EGOVCHAIN_RPC_TOKEN, and EGOVCHAIN_SIGNER_PRIVATE_KEY are required for staging');
-    if (base !== base.trim() || token !== token.trim() || signer !== signer.trim()) throw new RuntimeConfigError('EGOVCHAIN staging settings must not contain surrounding whitespace');
+    if (!base?.trim() || !token?.trim()) throw new RuntimeConfigError('EGOVCHAIN_RPC_BASE_URL and EGOVCHAIN_RPC_TOKEN are required for staging');
+    if (base !== base.trim() || token !== token.trim()) throw new RuntimeConfigError('EGOVCHAIN staging settings must not contain surrounding whitespace');
     requireHttpsBase('EGOVCHAIN_RPC_BASE_URL', base);
-    try { new Wallet(signer); } catch { throw new RuntimeConfigError('EGOVCHAIN_SIGNER_PRIVATE_KEY must be a valid signing key'); }
   }
   if (env.DB_POOL_MAX !== undefined && !env.DB_POOL_MAX.trim()) throw new RuntimeConfigError('DB_POOL_MAX must be a positive integer');
   positiveInt('DB_POOL_MAX', env.DB_POOL_MAX, 10);

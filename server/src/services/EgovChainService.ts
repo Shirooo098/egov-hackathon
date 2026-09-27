@@ -1,8 +1,12 @@
-import { Wallet, keccak256 } from 'ethers';
 import { createHash, randomBytes } from 'node:crypto';
 
 export const EGOVCHAIN_CHAIN_ID = 13371;
+export const ALLOWED_RPC_METHODS = ['eth_chainId', 'eth_gasPrice', 'eth_blockNumber', 'eth_getBlockByNumber'] as const;
+export type AllowedRpcMethod = (typeof ALLOWED_RPC_METHODS)[number];
+
 const timeoutMs = 10_000;
+const HEX_QUANTITY_REGEX = /^0x(?:0|[1-9a-fA-F][0-9a-fA-F]{0,63})$/;
+const HASH_32BYTE_REGEX = /^0x[0-9a-fA-F]{64}$/;
 
 export type ConsentCommitmentInput = {
   targetId: string;
@@ -20,80 +24,96 @@ export function consentCommitment(input: ConsentCommitmentInput, salt = randomBy
   return { commitment: createHash('sha256').update(canonical).digest('hex'), salt };
 }
 
-function configured() {
+function configured(): boolean {
   if (process.env.EBUHAY_MODE !== 'synthetic' || process.env.EGOVCHAIN_MODE !== 'staging') return false;
-  return Boolean(process.env.EGOVCHAIN_RPC_BASE_URL && process.env.EGOVCHAIN_RPC_TOKEN && process.env.EGOVCHAIN_SIGNER_PRIVATE_KEY);
+  return Boolean(process.env.EGOVCHAIN_RPC_BASE_URL?.trim() && process.env.EGOVCHAIN_RPC_TOKEN?.trim());
 }
 
-export function egovchainEnabled() { return configured(); }
-export function publicConsentEvent(row: Record<string, unknown>, enabled: boolean) {
-  const { outboxStatus, outboxErrorCode, ...event } = row;
-  const anchorStatus = event.anchorStatus === 'pending' && (!enabled || !outboxStatus || outboxStatus === 'dead_letter' || (outboxStatus === 'failed' && outboxErrorCode !== 'egovchain_receipt_pending'))
-    ? 'unavailable' : event.anchorStatus;
-  return { ...event, anchorStatus };
-}
-export function signerAddress() {
-  if (!process.env.EGOVCHAIN_SIGNER_PRIVATE_KEY) throw new Error('egovchain_disabled');
-  return new Wallet(process.env.EGOVCHAIN_SIGNER_PRIVATE_KEY).address;
+export function egovchainEnabled(): boolean {
+  return configured();
 }
 
-export async function signConsentTransaction(commitment: string, nonce: number) {
+export function publicConsentEvent(row: Record<string, unknown>, _enabled: boolean): Record<string, unknown> & { anchorStatus: string; historical?: boolean } {
+  const { outboxStatus, outboxErrorCode, anchorStatus, ...event } = row;
+  if (anchorStatus === 'verified' || anchorStatus === 'failed') {
+    return { ...event, anchorStatus: 'historical', historicalAnchorStatus: anchorStatus, historical: true };
+  }
+  return { ...event, anchorStatus: 'deferred' };
+}
+
+export async function rpc(method: string, params: unknown[] = []): Promise<unknown> {
+  if (!ALLOWED_RPC_METHODS.includes(method as AllowedRpcMethod)) throw new Error('egovchain_unsupported_method');
+  const blockLookup = method === 'eth_getBlockByNumber';
+  if (!Array.isArray(params) || (blockLookup
+    ? params.length !== 2 || typeof params[0] !== 'string' || !HEX_QUANTITY_REGEX.test(params[0]) || params[1] !== false
+    : params.length !== 0)) throw new Error('egovchain_invalid_params');
   if (!configured()) throw new Error('egovchain_disabled');
-  const wallet = new Wallet(process.env.EGOVCHAIN_SIGNER_PRIVATE_KEY!);
-  const chainId = Number(BigInt(String(await rpc('eth_chainId'))));
-  if (chainId !== EGOVCHAIN_CHAIN_ID) throw new Error('egovchain_wrong_chain');
-  const gasPrice = BigInt(String(await rpc('eth_gasPrice')));
-  if (gasPrice !== 0n) throw new Error('egovchain_nonzero_gas');
-  const data = `0x${commitment}`;
-  const gasLimit = BigInt(String(await rpc('eth_estimateGas', [{ from: wallet.address, to: wallet.address, value: '0x0', data }])));
-  const raw = await wallet.signTransaction({
-    type: 0,
-    to: wallet.address,
-    value: 0n,
-    data,
-    nonce,
-    chainId: EGOVCHAIN_CHAIN_ID,
-    gasPrice: 0n,
-    gasLimit,
-  });
-  return { raw, txHash: keccak256(raw), from: wallet.address };
-}
 
-export async function rpc(method: string, params: unknown[] = []) {
-  if (!configured()) throw new Error('egovchain_disabled');
-  const base = `${process.env.EGOVCHAIN_RPC_BASE_URL!.replace(/\/$/, '')}/${process.env.EGOVCHAIN_RPC_TOKEN!}`;
+  let targetUrl: URL;
+  try {
+    const base = new URL(process.env.EGOVCHAIN_RPC_BASE_URL!.trim());
+    if (base.protocol !== 'https:' || base.username || base.password || base.search || base.hash) throw new Error();
+    targetUrl = new URL(`${base.toString().replace(/\/+$/, '')}/${encodeURIComponent(process.env.EGOVCHAIN_RPC_TOKEN!.trim())}`);
+  } catch { throw new Error('egovchain_invalid_url'); }
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(base, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }), signal: controller.signal });
-    const body = await response.json() as { result?: unknown; error?: { code?: number } };
-    if (!response.ok || body.error) throw new Error(`egovchain_rpc_${body.error?.code ?? response.status}`);
-    return body.result;
+    let response: Response;
+    try {
+      response = await fetch(targetUrl, {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
+        redirect: 'error', signal: controller.signal,
+      });
+    } catch {
+      throw new Error(controller.signal.aborted ? 'egovchain_timeout' : 'egovchain_network_error');
+    }
+    if (!response.ok) {
+      throw new Error(response.status === 401 || response.status === 403 ? 'egovchain_auth_failed' : `egovchain_http_${response.status}`);
+    }
+    let body: unknown;
+    try { body = await response.json(); }
+    catch { throw new Error(controller.signal.aborted ? 'egovchain_timeout' : 'egovchain_malformed_response'); }
+    if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error('egovchain_malformed_response');
+    const envelope = body as Record<string, unknown>;
+    if (envelope.jsonrpc !== '2.0' || envelope.id !== 1) throw new Error('egovchain_malformed_response');
+    if ('error' in envelope) throw new Error('egovchain_rpc_error');
+    const result = envelope.result;
+    if (blockLookup) {
+      if (!result || typeof result !== 'object' || Array.isArray(result)) throw new Error('egovchain_malformed_response');
+      const block = result as Record<string, unknown>;
+      if (typeof block.number !== 'string' || !HEX_QUANTITY_REGEX.test(block.number) ||
+          typeof block.hash !== 'string' || !HASH_32BYTE_REGEX.test(block.hash) ||
+          BigInt(block.number) !== BigInt(params[0] as string)) throw new Error('egovchain_malformed_response');
+      return { number: block.number, hash: block.hash };
+    }
+    if (typeof result !== 'string' || !HEX_QUANTITY_REGEX.test(result)) throw new Error('egovchain_malformed_response');
+    if (method === 'eth_chainId' && BigInt(result) !== BigInt(EGOVCHAIN_CHAIN_ID)) throw new Error('egovchain_wrong_chain');
+    if (method === 'eth_gasPrice' && BigInt(result) !== 0n) throw new Error('egovchain_nonzero_gas');
+    return result;
   } finally { clearTimeout(timer); }
 }
+export type EgovChainObservation = {
+  ok: true;
+  chainId: number;
+  gasPrice: string;
+  blockNumber: string;
+  blockHash: string;
+  observedAt: string;
+};
 
-export async function broadcast(raw: string) { return String(await rpc('eth_sendRawTransaction', [raw])); }
-
-export async function receipt(txHash: string) { return await rpc('eth_getTransactionReceipt', [txHash]) as { status?: string; blockHash?: string; blockNumber?: string; transactionHash?: string } | null; }
-
-export async function verifyReceipt(txHash: string, commitment: string, strict = false) {
-  const r = await receipt(txHash);
-  if (!r) return null;
-  const invalid = () => { if (strict) throw new Error('egovchain_invalid_receipt'); return null; };
-  if (!['0x1', '0x0'].includes(r.status ?? '') || !r.blockHash || !r.blockNumber || r.transactionHash?.toLowerCase() !== txHash.toLowerCase()) return invalid();
-  const [tx, block] = await Promise.all([
-    rpc('eth_getTransactionByHash', [txHash]) as Promise<{ from?: string; to?: string; value?: string; input?: string; chainId?: string; hash?: string } | null>,
-    rpc('eth_getBlockByNumber', [r.blockNumber, false]) as Promise<{ hash?: string; transactions?: string[] } | null>,
-  ]);
-  const address = signerAddress().toLowerCase();
-  if (!tx || !block || block.hash?.toLowerCase() !== r.blockHash.toLowerCase() || !block.transactions?.some((hash) => hash.toLowerCase() === txHash.toLowerCase()) || tx.hash?.toLowerCase() !== txHash.toLowerCase() || tx.from?.toLowerCase() !== address || tx.to?.toLowerCase() !== address || tx.input?.toLowerCase() !== `0x${commitment}`.toLowerCase() || Number(BigInt(tx.chainId ?? '0x0')) !== EGOVCHAIN_CHAIN_ID) return invalid();
-  let value: bigint;
-  try {
-    if (typeof tx.value !== 'string' || !tx.value.trim()) return invalid();
-    value = BigInt(tx.value);
-  } catch {
-    return invalid();
-  }
-  if (value !== 0n) return invalid();
-  return r;
+export async function checkEgovChainReadonly(): Promise<EgovChainObservation> {
+  const chainIdHex = String(await rpc('eth_chainId'));
+  const gasPriceHex = String(await rpc('eth_gasPrice'));
+  const blockNumberHex = String(await rpc('eth_blockNumber'));
+  const block = (await rpc('eth_getBlockByNumber', [blockNumberHex, false])) as { number: string; hash: string };
+  return {
+    ok: true,
+    chainId: Number(BigInt(chainIdHex)),
+    gasPrice: gasPriceHex,
+    blockNumber: block.number,
+    blockHash: block.hash,
+    observedAt: new Date().toISOString(),
+  };
 }

@@ -131,6 +131,15 @@ test('Issue 05 and 06: eGovAI service truthfully fails closed without mock laws 
 });
 
 test('Issue 05 and 06: eGovAI HTTP endpoint returns 503 capability_deferred with retry guidance', async () => {
+  const nativeFetch = globalThis.fetch;
+  globalThis.fetch = (async (input: unknown, init?: unknown) => {
+    const url = String(input);
+    if (url.startsWith('http://127.0.0.1:')) {
+      return nativeFetch(input as RequestInfo, init as RequestInit);
+    }
+    return new Response(JSON.stringify({ error: 'unavailable' }), { status: 503 });
+  }) as typeof fetch;
+
   const app = express();
   app.use(express.json());
   app.use('/api/egov', egovRouter);
@@ -153,11 +162,12 @@ test('Issue 05 and 06: eGovAI HTTP endpoint returns 503 capability_deferred with
     });
     assert.equal(chatRes.status, 503);
     const chatBody = (await chatRes.json()) as { error?: string; code?: string; retryable?: boolean; retry_guidance?: string };
-    assert.equal(chatBody.error, 'capability_deferred');
-    assert.equal(chatBody.code, 'capability_deferred');
+    assert.equal(chatBody.error, 'provider_unavailable');
+    assert.equal(chatBody.code, 'provider_unavailable');
     assert.equal(chatBody.retryable, true);
     assert.ok(typeof chatBody.retry_guidance === 'string');
   } finally {
+    globalThis.fetch = nativeFetch;
     await new Promise<void>((resolve) => server.close(() => resolve()));
   }
 });
@@ -193,6 +203,15 @@ test('Issue 06: synthetic runtime has no free-text laws API', async () => {
 });
 
 test('Issue 06: eGovAI HTTP endpoint rejects requests carrying extra data or invalid category while allowing curated prompt with PH', async () => {
+  const nativeFetch = globalThis.fetch;
+  globalThis.fetch = (async (input: unknown, init?: unknown) => {
+    const url = String(input);
+    if (url.startsWith('http://127.0.0.1:')) {
+      return nativeFetch(input as RequestInfo, init as RequestInit);
+    }
+    return new Response(JSON.stringify({ error: 'unavailable' }), { status: 503 });
+  }) as typeof fetch;
+
   const app = express();
   app.use(express.json());
   app.use('/api/egov', egovRouter);
@@ -233,14 +252,16 @@ test('Issue 06: eGovAI HTTP endpoint rejects requests carrying extra data or inv
     });
     assert.equal(clientRes.status, 503);
     const clientBody = (await clientRes.json()) as { error?: string; code?: string; retryable?: boolean; retry_guidance?: string };
-    assert.equal(clientBody.error, 'capability_deferred');
-    assert.equal(clientBody.code, 'capability_deferred');
+    assert.equal(clientBody.error, 'provider_unavailable');
+    assert.equal(clientBody.code, 'provider_unavailable');
     assert.equal(clientBody.retryable, true);
     assert.ok(typeof clientBody.retry_guidance === 'string');
   } finally {
+    globalThis.fetch = nativeFetch;
     await new Promise<void>((resolve) => server.close(() => resolve()));
   }
 });
+
 
 test('Issues 01 and 07: unmatched callback and unknown path cannot expose an exchange code', async () => {
   const server = createServer(createApp({ config: testConfig }));

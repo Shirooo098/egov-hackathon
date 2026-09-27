@@ -51,7 +51,7 @@ describe('Issue 02: FaceLivenessCheck user surface', () => {
 });
 
 describe('Issue 03: consent proof labels', () => {
-  it('reserves anchored wording for verified official staging proof', async () => {
+  it('reserves anchored wording for verified official staging proof and explains deferred anchoring', async () => {
     vi.spyOn(platformApi, 'currentPair').mockResolvedValue({ data: null });
     vi.spyOn(platformApi, 'episode').mockResolvedValue({ data: { id: 'e1', version: 1, participation: 'active' } });
     vi.spyOn(platformApi, 'episodeConsents').mockResolvedValue({ data: {
@@ -59,15 +59,15 @@ describe('Issue 03: consent proof labels', () => {
       current: { coordination: 'granted' },
       events: [
         { id: 'verified', purpose: 'coordination', action: 'grant', anchorStatus: 'verified', createdAt: '2026-09-24T12:00:00Z' },
-        { id: 'pending', purpose: 'coordination', action: 'grant', anchorStatus: 'pending', createdAt: '2026-09-24T11:00:00Z' },
+        { id: 'deferred', purpose: 'coordination', action: 'grant', anchorStatus: 'deferred', createdAt: '2026-09-24T11:00:00Z' },
         { id: 'unavailable', purpose: 'coordination', action: 'grant', anchorStatus: 'unavailable', createdAt: '2026-09-24T10:00:00Z' },
       ],
     } });
     const body = render(<PairCoordinationPanel role="recipient" episodeId="e1" />);
-    await vi.waitFor(() => expect(body.textContent).toContain('Latest proof: anchored on the official staging chain.'));
-    expect(body.textContent).toContain('proof pending official staging receipt');
+    await vi.waitFor(() => expect(body.textContent).toContain('Latest proof: historical chain record (not reverified).'));
+    expect(body.textContent).toContain('proof anchoring deferred (read-only official chain)');
     expect(body.textContent).toContain('proof official chain unavailable');
-    expect(body.textContent).not.toMatch(/proof verified|proof failed/i);
+    expect(body.textContent).not.toMatch(/proof verified|proof failed|pending official staging receipt/i);
   });
 });
 
@@ -110,7 +110,7 @@ describe('Issue 05 and 06: FloatingAIChat informational and unavailable guidance
     act(() => (launcher as HTMLButtonElement).click());
 
     expect(body.textContent).toContain('eGovAI Guidance');
-    expect(body.textContent).toContain('Service unavailable (503)');
+    expect(body.textContent).toContain('Choose a public question');
     expect(body.textContent).toContain('Informational guidance only');
     expect(body.textContent).toContain('Excludes clinical, legal, eligibility, matching, or scheduling advice');
     expect(body.textContent).toContain('Welcome to eGovAI guidance');
@@ -133,9 +133,30 @@ describe('Issue 05 and 06: FloatingAIChat informational and unavailable guidance
     });
 
     expect(body.textContent).toContain('How does eBuhay coordination work?');
-    expect(body.textContent).toContain('The official eGovAI service is currently unavailable or deferred (503)');
-    expect(body.textContent).toContain('Please retry later after official integration is verified.');
+    expect(body.textContent).toContain('The official eGovAI service is currently unavailable');
+    expect(body.textContent).toContain('Please retry later');
     expect(body.textContent).not.toContain('Republic Act');
     expect(body.textContent).not.toContain('eGovAI Legal Advisory');
+  });
+
+  it('shows the official answer status after a valid public FAQ response', async () => {
+    vi.spyOn(egovApi, 'askAI').mockResolvedValue({
+      success: true,
+      data: 'Public process answer.',
+      informational: true,
+    });
+
+    const body = render(<FloatingAIChat />);
+    const launcher = body.querySelector('button.floating-ai-launcher');
+    act(() => (launcher as HTMLButtonElement).click());
+    const choice = Array.from(body.querySelectorAll('button')).find((button) =>
+      button.textContent?.includes('How does eBuhay coordination work?'),
+    );
+    await act(async () => {
+      (choice as HTMLButtonElement).click();
+    });
+
+    expect(body.textContent).toContain('Official answer received');
+    expect(body.textContent).toContain('Public process answer.');
   });
 });

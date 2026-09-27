@@ -17,28 +17,26 @@ test('consent commitments are stable for the same salted evidence and change wit
   assert.equal(EGOVCHAIN_CHAIN_ID, 13371);
 });
 
-test('consent proof status distinguishes pending, unavailable, and verified without leaking provider errors', () => {
-  const row = { id: 'consent-1', anchorStatus: 'pending', outboxStatus: 'pending', outboxErrorCode: null };
-  assert.deepEqual(publicConsentEvent(row, true), { id: 'consent-1', anchorStatus: 'pending' });
-  assert.equal(publicConsentEvent(row, false).anchorStatus, 'unavailable');
-  assert.equal(publicConsentEvent({ ...row, outboxStatus: null }, true).anchorStatus, 'unavailable');
-  assert.equal(publicConsentEvent({ ...row, outboxStatus: 'failed', outboxErrorCode: 'egovchain_receipt_pending' }, true).anchorStatus, 'pending');
-  assert.equal(publicConsentEvent({ ...row, outboxStatus: 'failed', outboxErrorCode: 'egovchain_wrong_chain' }, true).anchorStatus, 'unavailable');
-  assert.equal(publicConsentEvent({ ...row, outboxStatus: 'dead_letter' }, true).anchorStatus, 'unavailable');
-  assert.equal(publicConsentEvent({ ...row, anchorStatus: 'verified' }, false).anchorStatus, 'verified');
+test('consent proof status distinguishes deferred, unavailable, and verified without leaking provider errors', () => {
+  const row = { id: 'consent-1', anchorStatus: 'deferred', outboxStatus: 'pending', outboxErrorCode: null };
+  assert.deepEqual(publicConsentEvent(row, true), { id: 'consent-1', anchorStatus: 'deferred' });
+  assert.equal(publicConsentEvent(row, false).anchorStatus, 'deferred');
+  assert.equal(publicConsentEvent({ ...row, anchorStatus: 'pending' }, true).anchorStatus, 'deferred');
+  assert.equal(publicConsentEvent({ ...row, anchorStatus: 'pending' }, false).anchorStatus, 'deferred');
+  assert.equal(publicConsentEvent({ ...row, anchorStatus: 'verified' }, false).anchorStatus, 'historical');
+  assert.equal(publicConsentEvent({ ...row, anchorStatus: 'verified' }, false).historical, true);
 });
 
-test('consent writes enqueue one durable anchor and never fabricate simulated proof', () => {
+test('consent writes do not enqueue anchor outbox in read-only runtime and preserve audit logging', () => {
   const platform = fs.readFileSync(new URL('../src/routes/platform.ts', import.meta.url), 'utf8');
   const pair = fs.readFileSync(new URL('../src/routes/rebaseline.ts', import.meta.url), 'utf8');
-  assert.match(platform, /INSERT INTO consent_anchor_outbox\(episode_consent_id, commitment\)/);
-  assert.match(pair, /INSERT INTO consent_anchor_outbox\(pair_consent_id, commitment\)/);
+  assert.doesNotMatch(platform, /INSERT INTO consent_anchor_outbox/);
+  assert.doesNotMatch(pair, /INSERT INTO consent_anchor_outbox/);
   assert.doesNotMatch(pair, /simulatedTx|simulatedBlockHash/);
   assert.match(platform, /Idempotency key payload mismatch/);
   assert.match(pair, /counts\.coordination.*counts\.information_sharing/);
   const worker = fs.readFileSync(new URL('../src/worker.ts', import.meta.url), 'utf8');
-  assert.match(worker, /verifyReceipt\(txHash!, row\.commitment, true\)/);
-  assert.ok(worker.indexOf('const current = await verifyReceipt') < worker.indexOf('await broadcast(raw!)'));
+  assert.doesNotMatch(worker, /await runConsentAnchorBatch\(\)/);
 });
 
 test('legacy chain-info paths cannot return simulated provider evidence', async () => {
@@ -57,7 +55,7 @@ test('legacy chain-info paths cannot return simulated provider evidence', async 
   }
 });
 
-test('Citizen consent HTTP view distinguishes pending, verified proof, and unavailable without leaking provider errors', async () => {
+test('Citizen consent HTTP view distinguishes deferred, verified proof, and unavailable without leaking provider errors', async () => {
   const episodeId = '00000000-0000-4000-8000-000000000001';
   const accountId = '00000000-0000-4000-8000-000000000002';
   const savedMode = process.env.EBUHAY_MODE;
@@ -67,7 +65,7 @@ test('Citizen consent HTTP view distinguishes pending, verified proof, and unava
   const savedSigner = process.env.EGOVCHAIN_SIGNER_PRIVATE_KEY;
   process.env.EBUHAY_MODE = 'synthetic';
   delete process.env.EGOVCHAIN_MODE;
-  let consentRow: Record<string, unknown> = { id: 'consent-1', episodeId, version: 'v1.0', purpose: 'coordination', scope: `case:${episodeId}:hospital:unassigned:v1.0`, action: 'grant', anchorStatus: 'pending', outboxStatus: 'failed', outboxErrorCode: 'egovchain_wrong_chain' };
+  let consentRow: Record<string, unknown> = { id: 'consent-1', episodeId, version: 'v1.0', purpose: 'coordination', scope: `case:${episodeId}:hospital:unassigned:v1.0`, action: 'grant', anchorStatus: 'deferred', outboxStatus: null, outboxErrorCode: null };
   const query = async (statement: string | { text: string }, _values?: unknown[]) => {
     const sql = typeof statement === 'string' ? statement : statement.text;
     if (sql.startsWith('UPDATE sessions s SET last_seen_at')) return { rowCount: 1, rows: [{ id: accountId, role: 'citizen', display_name: 'Test Citizen', service_scope: [], hospital_id: null }] };
@@ -91,28 +89,29 @@ test('Citizen consent HTTP view distinguishes pending, verified proof, and unava
     const response = await fetch(url, { headers });
     assert.equal(response.status, 200);
     const payload = await response.json() as { data: { events: Array<Record<string, unknown>> } };
-    assert.equal(payload.data.events[0].anchorStatus, 'unavailable');
+    assert.equal(payload.data.events[0].anchorStatus, 'deferred');
     assert.equal('outboxErrorCode' in payload.data.events[0], false);
 
     process.env.EGOVCHAIN_MODE = 'staging';
     process.env.EGOVCHAIN_RPC_BASE_URL = 'https://egovchain.example.test';
     process.env.EGOVCHAIN_RPC_TOKEN = 'synthetic-test-token';
-    process.env.EGOVCHAIN_SIGNER_PRIVATE_KEY = 'synthetic-test-key';
-    consentRow = { ...consentRow, outboxErrorCode: 'egovchain_receipt_pending' };
-    const pending = await fetch(url, { headers });
-    assert.equal(pending.status, 200);
-    const pendingEvent = (await pending.json() as { data: { events: Array<Record<string, unknown>> } }).data.events[0];
-    assert.equal(pendingEvent.anchorStatus, 'pending');
-    assert.equal('outboxStatus' in pendingEvent, false);
-    assert.equal('outboxErrorCode' in pendingEvent, false);
+    delete process.env.EGOVCHAIN_SIGNER_PRIVATE_KEY;
+    consentRow = { ...consentRow, anchorStatus: 'deferred' };
+    const deferred = await fetch(url, { headers });
+    assert.equal(deferred.status, 200);
+    const deferredEvent = (await deferred.json() as { data: { events: Array<Record<string, unknown>> } }).data.events[0];
+    assert.equal(deferredEvent.anchorStatus, 'deferred');
+    assert.equal('outboxStatus' in deferredEvent, false);
+    assert.equal('outboxErrorCode' in deferredEvent, false);
 
     const txHash = `0x${'1'.repeat(64)}`;
     const blockHash = `0x${'2'.repeat(64)}`;
-    consentRow = { ...consentRow, anchorStatus: 'verified', outboxStatus: 'verified', outboxErrorCode: null, txHash, blockHash, blockNumber: 256 };
+    consentRow = { ...consentRow, anchorStatus: 'verified', txHash, blockHash, blockNumber: 256 };
     const verified = await fetch(url, { headers });
     assert.equal(verified.status, 200);
     const verifiedEvent = (await verified.json() as { data: { events: Array<Record<string, unknown>> } }).data.events[0];
-    assert.equal(verifiedEvent.anchorStatus, 'verified');
+    assert.equal(verifiedEvent.anchorStatus, 'historical');
+    assert.equal(verifiedEvent.historical, true);
     assert.equal(verifiedEvent.txHash, txHash);
     assert.equal(verifiedEvent.blockHash, blockHash);
     assert.equal(verifiedEvent.blockNumber, 256);

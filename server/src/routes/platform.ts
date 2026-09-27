@@ -305,15 +305,15 @@ router.post('/episodes/:id/consent', requireSameOrigin, async (req, res, next) =
         evidence: evidence as string,
         idempotencyKey,
       });
-      const inserted = await tx.execute(sql`INSERT INTO episode_consents(episode_id, actor_account_id, consent_version, purpose, scope, evidence, commitment_salt, consent_hash, commitment, action, idempotency_key)
-        VALUES (${req.params.id}, ${actor.id}, ${consentVersion}, ${purpose}, ${scope}, ${evidence}, ${salt}, ${commitment}, ${commitment}, ${action}, ${idempotencyKey})
+      const inserted = await tx.execute(sql`INSERT INTO episode_consents(episode_id, actor_account_id, consent_version, purpose, scope, evidence, commitment_salt, consent_hash, commitment, action, idempotency_key, anchor_status)
+        VALUES (${req.params.id}, ${actor.id}, ${consentVersion}, ${purpose}, ${scope}, ${evidence}, ${salt}, ${commitment}, ${commitment}, ${action}, ${idempotencyKey}, 'deferred')
         RETURNING id, episode_id AS "episodeId", consent_version AS "version", purpose, scope, commitment, action, anchor_status AS "anchorStatus", created_at AS "createdAt"`);
       if (!inserted.rowCount) {
         return { conflict: 'Consent for this version is already recorded' };
       }
       await tx.execute(sql`INSERT INTO coordination_updates(target_reference, category, value, source, author_reference, occurred_at)
         VALUES (${req.params.id}, 'coordination_consent', ${JSON.stringify({ action, consentVersion, purpose, scope, commitment })}::jsonb, 'citizen-portal', ${actor.id}, now())`);
-      await tx.execute(sql`INSERT INTO consent_anchor_outbox(episode_consent_id, commitment) VALUES (${inserted.rows[0].id}, ${commitment})`);
+
       await tx.execute(sql`INSERT INTO audit_events(actor_account_id, action, target_reference, source, details)
         VALUES (${actor.id}, ${action === 'grant' ? 'coordination_consent_granted' : 'coordination_consent_withdrawn'}, ${req.params.id}, 'coordination', ${JSON.stringify({ consentVersion, purpose, scope, commitment })}::jsonb)`);
       if (action === 'withdraw') {
@@ -329,7 +329,7 @@ router.post('/episodes/:id/consent', requireSameOrigin, async (req, res, next) =
     });
     if (result.notFound) return fail(res, 404, 'Episode not found', 'not_found');
     if (result.conflict) return fail(res, 409, result.conflict, 'conflict');
-    return json(res, result.row, result.replay ? 200 : 201);
+    return json(res, publicConsentEvent(result.row as Record<string, unknown>, egovchainEnabled()), result.replay ? 200 : 201);
   } catch (e) { return next(e); }
 });
 
@@ -484,7 +484,7 @@ router.post('/appointments/requests', requireSameOrigin, async (req, res, next) 
     });
     if (result?.mismatch) return fail(res, 409, 'Idempotency key was reused with different request data', 'conflict');
     if (!result) return fail(res, 404, 'Episode, assignment, or hospital slot not found', 'not_found');
-    return json(res, result.row, result.replay ? 200 : 201);
+    return json(res, publicConsentEvent(result.row as Record<string, unknown>, egovchainEnabled()), result.replay ? 200 : 201);
   } catch (e) { return next(e); }
 });
 
@@ -518,7 +518,7 @@ router.post('/conversations/:id/messages', requireSameOrigin, async (req, res, n
       await tx.execute(sql`INSERT INTO audit_events(actor_account_id,action,target_reference,source,idempotency_reference,details) VALUES (${account.id},'team_message_sent',${req.params.id},'coordination-messaging',${input.idempotencyKey.trim()},${JSON.stringify({ length: messageBody.length })})`);
       return { row: { ...inserted.rows[0], senderCategory: account.role === 'citizen' ? 'citizen' : 'coordination_team' }, replay: false };
     });
-    if (!result) return fail(res, 404, 'Conversation not found', 'not_found'); if ('mismatch' in result) return fail(res, 409, 'Idempotency key was reused with different message data', 'conflict'); return json(res, result.row, result.replay ? 200 : 201);
+    if (!result) return fail(res, 404, 'Conversation not found', 'not_found'); if ('mismatch' in result) return fail(res, 409, 'Idempotency key was reused with different message data', 'conflict'); return json(res, publicConsentEvent(result.row as Record<string, unknown>, egovchainEnabled()), result.replay ? 200 : 201);
   } catch (e) { return next(e); }
 });
 

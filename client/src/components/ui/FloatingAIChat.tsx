@@ -10,7 +10,7 @@ type Message = {
 const GREETING = {
   id: "greeting",
   sender: "ai",
-  text: "Welcome to eGovAI guidance. This assistant provides public process information only and cannot provide clinical, legal, eligibility, matching, or scheduling decisions. The official service is currently deferred pending contract verification.",
+  text: "Welcome to eGovAI guidance. This assistant provides public process information only and cannot provide clinical, legal, eligibility, matching, or scheduling decisions. Select a public process question below.",
   time: "",
 };
 
@@ -25,6 +25,7 @@ export default function FloatingAIChat() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([GREETING as Message]);
   const [loading, setLoading] = useState(false);
+  const [availability, setAvailability] = useState<'ready' | 'available' | 'unavailable'>('ready');
   const endRef = useRef<HTMLDivElement>(null);
   const launcherRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLButtonElement>(null);
@@ -64,22 +65,27 @@ export default function FloatingAIChat() {
 
     try {
       const res = await egovApi.askAI(prompt, "PH");
+      if (!res || res.success !== true || typeof res.data !== "string" || !res.data.trim()) {
+        throw new Error("Invalid response format from eGovAI service");
+      }
+      setAvailability('available');
       setMessages((p) => [
         ...p,
         {
           id: Date.now() + 1,
           sender: "ai",
-          text: String(res.data),
+          text: res.data.trim(),
           time: timeNow(),
         },
       ]);
     } catch {
+      setAvailability('unavailable');
       setMessages((p) => [
         ...p,
         {
           id: Date.now() + 1,
           sender: "ai",
-          text: "The official eGovAI service is currently unavailable or deferred (503). Please retry later after official integration is verified.",
+          text: "The official eGovAI service is currently unavailable. Please retry later.",
           time: timeNow(),
         },
       ]);
@@ -105,12 +111,12 @@ export default function FloatingAIChat() {
               <h2 id="floating-ai-chat-title" className="floating-ai-title">
                 eGovAI Guidance
               </h2>
-              <div className="floating-ai-status">
+              <div className="floating-ai-status" role="status" aria-live="polite">
                 <span
                   className="floating-ai-status-dot"
-                  style={{ backgroundColor: "var(--danger, #DC2626)" }}
+                  style={{ backgroundColor: availability === 'unavailable' ? "var(--danger, #DC2626)" : "var(--foreground-muted, #64748b)" }}
                 />
-                Service unavailable (503)
+                {loading ? 'Requesting official guidance' : availability === 'available' ? 'Official answer received' : availability === 'unavailable' ? 'Service unavailable' : 'Choose a public question'}
               </div>
             </div>
             <button

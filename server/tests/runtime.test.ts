@@ -48,12 +48,11 @@ test('enabled official SMS and Chain providers require complete HTTPS startup co
   assert.throws(() => loadRuntimeConfig({ ...env, EMESSAGE_BASE_URL: 'http://sms.test', EMESSAGE_API_TOKEN: 'token' }), /EMESSAGE_BASE_URL.*HTTPS/);
   assert.doesNotThrow(() => loadRuntimeConfig({ ...env, EMESSAGE_BASE_URL: 'https://sms.test', EMESSAGE_API_TOKEN: 'token' }));
 
-  const chain = { ...env, EGOVCHAIN_MODE: 'staging', EGOVCHAIN_RPC_BASE_URL: 'https://rpc.test/egovchain', EGOVCHAIN_RPC_TOKEN: 'token', EGOVCHAIN_SIGNER_PRIVATE_KEY: `0x${'11'.repeat(32)}` };
+  const chain = { ...env, EGOVCHAIN_MODE: 'staging', EGOVCHAIN_RPC_BASE_URL: 'https://rpc.test/egovchain', EGOVCHAIN_RPC_TOKEN: 'token' };
   assert.throws(() => loadRuntimeConfig({ ...chain, EGOVCHAIN_RPC_TOKEN: '' }), /EGOVCHAIN_RPC_TOKEN/);
   assert.throws(() => loadRuntimeConfig({ ...chain, EGOVCHAIN_RPC_BASE_URL: 'http://rpc.test' }), /EGOVCHAIN_RPC_BASE_URL.*HTTPS/);
-  assert.throws(() => loadRuntimeConfig({ ...chain, EGOVCHAIN_SIGNER_PRIVATE_KEY: 'not-a-key' }), /EGOVCHAIN_SIGNER_PRIVATE_KEY/);
   assert.throws(() => loadRuntimeConfig({ ...chain, EGOVCHAIN_MODE: ' staging ' }), /EGOVCHAIN_MODE/);
-  assert.throws(() => loadRuntimeConfig({ ...chain, EGOVCHAIN_SIGNER_PRIVATE_KEY: ` ${chain.EGOVCHAIN_SIGNER_PRIVATE_KEY}` }), /surrounding whitespace/);
+  assert.throws(() => loadRuntimeConfig({ ...chain, EGOVCHAIN_RPC_TOKEN: ` ${chain.EGOVCHAIN_RPC_TOKEN}` }), /surrounding whitespace/);
   assert.throws(() => loadRuntimeConfig({ ...chain, EBUHAY_MODE: 'production', APPROVED_SERVICE: 'blood', ALLOWED_ORIGINS: 'https://app.test' }), /EGOVCHAIN_MODE/);
   assert.doesNotThrow(() => loadRuntimeConfig(chain));
 });

@@ -30,6 +30,7 @@ import {
 import { SESSION_COOKIE } from "./auth/service.js";
 import { createEgovCallbackRouter } from "./routes/egov-auth.js";
 import { egovchainEnabled } from "./services/EgovChainService.js";
+import { publicFaqConfigured } from "./services/egovaiPublicFaq.js";
 import { safeRouteClass } from "./middleware/route-class.js";
 
 export type AppOptions = {
@@ -179,7 +180,7 @@ export function createApp(options: AppOptions = {}) {
       timestamp: new Date().toISOString(),
       services: {
         eMessage: !isLiveMode(config!.mode) && process.env.EMESSAGE_BASE_URL?.trim() && process.env.EMESSAGE_API_TOKEN?.trim() ? "CONFIGURED_STAGING" : inactiveStatus,
-        eGovAI: inactiveStatus,
+        eGovAI: config!.mode === "synthetic" && publicFaqConfigured() ? "CONFIGURED_STAGING" : inactiveStatus,
         eGovChain: !isLiveMode(config!.mode) && egovchainEnabled() ? "CONFIGURED_STAGING" : inactiveStatus,
       },
     });
@@ -216,7 +217,7 @@ export function createApp(options: AppOptions = {}) {
     app.use("/api/platform", platformRouter);
     app.use("/api", platformRouter);
   }
-  if (config!.mode === "synthetic") app.use("/api/egov", egovRouter);
+  if (config!.mode === "synthetic") app.use("/api/egov", throttle(config!), egovRouter);
   console.log("✅ Registered /api/egov routes");
   console.log("✅ Registered /api/emessage routes");
 

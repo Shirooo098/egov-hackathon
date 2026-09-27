@@ -65,3 +65,5 @@ export async function generateScheduleSlots(_input: ScheduleInput): Promise<neve
 export function getCreditsRemaining(): number {
   return 0;
 }
+
+export { askPublicFaq, PUBLIC_EGOVAI_CHOICES, type PublicEgovAIChoice } from './egovaiPublicFaq.js';

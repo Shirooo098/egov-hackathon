@@ -644,9 +644,9 @@ router.post('/pairs/:id/consent', requireSession, requireSameOrigin, async (req,
     }
 
     const { commitment, salt } = consentCommitment({ targetId: row.id, actorId: requireAccount(req).id, version: consentVersion, action: action === 'decline' ? 'withdraw' : action, purpose, scope, evidence, idempotencyKey });
-    const inserted = await client.query(`INSERT INTO pair_consents(pair_id, episode_id, actor_account_id, consent_version, purpose, scope, evidence, commitment_salt, consent_hash, commitment, action, idempotency_key)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9, $10, $11) RETURNING id`, [row.id, episodeId, requireAccount(req).id, consentVersion, purpose, scope, evidence, salt, commitment, action === 'decline' ? 'withdraw' : action, idempotencyKey]);
-    await client.query(`INSERT INTO consent_anchor_outbox(pair_consent_id, commitment) VALUES ($1,$2)`, [inserted.rows[0].id, commitment]);
+    const inserted = await client.query(`INSERT INTO pair_consents(pair_id, episode_id, actor_account_id, consent_version, purpose, scope, evidence, commitment_salt, consent_hash, commitment, action, idempotency_key, anchor_status)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9, $10, $11, 'deferred') RETURNING id`, [row.id, episodeId, requireAccount(req).id, consentVersion, purpose, scope, evidence, salt, commitment, action === 'decline' ? 'withdraw' : action, idempotencyKey]);
+
     await client.query(`INSERT INTO audit_events(actor_account_id, action, target_reference, source, details)
       VALUES ($1, $4, $2, 'coordination', $3)`, [requireAccount(req).id, row.id, JSON.stringify({ consentVersion, purpose, scope, commitment }), action === 'withdraw' ? 'pair_consent_withdrawn' : 'pair_consent_granted']);
 
@@ -659,7 +659,7 @@ router.post('/pairs/:id/consent', requireSession, requireSameOrigin, async (req,
         WHERE ar.episode_id IN ($2::uuid,$3::uuid)
           AND NOT EXISTS (SELECT 1 FROM follow_up_tasks f WHERE f.episode_id=ar.episode_id AND f.booking_id=b.id AND f.cause='pair_consent_withdrawn_booking_reconciliation')`, [commitment, row.recipient_episode_id, row.donor_episode_id]);
       await client.query('COMMIT');
-      return ok(res, { id: row.id, state: 'withdrawn', version: row.version + 1, action: 'withdraw', commitment, anchorStatus: 'pending', suspended: true }, 201);
+      return ok(res, { id: row.id, state: 'withdrawn', version: row.version + 1, action: 'withdraw', commitment, anchorStatus: 'deferred', suspended: true }, 201);
     }
 
     const countRes = await client.query(`SELECT purpose,count(*)::int AS count FROM (SELECT DISTINCT ON (episode_id,purpose) episode_id,purpose,action FROM pair_consents WHERE pair_id=$1 AND consent_version=$2 AND scope=$3 ORDER BY episode_id,purpose,created_at DESC,id DESC) current WHERE action='grant' GROUP BY purpose`, [row.id, consentVersion, expectedScope]);
@@ -668,7 +668,7 @@ router.post('/pairs/:id/consent', requireSession, requireSameOrigin, async (req,
     if ((counts.coordination ?? 0) >= 2 && (counts.information_sharing ?? 0) >= 2) {
       const updated = await client.query(`UPDATE pair_proposals
         SET state='coordination_complete', status='coordination_complete', version=version+1,
-            anchor_status='pending', updated_at=now()
+            anchor_status='deferred', updated_at=now()
         WHERE id=$1 RETURNING id, state, version, anchor_status AS "anchorStatus"`, [row.id]);
       await client.query(`UPDATE conversations SET closed_at=COALESCE(closed_at,now()), closed_by=COALESCE(closed_by,$2) WHERE pair_id=$1`, [row.id, requireAccount(req).id]);
       await client.query(`INSERT INTO audit_events(actor_account_id, action, target_reference, source, details)
@@ -676,7 +676,7 @@ router.post('/pairs/:id/consent', requireSession, requireSameOrigin, async (req,
         [requireAccount(req).id, row.id, JSON.stringify({ message: 'Coordination complete — clinical clearance still required', consentVersion })]);
       await notifyPairParticipants(client, row.id, requireAccount(req).id);
       await client.query('COMMIT');
-        return ok(res, { ...updated.rows[0], consentCount: 2, commitment, anchorStatus: 'pending', message: 'Coordination complete — clinical clearance still required' }, 201);
+        return ok(res, { ...updated.rows[0], consentCount: 2, commitment, anchorStatus: 'deferred', message: 'Coordination complete — clinical clearance still required' }, 201);
     } else {
       const updated = await client.query(`UPDATE pair_proposals SET version=version+1, updated_at=now() WHERE id=$1 RETURNING id, state, version`, [row.id]);
       await client.query('COMMIT');

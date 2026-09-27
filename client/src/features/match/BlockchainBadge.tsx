@@ -24,7 +24,7 @@ export default function BlockchainBadge(_props: Props) {
       </div>
       <p role="status">
         Use the case or pair consent controls to submit a grant or withdrawal.
-        Proof remains pending until the server reports a staging receipt.
+        eGovChain integration is read-only; consent anchoring is deferred.
       </p>
     </div>
   );

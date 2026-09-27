@@ -6,6 +6,7 @@ import { requireSession, requireRole } from '../middleware/auth.js';
 import { requireSameOrigin } from '../middleware/origin.js';
 import type { RuntimeConfig } from '../runtime/config.js';
 import { decryptProfile, type EncryptedProfileRecord } from '../crypto/profileCrypto.js';
+import { publicConsentEvent } from '../services/EgovChainService.js';
 import { maskPhoneNumber } from '../services/eMessageService.js';
 
 const VALID_REQUEST_TYPES = new Set(['access', 'correction', 'restriction', 'objection', 'export']);
@@ -242,7 +243,7 @@ export function createPrivacyRouter(config: RuntimeConfig) {
             intakes: intakesResult.rows,
             appointments: appointmentsResult.rows,
             bookings: bookingsResult.rows,
-            consents: consentsResult.rows,
+            consents: consentsResult.rows.map((row) => publicConsentEvent(row as Record<string, unknown>, false)),
             notifications: notifsResult.rows,
             privacyRequests: privReqsResult.rows,
             correctionHistory: correctionsResult.rows,

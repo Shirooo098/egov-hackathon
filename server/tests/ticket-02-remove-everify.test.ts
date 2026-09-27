@@ -82,7 +82,7 @@ test('Ticket 02: Legacy eVerify HTTP endpoints fail closed with 404 and make no 
 });
 
 test('Ticket 02: /api/health reports official integration configuration without simulated success', async () => {
-  const keys = ['EBUHAY_MODE', 'EMESSAGE_BASE_URL', 'EMESSAGE_API_TOKEN', 'EGOVCHAIN_MODE', 'EGOVCHAIN_RPC_BASE_URL', 'EGOVCHAIN_RPC_TOKEN', 'EGOVCHAIN_SIGNER_PRIVATE_KEY'] as const;
+  const keys = ['EBUHAY_MODE', 'EMESSAGE_BASE_URL', 'EMESSAGE_API_TOKEN', 'EGOVCHAIN_MODE', 'EGOVCHAIN_RPC_BASE_URL', 'EGOVCHAIN_RPC_TOKEN', 'EGOV_AI_BASE_URL', 'EGOV_ACCESS_CODE'] as const;
   const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
   for (const key of keys) delete process.env[key];
   const app = createApp({ config: testConfig });
@@ -105,7 +105,7 @@ test('Ticket 02: /api/health reports official integration configuration without 
     Object.assign(process.env, {
       EBUHAY_MODE: 'synthetic', EMESSAGE_BASE_URL: 'https://sms.test', EMESSAGE_API_TOKEN: 'test-token',
       EGOVCHAIN_MODE: 'staging', EGOVCHAIN_RPC_BASE_URL: 'https://chain.test', EGOVCHAIN_RPC_TOKEN: 'test-token',
-      EGOVCHAIN_SIGNER_PRIVATE_KEY: '0x' + '1'.repeat(64),
+
     });
     const configured = (await (await fetch(`${base}/api/health`)).json()) as { services: Record<string, unknown> };
     assert.equal(configured.services.eMessage, 'CONFIGURED_STAGING');
