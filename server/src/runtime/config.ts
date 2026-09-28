@@ -152,10 +152,6 @@ export function isServiceAllowed(mode: RuntimeMode, service: ServiceCode): boole
   return SERVICE_CODES.includes(service) && (!isLiveMode(mode) || service === 'blood');
 }
 
-export function assertServiceAllowed(mode: RuntimeMode, service: ServiceCode): void {
-  if (!isServiceAllowed(mode, service)) throw new RuntimeConfigError(`Service ${service} is disabled in ${mode} mode`);
-}
-
 export function isDisabledService(value: unknown): boolean {
   return typeof value === 'string' && ['kidney', 'organ', 'living-kidney', 'deceased-kidney'].includes(value.toLowerCase());
 }

@@ -33,9 +33,6 @@ export const ALLOWED_NOTIFICATION_PURPOSES = Object.freeze(
 
 export const MAX_NOTIFICATION_ATTEMPTS = 5;
 
-export const notificationRetryDelayMs = (attempt: number) =>
-  Math.min(300_000, 1000 * 2 ** Math.min(Math.max(attempt - 1, 0), 6));
-
 export type NotificationRecordInput = {
   recipientAccountId: string;
   actorAccountId?: string | null;

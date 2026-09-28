@@ -16,13 +16,6 @@ export type ScheduleInput = {
   urgencyLevel?: 'critical' | 'urgent' | 'moderate';
 };
 
-export type ScheduleResult = {
-  success: boolean;
-  slots: Array<Record<string, unknown>>;
-  session_id?: string;
-  [key: string]: unknown;
-};
-
 export class CapabilityDeferredError extends Error {
   status = 503;
   code = 'capability_deferred';
@@ -60,10 +53,6 @@ export async function generateScheduleSlots(_input: ScheduleInput): Promise<neve
   throw new CapabilityDeferredError(
     'Official eGovAI scheduling optimization is unavailable. Clinical and scheduling outputs cannot be generated.'
   );
-}
-
-export function getCreditsRemaining(): number {
-  return 0;
 }
 
 export { askPublicFaq, PUBLIC_EGOVAI_CHOICES, type PublicEgovAIChoice } from './egovaiPublicFaq.js';
