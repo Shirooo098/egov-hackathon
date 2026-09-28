@@ -25,7 +25,7 @@ _Avoid_: AI match, verified match, clinical recommendation, allocation
 **Synthetic Demo Ready:** The state in which the synthetic showcase walkthrough, disclosures, reset behavior, and checks are repeatable. It is not production readiness.
 _Avoid_: Production ready
 
-**Hosted synthetic showcase:** A deployed, stable demonstration surface that uses fictional data, synthetic access, staging-only eGovChain anchoring, and visible disclosures. A hosting platform may label its deployment slot “Production,” but the showcase is not a live healthcare production service.
+**Hosted synthetic showcase:** A deployed, stable demonstration surface with synthetic healthcare workflows, official staging Citizen identity, read-only staging eGovChain connectivity, and visible disclosures. A hosting platform may label its deployment slot “Production,” but the showcase is not a live healthcare production service.
 _Avoid_: Production deployment
 
 **Official eGov staging API:** The official staging API for the named eGov-branded feature. Every user-facing eGov-branded feature uses its official staging API; service unavailability is shown as a clear error and may be retried, never replaced with generated or synthetic success output.
@@ -44,11 +44,15 @@ Citizen runtime login is official eGov SSO only in every environment; invitation
 
 **Case intent:** A Citizen's post-authentication choice to begin a donor or recipient case, not a distinct account type or login.
 
-**Official eGov scope:** The first scope is official eGov SSO, official eGovChain consent commitments, official eMessage transactional notifications triggered by consent and authenticated actions, official eGovAI informational-only responses, and optional standalone Face Liveness. eGovAI never makes clinical or legal decisions; eVerify remains deferred.
+**Official eGov scope:** Official staging Citizen SSO, read-only Chain connectivity, consented transactional SMS, and fixed public informational AI FAQs. Standalone Face Liveness is optional and deferred under separate biometric safeguards. Signed Chain anchoring is deferred; eVerify has no product feature, placeholder, or runtime integration.
 
 **Standalone Face Liveness:** An optional Citizen-initiated proof-of-presence check after SSO. It is not eVerify, identity authentication, case eligibility, or clinical clearance.
 
 **Liveness opt-in:** Explicit permission for one optional Face Liveness session. It does not authorize eBuhay to retain or display a selfie or reference image.
+
+**Completed presence check:** A one-session Face Liveness result verified by eBuhay against the official staging result endpoint: `SUCCEEDED` with confidence at least 95. The Citizen sees only “Presence check completed” or “Not completed—retry,” never a raw score. It is not identity verification.
+
+**Pending liveness session:** Transient state bound to the opted-in Citizen session. A hosted redirect only prompts eBuhay to retrieve the official result server-to-server; redirect parameters do not establish the result. No liveness-specific outcome, score, token, or image is persistently retained while its retention basis remains unapproved.
 
 **eMessage boundary:** Official eMessage is limited to appointment changes, status updates, and document-action reminders. Each notification requires explicit opt-in and an authenticated server trigger; SMS content is generic and non-medical.
 
@@ -65,13 +69,15 @@ _Avoid_: Delivered SMS
 
 **Project-owned security secrets and keys:** Required eBuhay-controlled secrets and signing keys remain distinct from generated provider outputs. Production or live use is not authorized.
 
-Any enabled feature missing required credentials blocks deployment. Runtime provider outages return a clear `503` and retry option. Private provider-contract implementation waits for authenticated schemas and never guesses.
+**Documented provider contract:** The supplied description of a provider's requests and responses. Missing details are unknowns, not invented fields or automatic requirements for additional provider documentation.
 
-**eGovChain privacy:** eGovChain stores commitments or hashes and non-identifying metadata only; it never stores PII, medical data, case data, or raw consent content.
+**Unconfirmed SMS attempt:** A submission whose acceptance cannot be established, including an interrupted send. It does not establish delivery and is not automatically resent.
+
+**Read-only Chain connection:** Verified access to official staging network metadata. It is not a consent proof and sends no identity, medical, case or raw consent content.
 
 **eGov audit and status:** Audit logs include the feature, internal request ID, provider status, time, actor, and correlation ID when supplied, but never credentials, tokens, exchange codes, message bodies, or unneeded PII. The UI never reports verified, delivered, or anchored without confirmed official evidence; an eMessage-created request is labeled accepted, not delivered.
 
-**Ticket completion:** The state in which the current implementation satisfies every binding acceptance criterion and retains the required evidence. Implemented code without that evidence is not ticket completion.
+**Ticket completion:** The state in which the ticket's documented flow and essential project safeguards are satisfied with the required verification evidence. Unknown provider details block only when safe implementation is impossible; implemented code without required evidence is not completion.
 _Avoid_: Code complete
 
 **Hospital:** The institutional system and staff boundary. In this prototype, the eBuhay Simulated Hospital owns only synthetic records and simulated booking evidence.
@@ -80,11 +86,11 @@ _Avoid_: Code complete
 
 **Confirmed booking:** A booking projection backed by separately recorded synthetic hospital evidence. It is not automatic synchronization.
 
-**eGovChain commitment:** Tamper-evident cryptographic evidence for an approved grant or withdrawal, anchored with the exact consent version and scope in synthetic staging. The planned anchor is a salted SHA-256 commitment in transaction calldata; it is distinct from clinical consent and current authorization, and does not guarantee legal validity.
+**eGovChain commitment (deferred):** Historical or planned evidence of a particular synthetic consent grant or withdrawal. Creating new commitments is outside the current read-only scope; a commitment is not clinical consent, current authorization or a guarantee of legal validity.
 
 **eGovChain provider:** The DICT-operated hosted Hyperledger Besu network and JSON-RPC gateway. It issues the RPC base URL and access token; eBuhay connects to it and does not operate blockchain nodes or validators.
 
-**eGovChain credential:** The provider-issued RPC base URL and token that permit eBuhay to call the hosted gateway. It is separate from the eBuhay-controlled signer private key.
+**eGovChain credential:** The provider-issued RPC base URL and token permitting access to the hosted gateway. Current read-only scope requires no signer credential.
 
 **Case consent:** Versioned citizen coordination and information-sharing consent attached to one donor or recipient case, with separate unchecked controls for each explicit purpose. Each feature requires its applicable consent; donor withdrawal does not change recipient consent.
 
@@ -94,7 +100,7 @@ _Avoid_: Code complete
 
 **eGovChain receipt:** Evidence of an actual official eGovChain staging transaction anchoring synthetic consent, clearly labeled with its environment. It is shown only after successful anchoring; simulated, pending, or failed attempts never become a receipt.
 
-**eGovChain signer:** A project-controlled blockchain identity dedicated to one synthetic staging environment. Its private key authorizes transactions and remains server-side; only its public address may be shared for verification or provider allowlisting. Local and hosted Preview environments use different signers.
+**eGovChain signer (deferred):** A blockchain identity capable of authorizing transactions. It is outside the current read-only scope.
 _Avoid_: Personal wallet
 
 **Current consent:** The newest applicable grant or withdrawal for one actor, purpose, and exact current scope in eBuhay. An eGovChain receipt proves an event was anchored; it does not decide current permission.

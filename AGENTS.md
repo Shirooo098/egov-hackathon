@@ -1,30 +1,76 @@
-# eBuhay agent guidance
+# eBuhay project guidance
 
-## Source of truth
+## Specifications
 
-Authority is ordered: [canonical PRD](tasks/prd-hospital-integrated-donation-platform.md) > [official eGov staging integration specification](.scratch/official-egov-integrations/spec.md) for branded integrations > [active synthetic hospital demo specification](.scratch/synthetic-hospital-demo/spec.md) for healthcare workflows. `PRODUCT.md`, `CONTEXT.md`, `README.md`, and `DESIGN.md` are active summaries. `DEMO_GUIDE.md`, older PRDs/specs, and the earlier [synthetic specification](.scratch/hospital-integrated-donation-platform/spec.md) are historical provenance; when they conflict, the higher authority wins.
+Read the relevant sections for the affected behavior, not every document.
 
-Tickets 01–24 are the existing synthetic foundation (tickets 04 and 05 are superseded for runtime Citizen login by official eGov staging SSO; case and pair workflow invitations remain). The implementation frontier is the synthetic-only replacement roadmap: ticket 25 Synthetic Hospital Foundation, ticket 26 Blood and Multi-Organ Simulation, and ticket 27 Synthetic Demo Ready. These tickets do not authorize partner sandbox, controlled-live, or production deployment; do not infer legal approval or launch authorization from documentation.
+Authority, highest first:
+1. `tasks/prd-hospital-integrated-donation-platform.md`
+2. `.scratch/official-egov-integrations/spec.md` for branded integrations
+3. `.scratch/synthetic-hospital-demo/spec.md` for healthcare workflows
 
-Official eGov staging SSO is the only runtime Citizen login in every environment; authentication invitations are superseded, while case and pair workflow invitations remain. Provider doubles are automated test fixtures only, never runtime modes or selectable login fallbacks. Healthcare records and hospital/blood/transplant/appointment/coordination workflows remain synthetic and live-disabled across intake, events, appointments, offers, UI, and APIs. Official eGov staging identity never grants Staff authority or production/live approval; Hospital Staff access remains separate (named accounts with password plus MFA). No live hospital, blood-service, clinical, or production integrations, credentials, or records are authorized.
+`PRODUCT.md`, `CONTEXT.md`, `README.md`, and `DESIGN.md` are summaries.
+`DEMO_GUIDE.md`, older specifications, and
+`.scratch/hospital-integrated-donation-platform/spec.md` are historical.
+Resolve conflicts using the authority order above.
 
-Living- and deceased-donor kidney workflows stay synthetic-only and live-disabled across intake, events, appointments, offers, UI, and APIs. Synthetic bounded behavior must remain visibly synthetic.
+For ticket work, confirm the active ticket and its dependencies against the
+applicable specification and roadmap. Record the current milestone and progress
+in `CONTINUITY.md`; do not infer completion from ticket numbering.
 
-## Repository shape
+## Runtime and data boundaries
 
-- Page-level screens live in `client/src/pages/`.
-- Reusable feature modules live in `client/src/features/`.
-- New shared UI lives in `client/src/components/ui/`; older `client/src/shared/ui/` files may remain during the user-owned migration and must be preserved.
-- Express backend code lives in `server/src/`; persistence and authorization belong on the server as implementation advances.
+- This is a server-backed synthetic demo, not a live healthcare service.
+- All healthcare records and hospital, blood, transplant, appointment, and
+  coordination workflows remain synthetic and live-disabled across intake,
+  events, offers, UI, and APIs. This includes living- and deceased-donor kidneys.
+- Make simulated behavior visibly synthetic. Attribute manual updates; never
+  present them as automatic synchronization. Manual updates may record a
+  simulated hospital-confirmed booking.
+- No live hospital, blood-service, clinical, or production integrations,
+  credentials, or records are authorized.
+- Roadmap tickets and staging identity do not authorize partner sandbox,
+  controlled-live, production deployment, or legal approval.
 
-Preserve unrelated dirty-worktree edits. Scope edits and tests to the requested files. Do not stage tests, commit, or push unless explicitly requested. Use the package-local scripts and test commands documented in each package; keep demo/browser validation separate from unit checks.
+## Authentication and authorization
 
-## Product boundaries
+- Official eGov staging SSO is the only runtime Citizen login in every environment.
+- Authentication invitations from foundation tickets 04 and 05 are superseded;
+  case and pair workflow invitations remain.
+- Provider doubles are automated test fixtures only, never runtime login modes
+  or selectable fallbacks.
+- Hospital Staff use separate named accounts with password and MFA.
+  Citizen staging identity never grants Staff authority.
+- Enforce persistence and authorization on the server.
 
-Citizens may hold separate donor and recipient cases under one account; adult self-service is the initial boundary. Coordinators handle operational work. A clinical lead assigns Doctors; Doctors own clinical review in the hospital system. Hospital systems own authoritative clinical outcomes, appointment availability, and confirmed bookings. eBuhay stores coordination status, approved summaries, references, source/author/time, and reconciliation history.
+## Product ownership
 
-The current repository is a browser/demo app with server-backed synthetic workflows, not a live service. Never misrepresent simulated records as real or manual updates as automatically synchronized; an attributed manual update may record a simulated hospital-confirmed booking. There is no automatic matching/ranking or Citizen clinical clearance. Citizen messaging is with the assigned coordination team, with only the explicitly bounded synthetic anonymous pair-conversation exception. The roadmap does not authorize live use.
+- One Citizen account may hold separate donor and recipient cases.
+  Initial self-service is adult-only.
+- Coordinators handle operations. Clinical leads assign Doctors.
+  Doctors own clinical review in the hospital system.
+- Hospital systems own authoritative clinical outcomes, appointment
+  availability, and confirmed bookings.
+- eBuhay stores coordination status, approved summaries, references,
+  source/author/time, and reconciliation history.
+- No automatic matching/ranking or Citizen clinical clearance.
+- Citizen messaging is with the assigned coordination team, except for the
+  explicitly specified synthetic anonymous pair-conversation workflow.
 
-## Collaboration
+## Code placement
 
-Delegate substantial, separable work to the cheapest suitable specialized agent with explicit file ownership. Keep ownership non-overlapping, preserve concurrent edits, and report verification honestly. Use `rtk` for repository inspection where available.
+- Screens: `client/src/pages/`
+- Feature modules: `client/src/features/`
+- New shared UI: `client/src/components/ui/`
+- Preserve existing `client/src/shared/ui/` during the user-owned migration.
+- Express backend: `server/src/`
+
+## Execution and validation
+
+- Follow the global execution, modularity, and continuity policy.
+- Scope changes and checks to the affected behavior, including relevant callers.
+- Use affected-package scripts and documented test commands.
+- Keep browser/demo validation separate from unit checks.
+- Preserve unrelated worktree changes.
+- Do not stage tests, commit, or push unless explicitly requested.
+- Use `rtk` for supported repository inspection commands where available.

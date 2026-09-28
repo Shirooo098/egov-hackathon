@@ -12,10 +12,11 @@ This checkpoint measures synthetic-demo progress, not launch readiness.
 
 | Tickets | Current classification | Evidence and remaining gate |
 |---|---|---|
-| 01–24 | Existing synthetic foundation | Existing client/server behavior remains synthetic and must retain visible labels, attribution, resetability, and server boundaries where implemented. |
+| 01–23 | Existing synthetic foundation | Existing client/server behavior remains synthetic and must retain visible labels, attribution, resetability, and server boundaries where implemented. |
+| 24 | Measured automated baseline | Run isolated database, security, authorization, concurrency, reset-boundary, build, typecheck, lint, and affected automated checks with retained source-revision evidence. Manual accessibility, walkthrough, and reviewer signoff belong to Ticket 27; Ticket 24 is still open. |
 | 25 | Synthetic Hospital Foundation | Establish the console foundation; separate Citizen official eGov staging SSO and Staff named-password/MFA roles with environment-scoped secrets (authentication invitations superseded; case/pair workflow invitations remain; provider doubles are tests only); blood/transplant services; and shared signer plus CLI cleanup. |
 | 26 | Blood and Multi-Organ Simulation | Exercise exact living kidney/liver and deceased kidney/liver/heart/lung/pancreas journeys with representative deterministic fixtures and signed events, without matching, allocation, or clearance. |
-| 27 | Synthetic Demo Ready | Verify admin-only console reset, measured checks, rejection/reconciliation behavior, current landing disclosure, and the existing showcase walkthrough; no reset CLI. |
+| 27 | Synthetic Demo Ready | Verify admin-only console reset, measured checks, rejection/reconciliation behavior, manual accessibility, accountable reviewer signoff, current landing disclosure, and the existing showcase walkthrough; no reset CLI. |
 
 The next engineering checkpoint is Synthetic Hospital Foundation, followed by Blood and Multi-Organ Simulation and Synthetic Demo Ready. These tickets do not authorize controlled-live or production deployment; runtime Citizen login is official eGov staging SSO only in every environment, and healthcare workflows remain synthetic-only.
 
@@ -61,6 +62,10 @@ There is no automated matching, ranking, compatibility calculation, clinical cle
 
 Progression is evidence-based; a ticket may not be treated as live approval. Exit evidence must be attributable to an accountable owner and retained with the demo record.
 
+### Ticket 24 — Measured Synthetic Baseline
+
+**Exit:** actual automated client/server, security, authorization, concurrency, isolated PostgreSQL integrity, reset-boundary, build, typecheck, and lint results are retained with raw logs, fixtures, timestamps, source revision, and synthetic environment. Partial or failed results remain visible. This gate releases synthetic implementation work but is not Synthetic Demo Ready; manual accessibility, walkthrough, and accountable reviewer acceptance occur in Ticket 27.
+
 ### Ticket 25 — Synthetic Hospital Foundation
 
 **Entry:** synthetic-only environment, approved build contract, seeded/reset data, visible simulation disclosures, named test owner, and no real personal or hospital records.
@@ -79,7 +84,7 @@ Progression is evidence-based; a ticket may not be treated as live approval. Exi
 
 **Entry:** Tickets 25–26 evidence, reproducible admin-only console reset, disclosure copy, walkthrough instructions, and affected client/server checks.
 
-**Exit:** measured checks pass; rejection and reconciliation behavior is evidenced; the current landing disclosure and existing [showcase walkthrough](../docs/SHOWCASE_RELEASE.md) are accurate; reset is admin-only through the console with no reset CLI; and the demo is free of claims about real identities, clinical decisions, live integrations, or production deployment.
+**Exit:** measured checks pass; manual keyboard, screen-reader, contrast, responsive, and end-to-end walkthrough results plus accountable reviewer acceptance are retained for the actual showcase revision; rejection and reconciliation behavior is evidenced; the current landing disclosure and existing [showcase walkthrough](../docs/SHOWCASE_RELEASE.md) are accurate; reset is admin-only through the console with no reset CLI; and the demo is free of claims about real identities, clinical decisions, live integrations, or production deployment.
 
 ## Explicitly prohibited by this roadmap
 
