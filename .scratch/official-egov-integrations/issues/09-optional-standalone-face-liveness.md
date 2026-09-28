@@ -4,7 +4,7 @@
 
 **Blocked by:** 01 — Official Citizen session; 02 — no eVerify feature and truthful liveness unavailability; authenticated Face Liveness error/status and provider-retention contract; approved privacy notice and safety review.
 
-**Status:** blocked-external — success contract supplied; error/expiry behavior, provider/privacy gates and credentialed validation remain outstanding; does not block Ticket 07
+**Status:** deferred — optional; success contract supplied; error/expiry behavior, provider/privacy gates and credentialed validation remain outstanding; does not block Ticket 07
 
 ## Contract evidence — 2026-09-24
 

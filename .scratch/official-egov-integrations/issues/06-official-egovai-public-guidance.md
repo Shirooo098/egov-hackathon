@@ -2,16 +2,16 @@
 
 **What to build:** Provide a fixed, curated set of public eBuhay-process FAQ choices through the verified official eGovAI staging contract while excluding free text and personal, case, clinical, matching, and appointment information.
 
-**Blocked by:** 05 — Capture the authenticated eGovAI contract.
+**Open verification:** The supplied success contract is documented in Ticket 05. Actual provider staging verification remains open.
 
-**Status:** blocked-external — fixed public FAQ choices and server allowlist implemented (`fbb3f2d`); the local HTTP boundary rejects extra request data and invalid categories, and UI tests confirm informational and retry guidance. Provider answers remain blocked by Ticket 05's authenticated contract.
+**Status:** open — the fixed public FAQ provider flow, server allowlist, failure handling, and UI guidance are implemented locally (`c01cc6a`). Actual staging verification remains open.
 
-On 2026-09-25, the obsolete Staff-facing free-text "PH Health Laws AI" prototype and its synthetic-only `/api/egovai/laws` and `/api/v1/egovai/laws` routes were removed. Both legacy paths now return 404 in the synthetic runtime; the fixed-choice Citizen FAQ endpoint remains deferred until Ticket 05 is complete.
+On 2026-09-25, the obsolete Staff-facing free-text "PH Health Laws AI" prototype and its synthetic-only `/api/egovai/laws` and `/api/v1/egovai/laws` routes were removed. Both legacy paths now return 404 in the synthetic runtime. The fixed-choice Citizen FAQ endpoint uses the documented provider token/inference flow. [Local verification](../evidence/read-only-chain-and-ai-local-checks-2026-09-28.md) covers fixtures, not an actual provider response.
 
-- [ ] The assistant uses only the verified official staging contract and has no generated or local-answer fallback.
+- [ ] The assistant uses only the supplied and then verified official staging contract and has no generated or local-answer fallback.
 - [x] Only fixed public FAQ selections can be submitted; free-text prompts and identity, case, donor, recipient, clinical, matching, and appointment data cannot cross the provider boundary.
 - [ ] Responses are visibly informational and are never presented as clinical, legal, eligibility, clearance, matching, ranking, treatment, or scheduling decisions.
-- [ ] Provider failures return a clear unavailable state with retry guidance instead of a fabricated answer.
-- [ ] Credentials and provider tokens remain server-side and are excluded from persistence and logs.
-- [ ] HTTP-level tests use redacted official-shaped fixtures to cover allowed FAQ choices, rejected arbitrary text/prohibited data, provider errors, and the absence of fallback answers.
+- [x] Timeout, non-2xx, and malformed provider responses return a clear unavailable state with retry guidance instead of a fabricated answer in local checks.
+- [x] Credentials and provider tokens remain server-side and are excluded from persistence and logs in the implemented flow.
+- [x] HTTP-level tests use redacted official-shaped fixtures to cover allowed FAQ choices, rejected arbitrary text/prohibited data, provider errors, and the absence of fallback answers.
 - [x] User-visible tests verify the informational label and truthful unavailable state.
