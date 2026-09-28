@@ -60,6 +60,8 @@ server/tests/*.log
 .impeccable/
 
 # Local-only source and verification material
+/.codegraph/
+/docs/
 **/src/cli/
 **/tests/
 /server/src/db/migrate-test.ts
