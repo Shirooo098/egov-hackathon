@@ -2,7 +2,7 @@
 
 **What to build:** Validate official staging JSON-RPC with the credential-issued base URL/token: read chain ID, gas price and a block. Report connection results without claiming consent was anchored.
 
-**Status:** open — runtime aligned with the revised read-only scope on 2026-09-28; local checks pass and actual revision-specific staging evidence remains. Non-identifying network metadata does not depend on Citizen SSO; existing application authorization stays intact.
+**Status:** complete — runtime aligned with the revised read-only scope on 2026-09-28; local checks and actual revision-specific staging reads passed. Non-identifying network metadata does not depend on Citizen SSO; existing application authorization stays intact. Deployed integration remains Ticket 07's gate.
 
 ## Scope and documentation basis
 
@@ -21,12 +21,12 @@ Consent signing/submission, smart-contract deployment and anchoring are deferred
 - [x] Keep credential-bearing RPC URLs/tokens server-side; no personal, consent or healthcare content in requests/logs.
 - [x] Labels distinguish configured, verified read-only connection and unavailable; no connectivity-as-anchor or legal/clinical proof claim.
 - [x] Focused checks verify no signer requirement, no signing/broadcast, failure handling and privacy.
-- [ ] Retain authorized actual read-only staging observations with UTC time, source revision, chain ID, gas price and public block reference. No new provider call is claimed by this revision.
+- [x] Retain actual read-only staging observations with UTC time, source revision, chain ID, gas price and public block reference. [Redacted provider observation](../evidence/chain-ai-staging-provider-2026-09-28.md) records four successful reads; no transaction was submitted.
 
 ## Historical work
 
 Previous receipt/delayed-mining/reorg/Citizen-state fixture checks passed focused24/24, typecheck and review on 2026-09-27. They do not prove the revised read-only runtime or an actual anchor. The 2026-09-28 runtime removes signing, broadcasting and anchor queue processing. Existing stored evidence is preserved and displayed as historical; obsolete signed-runtime tests remain available in Git history. These local implementation changes do not establish an actual staging observation.
 
-## Local verification � 2026-09-28
+## Local verification — 2026-09-28
 
-Runtime plus regression fixtures based on `07de449`: normal server suite127/127, server typecheck, client focused UI10/10 and client typecheck/production build passed. Independent security review found an old-status omission in consent replay/export responses; both callers were repaired and the regression fixture passed. [Verification record](../evidence/read-only-chain-and-ai-local-checks-2026-09-28.md). No actual provider, database or browser operation was performed.
+Runtime plus regression fixtures based on `07de449`: normal server suite127/127, server typecheck, client focused UI10/10 and client typecheck/production build passed. Independent security review found an old-status omission in consent replay/export responses; both callers were repaired and the regression fixture passed. [Verification record](../evidence/read-only-chain-and-ai-local-checks-2026-09-28.md). That earlier local test run performed no provider, database or browser operation; the subsequent read-only provider observation is linked above.

@@ -1,7 +1,7 @@
 # Official eGov ticket status
 
 Updated 2026-09-28 from the individual ticket records and retained local checks.
-**2 complete; 6 open; 1 optional deferred.** Open records remaining staging,
+**4 complete; 4 open; 1 optional deferred.** Open records remaining staging,
 provider, or runtime verification; it does not erase implemented work or passing
 local checks.
 
@@ -9,16 +9,17 @@ local checks.
 | --- | --- | --- |
 | [01 — Citizen SSO](01-official-egov-sso-citizen-login.md) | **Open** | Validate actual in-app staging sign-in and confirmation. Callback-correlation behavior remains an explicit provider unknown; concrete unresolved authentication vulnerabilities block completion. Local handoff/session/replay checks are implemented. |
 | [02 — Remove eVerify](02-remove-everify-and-hold-liveness.md) | **Complete** | No remaining work in this ticket. eVerify removed; Face Liveness held unavailable. |
-| [03 — Read-only Chain](03-official-egovchain-consent-proof.md) | **Open** | Read-only runtime is implemented and locally checked; retain authorized actual staging chain/gas/block evidence. No Citizen SSO dependency for network metadata. |
+| [03 — Read-only Chain](03-official-egovchain-consent-proof.md) | **Complete** | Four documented staging RPC reads passed with chain13371, zero gas, and a public block reference; no signer or write. Deployed revision validation remains Ticket 07. |
 | [04 — eMessage](04-official-opted-in-emessage-notifications.md) | **Open** | Validate official `201` acknowledgement using an approved opted-in SSO destination. Ambiguous sends remain unconfirmed with no automatic retry or new reconciliation tooling required. Local consent, authorization, audit and PostgreSQL checks pass. |
 | [05 — AI contract](05-capture-authenticated-egovai-contract.md) | **Complete — documentation-only** | Supplied token/inference success schemas, source lines, privacy limits, and unknowns are recorded. Provider implementation and staging verification remain outside this documentation-only completion. |
-| [06 — AI public guidance](06-official-egovai-public-guidance.md) | **Open** | Curated FAQ provider flow and failure handling are implemented and locally checked; retain an actual official staging FAQ response. |
+| [06 — AI public guidance](06-official-egovai-public-guidance.md) | **Complete** | One fixed public FAQ passed actual staging token/inference validation. Deployed UI validation remains Ticket 07. |
 | [07 — Deployment validation](07-official-only-deployment-validation.md) | **Open** | Supply approved deployment/test inputs and call authorization, then retain complete staging smoke evidence. Local structural checks and runbook are ready. |
 | [08 — Widget / post-SSO](08-official-web-widget-and-post-sso-journey.md) | **Open** | Validate both real staging entry paths use the same account and preserve Citizen/Staff separation, case choice and local sign-out. Local widget/journey checks are implemented. |
 | [09 — Optional Face Liveness](09-optional-standalone-face-liveness.md) | **Deferred — optional** | Separate optional privacy, provider, and safety work remains deferred. Does not block 07. |
 
 Individual ticket acceptance checklists remain authoritative. No unchecked item is
 declared complete by this summary. A limited [local-backend SSO provider check](../evidence/sso-provider-smoke-2026-09-27.json) passed token/profile operations; its mobile did not match the approved SMS destination. Complete deployed staging smoke checks have not run.
+[Read-only Chain and public FAQ staging observations](../evidence/chain-ai-staging-provider-2026-09-28.md) passed through local backend clients; they do not prove the deployed revision.
 Follow the [staging smoke runbook](../../../docs/OFFICIAL_EGOV_STAGING_SMOKE.md)
 when its approved inputs and contracts are available; keep credentials in the
 server environment, not in tickets or evidence.
