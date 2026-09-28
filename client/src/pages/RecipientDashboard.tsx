@@ -10,6 +10,7 @@ import { useMatch } from "../context/MatchContext";
 import { ALL_ORGANS as ORGANS, BLOOD_TYPES } from "../services/domain";
 import { formatStatus } from "../utils/matchStatus";
 import PairCoordinationPanel from "../features/match/PairCoordinationPanel";
+import SmsPreferences from "../features/notifications/SmsPreferences";
 import {
   HeartIcon,
   MatchIcon,
@@ -390,6 +391,7 @@ export default function RecipientDashboard({
                   </button>
                 </form>
               </div>
+              <SmsPreferences />
             </div>
           )}
 

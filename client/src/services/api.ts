@@ -29,8 +29,8 @@ async function request(
   if (csrf) headers["x-csrf-token"] = csrf;
   const res = await fetch(`${API_BASE}${path}`, {
     credentials: "include",
-    headers,
     ...options,
+    headers,
   });
   let data: JsonObject = {};
   try {
@@ -55,16 +55,29 @@ export const api = {
   request,
   auth: {
     session: () => request("/auth/session"),
-    redeemInvitation: (token: string) =>
-      request("/auth/invitations/redeem", {
-        method: "POST",
-        body: JSON.stringify({ token }),
-      }),
     logout: () => request("/auth/logout", { method: "POST" }),
     staffSignIn: (username: string, password: string, mfaCode: string) =>
       request("/auth/staff/sign-in", {
         method: "POST",
         body: JSON.stringify({ username, password, mfaCode }),
+      }),
+    csrf: () => request("/v1/csrf"),
+    egovWidgetConfig: () => request("/v1/auth/egov/widget-config"),
+    egovPending: () => request("/v1/auth/egov/pending"),
+    egovExchange: (exchangeCode: string) =>
+      request("/v1/auth/egov/exchange", {
+        method: "POST",
+        body: JSON.stringify({ exchange_code: exchangeCode }),
+      }),
+    egovConfirm: (pendingId: string) =>
+      request("/v1/auth/egov/confirm", {
+        method: "POST",
+        body: JSON.stringify({ pendingId }),
+      }),
+    egovCancel: (pendingId: string) =>
+      request("/v1/auth/egov/cancel", {
+        method: "POST",
+        body: JSON.stringify({ pendingId }),
       }),
   },
   // Operations & Admin Controls
@@ -80,19 +93,5 @@ export const api = {
     request("/blockchain/anchor", {
       method: "POST",
       body: JSON.stringify(body),
-    }),
-  // eGovAI Laws
-  askLaws: (prompt: string, category = "PH") =>
-    request("/egovai/laws", {
-      method: "POST",
-      body: JSON.stringify({ prompt, category }),
-    }),
-
-  // eMessage SMS
-  // number must be E.164 format, e.g. "+639090000000"
-  sendSms: (number: string, message: string) =>
-    request("/emessage/sms/push", {
-      method: "POST",
-      body: JSON.stringify({ number, message }),
     }),
 };

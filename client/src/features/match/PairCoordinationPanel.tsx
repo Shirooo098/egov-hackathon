@@ -72,6 +72,11 @@ const safeCoordinationText = (value?: string) => {
 };
 const newestEvents = (events: Consent[] = []) =>
   [...events].sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+const proofLabel = (status?: string) => {
+  if (status === "historical" || status === "verified") return "historical chain record (not reverified)";
+  if (status === "deferred" || status === "pending") return "anchoring deferred (read-only official chain)";
+  return "official chain unavailable";
+};
 type PairProps = {
   role?: string;
   pairId?: string;
@@ -532,9 +537,9 @@ export default function PairCoordinationPanel({
             return (
               <div key={purpose} className="consent-control">
                 <strong>{label}</strong>
-                <p>{current ? "Granted for this case." : `${episodeConsent.current?.[purpose] || "required"}.`} {latest && `Latest proof: ${latest.anchorStatus || "pending"}.`}</p>
-                {latest?.txHash && <small>Staging transaction: {latest.txHash} · Recorded {latest.createdAt || "time unavailable"}</small>}
-                {!!episodeConsent.events?.filter((event) => event.purpose === purpose).length && <ol aria-label={`${label} consent history`}>{newestEvents(episodeConsent.events.filter((event) => event.purpose === purpose)).map((event) => <li key={event.id || `${event.createdAt}-${event.action}-${event.purpose}`}>{event.action || "action"} · {event.purpose || purpose} · {event.createdAt || "time unavailable"} · proof {event.anchorStatus || "pending"}{event.txHash ? ` · tx ${event.txHash}` : ""}</li>)}</ol>}
+                <p>{current ? "Granted for this case." : `${episodeConsent.current?.[purpose] || "required"}.`} {latest && `Latest proof: ${proofLabel(latest.anchorStatus)}.`}</p>
+                {latest?.txHash && <small>Historical staging transaction: {latest.txHash} (not reverified) · Recorded {latest.createdAt || "time unavailable"}</small>}
+                {!!episodeConsent.events?.filter((event) => event.purpose === purpose).length && <ol aria-label={`${label} consent history`}>{newestEvents(episodeConsent.events.filter((event) => event.purpose === purpose)).map((event) => <li key={event.id || `${event.createdAt}-${event.action}-${event.purpose}`}>{event.action || "action"} · {event.purpose || purpose} · {event.createdAt || "time unavailable"} · proof {proofLabel(event.anchorStatus)}{event.txHash ? ` · historical tx ${event.txHash} (not reverified)` : ""}</li>)}</ol>}
                 <label>
                   <input type="checkbox" checked={Boolean(consentConfirm[grantKey])} onChange={(e) => setConsentConfirm((state) => ({ ...state, [grantKey]: e.target.checked }))} />
                   I explicitly confirm this purpose for this synthetic case.
@@ -729,9 +734,9 @@ export default function PairCoordinationPanel({
                 return (
                   <div className="consent-control" key={purpose}>
                     <strong>{text}</strong>
-                    <p>{current ? "Granted for this pair." : `${pairConsent.current?.[purpose] || "required"}.`} {latest && `Latest proof: ${latest.anchorStatus || "pending"}.`}</p>
-                    {latest?.txHash && <small>Staging transaction: {latest.txHash} · Recorded {latest.createdAt || "time unavailable"}</small>}
-                    {!!pairConsent.events?.filter((event) => event.purpose === purpose).length && <ol aria-label={`${text} consent history`}>{newestEvents(pairConsent.events.filter((event) => event.purpose === purpose)).map((event) => <li key={event.id || `${event.createdAt}-${event.action}-${event.purpose}`}>{event.action || "action"} · {event.purpose || purpose} · {event.createdAt || "time unavailable"} · proof {event.anchorStatus || "pending"}{event.txHash ? ` · tx ${event.txHash}` : ""}</li>)}</ol>}
+                    <p>{current ? "Granted for this pair." : `${pairConsent.current?.[purpose] || "required"}.`} {latest && `Latest proof: ${proofLabel(latest.anchorStatus)}.`}</p>
+                    {latest?.txHash && <small>Historical staging transaction: {latest.txHash} (not reverified) · Recorded {latest.createdAt || "time unavailable"}</small>}
+                    {!!pairConsent.events?.filter((event) => event.purpose === purpose).length && <ol aria-label={`${text} consent history`}>{newestEvents(pairConsent.events.filter((event) => event.purpose === purpose)).map((event) => <li key={event.id || `${event.createdAt}-${event.action}-${event.purpose}`}>{event.action || "action"} · {event.purpose || purpose} · {event.createdAt || "time unavailable"} · proof {proofLabel(event.anchorStatus)}{event.txHash ? ` · historical tx ${event.txHash} (not reverified)` : ""}</li>)}</ol>}
                     <label>
                       <input type="checkbox" checked={Boolean(consentConfirm[grantKey])} onChange={(e) => setConsentConfirm((state) => ({ ...state, [grantKey]: e.target.checked }))} />
                       I explicitly confirm this purpose for this synthetic pair.

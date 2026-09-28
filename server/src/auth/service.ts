@@ -17,7 +17,6 @@ const SESSION_TTL_MS = Number.isFinite(configuredTtl)
 const TOKEN_LENGTH = 43;
 const digest = (value: string | Buffer) =>
   crypto.createHash("sha256").update(value).digest();
-const newToken = () => crypto.randomBytes(32).toString("base64url");
 
 function publicAccount(row: Record<string, unknown>): Account {
   return {
@@ -31,7 +30,7 @@ function publicAccount(row: Record<string, unknown>): Account {
   };
 }
 
-function isInvitationToken(token: unknown): token is string {
+function isSessionToken(token: unknown): token is string {
   return (
     typeof token === "string" &&
     token.length === TOKEN_LENGTH &&
@@ -39,72 +38,12 @@ function isInvitationToken(token: unknown): token is string {
   );
 }
 
-async function redeemInvitation(token: unknown) {
-  if (!isInvitationToken(token)) return null;
-  const pool = getPool();
-  const client = await pool.connect();
-  const sessionToken = newToken();
-  try {
-    await client.query("BEGIN");
-    const invitation = await client.query(
-      `UPDATE invitations SET consumed_at = now()
-      WHERE token_hash = $1 AND consumed_at IS NULL AND expires_at > now() AND purpose IN ('admission', 'login')
-      RETURNING purpose, intended_account_id, intended_contact, role, service_scope, hospital_id`,
-      [digest(token)],
-    );
-    if (!invitation.rowCount) {
-      await client.query("ROLLBACK");
-      return null;
-    }
-    const row = invitation.rows[0] as Record<string, unknown>;
-    let account;
-    if (row.purpose === "admission") {
-      const created = await client.query(
-        `INSERT INTO accounts (login_identity, display_name, role, service_scope, hospital_id)
-        VALUES (COALESCE($1, 'invited-' || encode($2, 'hex')), $1, $3, $4, $5) RETURNING *`,
-        [
-          row.intended_contact,
-          digest(token),
-          row.role,
-          row.service_scope || [],
-          row.hospital_id || null,
-        ],
-      );
-      account = created.rows[0];
-    } else {
-      const target = await client.query(
-        `SELECT * FROM accounts WHERE id = $1 AND status = 'active' FOR UPDATE`,
-        [row.intended_account_id],
-      );
-      if (!target.rowCount || target.rows[0].role !== "citizen") {
-        await client.query("ROLLBACK");
-        return null;
-      }
-      account = target.rows[0];
-    }
-    const expires = new Date(Date.now() + SESSION_TTL_MS);
-    await client.query(
-      "INSERT INTO sessions (account_id, token_hash, expires_at) VALUES ($1, $2, $3)",
-      [account.id, digest(sessionToken), expires],
-    );
-    await client.query("COMMIT");
-    return { token: sessionToken, account: publicAccount(account) };
-  } catch (error) {
-    await client.query("ROLLBACK").catch(() => {});
-    if (error instanceof Error && "code" in error && error.code === "23505")
-      return null;
-    throw error;
-  } finally {
-    client.release();
-  }
-}
-
 type SessionExecutor = Pick<ReturnType<typeof getPool>, "query" | "connect">;
 type QueryExecutor = Pick<SessionExecutor, "query">;
 type SessionDeps = { executor?: SessionExecutor; now?: Date };
 
 async function currentSession(token: unknown, deps: SessionDeps = {}) {
-  if (!isInvitationToken(token)) return null;
+  if (!isSessionToken(token)) return null;
   const now = deps.now ?? new Date();
   const executor = deps.executor ?? getPool();
   const result = await executor.query(
@@ -125,7 +64,7 @@ async function listSessions(
   deps: SessionDeps = {},
 ) {
   const executor = deps.executor ?? getPool();
-  const currentHash = isInvitationToken(currentToken)
+  const currentHash = isSessionToken(currentToken)
     ? digest(currentToken)
     : null;
   const result = await executor.query(
@@ -195,7 +134,7 @@ async function revokeSession(
 }
 
 async function logout(token: unknown, deps: SessionDeps = {}): Promise<void> {
-  if (isInvitationToken(token))
+  if (isSessionToken(token))
     await (deps.executor ?? getPool()).query(
       "UPDATE sessions SET revoked_at = now() WHERE token_hash = $1 AND revoked_at IS NULL",
       [digest(token)],
@@ -205,7 +144,6 @@ async function logout(token: unknown, deps: SessionDeps = {}): Promise<void> {
 export {
   SESSION_COOKIE,
   SESSION_TTL_MS,
-  redeemInvitation,
   currentSession,
   listSessions,
   listVerificationHistory,

@@ -2,7 +2,6 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import type { Request, Response, NextFunction } from "express";
-import verifyRouter from "./routes/verify.js";
 import { createSessionRouter } from "./routes/session.js";
 import staffRouter from "./routes/staff.js";
 import rebaselineRouter from "./routes/rebaseline.js";
@@ -10,7 +9,6 @@ import platformRouter from "./routes/platform.js";
 import matchRouter from "./routes/match.js";
 import scheduleRouter from "./routes/schedule.js";
 import blockchainRouter from "./routes/blockchain.js";
-import egovaiRouter from "./routes/egovai.js";
 import egovRouter from "./routes/egov.js";
 import emessageRouter from "./routes/emessage.js";
 import { getPool } from "./db/pool.js";
@@ -30,6 +28,10 @@ import {
   v1Cors,
 } from "./middleware/v1-security.js";
 import { SESSION_COOKIE } from "./auth/service.js";
+import { createEgovCallbackRouter } from "./routes/egov-auth.js";
+import { egovchainEnabled } from "./services/EgovChainService.js";
+import { publicFaqConfigured } from "./services/egovaiPublicFaq.js";
+import { safeRouteClass } from "./middleware/route-class.js";
 
 export type AppOptions = {
   config?: RuntimeConfig;
@@ -42,16 +44,6 @@ function containsDisabledService(value: unknown): boolean {
   if (value && typeof value === "object")
     return Object.values(value).some(containsDisabledService);
   return false;
-}
-
-function safeRouteClass(path: string): string {
-  const parts = path.split("/").filter(Boolean);
-  if (parts.includes("health") && parts.includes("live")) return "health.live";
-  const liveness = parts.indexOf("liveness");
-  if (liveness >= 0)
-    return `egov.liveness.${parts[liveness + 1] === "result" ? "result" : "session"}`;
-  // Keep unknown routes at a low-cardinality prefix; never emit identifiers.
-  return parts.slice(0, 2).join(".") || "root";
 }
 
 export function createApp(options: AppOptions = {}) {
@@ -67,6 +59,7 @@ export function createApp(options: AppOptions = {}) {
   const app = express();
 
   // Middleware
+  app.use(requestCorrelation);
   const allowedOrigins = config?.allowedOrigins ?? [];
   app.use(
     cors({
@@ -130,7 +123,6 @@ export function createApp(options: AppOptions = {}) {
   });
 
   // Request logger
-  app.use(requestCorrelation);
   app.use((req, res, next) => {
     console.log(
       JSON.stringify({
@@ -149,6 +141,7 @@ export function createApp(options: AppOptions = {}) {
   app.use("/api/v1", createCsrfProtection(SESSION_COOKIE));
   app.use("/api/v1", redactV1Response);
   app.use("/api/v1", createV1Router(config!));
+  app.use("/egovph", throttle(config!), createEgovCallbackRouter(config!));
 
   // Health check endpoints
   const liveHealth = (_req: Request, res: Response) => {
@@ -177,9 +170,7 @@ export function createApp(options: AppOptions = {}) {
   app.get("/api/health/ready", readyHealth);
 
   app.get("/api/health", (_req, res) => {
-    const integrationStatus = isLiveMode(config!.mode)
-      ? "DISABLED"
-      : "SYNTHETIC";
+    const inactiveStatus = isLiveMode(config!.mode) ? "DISABLED" : "UNAVAILABLE";
     res.status(200).json({
       success: true,
       status: "alive",
@@ -188,20 +179,19 @@ export function createApp(options: AppOptions = {}) {
       version: "1.0.0",
       timestamp: new Date().toISOString(),
       services: {
-        eVerify: integrationStatus,
-        eMessage: integrationStatus,
-        eGovAI: integrationStatus,
-        BesuBlockchain: integrationStatus,
+        eMessage: !isLiveMode(config!.mode) && process.env.EMESSAGE_BASE_URL?.trim() && process.env.EMESSAGE_API_TOKEN?.trim() ? "CONFIGURED_STAGING" : inactiveStatus,
+        eGovAI: config!.mode === "synthetic" && publicFaqConfigured() ? "CONFIGURED_STAGING" : inactiveStatus,
+        eGovChain: !isLiveMode(config!.mode) && egovchainEnabled() ? "CONFIGURED_STAGING" : inactiveStatus,
       },
     });
   });
 
   // Routes
-  app.use("/api/auth", verifyRouter);
-  // Invitation/session auth is intentionally mounted beside the legacy verifier.
-  // It is database-backed and does not alter the legacy demo endpoint.
   app.use("/api/auth", createSessionRouter(config!));
   app.use("/api/auth", staffRouter);
+  app.use("/api/auth", (_req, res) =>
+    res.status(404).json({ success: false, error: "not_found", message: "Route not found" }),
+  );
   if (config!.mode !== "synthetic")
     app.use("/api/egov", (_req, res) =>
       res
@@ -222,13 +212,12 @@ export function createApp(options: AppOptions = {}) {
     app.use("/api/matches", matchRouter);
     app.use("/api/schedule", scheduleRouter);
     app.use("/api/blockchain", blockchainRouter);
-    app.use("/api/egovai", egovaiRouter);
   }
   if (config!.mode === "partner-sandbox") {
     app.use("/api/platform", platformRouter);
     app.use("/api", platformRouter);
   }
-  if (config!.mode === "synthetic") app.use("/api/egov", egovRouter);
+  if (config!.mode === "synthetic") app.use("/api/egov", throttle(config!), egovRouter);
   console.log("✅ Registered /api/egov routes");
   console.log("✅ Registered /api/emessage routes");
 
@@ -250,7 +239,7 @@ export function createApp(options: AppOptions = {}) {
       .status(404)
       .json({
         success: false,
-        message: `Route ${req.method} ${req.url} not found`,
+        message: "Route not found",
       });
   });
 
@@ -260,21 +249,22 @@ export function createApp(options: AppOptions = {}) {
       err: Error & { status?: number },
       req: Request,
       res: Response,
-      next: NextFunction,
+      _next: NextFunction,
     ) => {
       const requestId = (req as Request & { requestId?: string }).requestId;
-      const cause = (
-        err as { cause?: { message?: string; detail?: string; code?: string } }
-      ).cause;
+      const status =
+        typeof err.status === "number" && err.status >= 400 && err.status < 600
+          ? err.status
+          : 500;
+      const errorCategory = status >= 500 ? "server_error" : "client_error";
       console.error(
         JSON.stringify({
           level: "error",
           requestId,
+          route: safeRouteClass(req.path),
+          status,
+          category: errorCategory,
           message: "request_failed",
-          detail: err.message,
-          causeMessage: cause?.message,
-          causeDetail: cause?.detail,
-          causeCode: cause?.code,
         }),
       );
       if (req.path.startsWith("/api/v1")) {

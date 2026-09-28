@@ -10,18 +10,25 @@ type Message = {
 const GREETING = {
   id: "greeting",
   sender: "ai",
-  text: "Hi! I'm the eBuhay prototype assistant. Ask about sample Philippine government-service references, organ/blood donation information, or how this demo works. I cannot provide legal or clinical advice.",
+  text: "Welcome to eGovAI guidance. This assistant provides public process information only and cannot provide clinical, legal, eligibility, matching, or scheduling decisions. Select a public process question below.",
   time: "",
 };
+
+export const PUBLIC_EGOVAI_CHOICES = [
+  "How does eBuhay coordination work?",
+  "What are the steps to become a donor?",
+  "What are the steps to become a recipient?",
+  "How can I contact the coordination team?",
+] as const;
 
 export default function FloatingAIChat() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([GREETING as Message]);
-  const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [availability, setAvailability] = useState<'ready' | 'available' | 'unavailable'>('ready');
   const endRef = useRef<HTMLDivElement>(null);
   const launcherRef = useRef<HTMLButtonElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLButtonElement>(null);
   const closeChat = () => {
     setOpen(false);
     launcherRef.current?.focus();
@@ -47,35 +54,38 @@ export default function FloatingAIChat() {
   const timeNow = () =>
     new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-  const send = async () => {
-    const prompt = text.trim();
-    if (!prompt || loading) return;
+  const send = async (prompt: string) => {
+    if (loading) return;
 
     setMessages((p) => [
       ...p,
       { id: Date.now(), sender: "user", text: prompt, time: timeNow() },
     ]);
-    setText("");
     setLoading(true);
 
     try {
       const res = await egovApi.askAI(prompt, "PH");
+      if (!res || res.success !== true || typeof res.data !== "string" || !res.data.trim()) {
+        throw new Error("Invalid response format from eGovAI service");
+      }
+      setAvailability('available');
       setMessages((p) => [
         ...p,
         {
           id: Date.now() + 1,
           sender: "ai",
-          text: String(res.data),
+          text: res.data.trim(),
           time: timeNow(),
         },
       ]);
     } catch {
+      setAvailability('unavailable');
       setMessages((p) => [
         ...p,
         {
           id: Date.now() + 1,
           sender: "ai",
-          text: "Sorry, I couldn't reach the eGov AI service just now. Please try again in a moment.",
+          text: "The official eGovAI service is currently unavailable. Please retry later.",
           time: timeNow(),
         },
       ]);
@@ -99,11 +109,14 @@ export default function FloatingAIChat() {
             <div className="floating-ai-avatar">e</div>
             <div className="floating-ai-title-wrap">
               <h2 id="floating-ai-chat-title" className="floating-ai-title">
-                Prototype assistant
+                eGovAI Guidance
               </h2>
-              <div className="floating-ai-status">
-                <span className="floating-ai-status-dot" />
-                Demo service
+              <div className="floating-ai-status" role="status" aria-live="polite">
+                <span
+                  className="floating-ai-status-dot"
+                  style={{ backgroundColor: availability === 'unavailable' ? "var(--danger, #DC2626)" : "var(--foreground-muted, #64748b)" }}
+                />
+                {loading ? 'Requesting official guidance' : availability === 'available' ? 'Official answer received' : availability === 'unavailable' ? 'Service unavailable' : 'Choose a public question'}
               </div>
             </div>
             <button
@@ -113,6 +126,21 @@ export default function FloatingAIChat() {
             >
               ✕
             </button>
+          </div>
+
+          <div
+            className="floating-ai-disclaimer"
+            style={{
+              padding: "0.5rem 0.75rem",
+              fontSize: "0.75rem",
+              background: "var(--surface-muted, #f1f5f9)",
+              borderBottom: "1px solid var(--border, #e2e8f0)",
+              color: "var(--foreground-muted, #64748b)",
+            }}
+          >
+            <strong>Informational guidance only:</strong> Public process questions
+            only. Excludes clinical, legal, eligibility, matching, or scheduling
+            advice.
           </div>
 
           {/* Messages */}
@@ -151,30 +179,19 @@ export default function FloatingAIChat() {
 
           {/* Input */}
           <div className="floating-ai-input">
-            <textarea
-              ref={inputRef}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  send();
-                }
-              }}
-              placeholder="Ask about eGov services…"
-              rows={1}
-              disabled={loading}
-              className="input floating-ai-textarea"
-              aria-label="AI chat message input"
-            />
-            <button
-              onClick={send}
-              disabled={!text.trim() || loading}
-              className="btn btn-primary btn-icon floating-ai-send"
-              aria-label="Send message"
-            >
-              <SendIcon />
-            </button>
+            <div className="floating-ai-choice-list" role="group" aria-label="Public eBuhay process questions">
+              {PUBLIC_EGOVAI_CHOICES.map((choice, index) => (
+                <button
+                  key={choice}
+                  ref={index === 0 ? inputRef : undefined}
+                  onClick={() => void send(choice)}
+                  disabled={loading}
+                  className="btn btn-secondary floating-ai-choice"
+                >
+                  {choice}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -194,23 +211,5 @@ export default function FloatingAIChat() {
         {open ? "✕" : "💬"}
       </button>
     </div>
-  );
-}
-
-function SendIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="22" y1="2" x2="11" y2="13" />
-      <polygon points="22 2 15 22 11 13 2 9 22 2" />
-    </svg>
   );
 }

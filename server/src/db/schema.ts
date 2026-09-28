@@ -81,6 +81,7 @@ const egovIdentities = pgTable("egov_identities", {
   id: id(),
   accountId: uuid("account_id").notNull().unique().references(() => accounts.id, { onDelete: "cascade" }),
   uniqid: text("uniqid").notNull().unique(),
+  provider: text("provider").notNull().default("legacy_unverified"),
   profile: jsonb("profile").notNull().default({}),
   createdAt: created(),
   updatedAt: updated(),
@@ -90,6 +91,7 @@ const egovExchangeTransactions = pgTable("egov_exchange_transactions", {
   codeHash: bytea("code_hash").notNull().unique(),
   invitationId: uuid("invitation_id").references(() => invitations.id),
   uniqid: text("uniqid").notNull(),
+  provider: text("provider").notNull().default("egovph"),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   consumedAt: timestamp("consumed_at", { withTimezone: true }),
   createdAt: created(),
@@ -242,6 +244,18 @@ const hospitalLinkages = pgTable("hospital_linkages", {
   createdAt: created(),
   updatedAt: updated(),
 });
+const egovSsoPending = pgTable("egov_sso_pending", {
+  id: id(),
+  cookieHash: bytea("cookie_hash").notNull().unique(),
+  exchangeTransactionId: uuid("exchange_transaction_id").notNull().references(() => egovExchangeTransactions.id),
+  uniqid: text("uniqid").notNull(),
+  provider: text("provider").notNull().default("egovph"),
+  displayName: text("display_name").notNull(),
+  mobile: text("mobile"),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  consumedAt: timestamp("consumed_at", { withTimezone: true }),
+  createdAt: created(),
+}, (t) => [index("egov_sso_pending_active_idx").on(t.cookieHash, t.expiresAt)]);
 const hospitalSlots = pgTable(
   "hospital_slots",
   {
@@ -711,6 +725,7 @@ const notifications = pgTable("notifications", {
   recipientAccountId: uuid("recipient_account_id")
     .notNull()
     .references(() => accounts.id),
+  actorAccountId: uuid("actor_account_id").references(() => accounts.id),
   template: text("template").notNull(),
   safeReference: text("safe_reference"),
   channel: text("channel").notNull(),
@@ -993,6 +1008,7 @@ export {
   egovIdentities,
   egovExchangeTransactions,
   egovVerificationHistory,
+  egovSsoPending,
   invitations,
   admissionRequests,
   citizenCases,

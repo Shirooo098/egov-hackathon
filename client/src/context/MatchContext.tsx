@@ -63,7 +63,7 @@ interface MatchContextValue {
   }) => void;
   setScheduledDate: (date: string, time?: string, location?: string) => void;
   signAgreement: (role: "donor" | "recipient") => void;
-  anchorToBlockchain: (data?: unknown) => Promise<unknown>;
+  anchorToBlockchain: () => Promise<unknown>;
   setConsentSigned: (value: boolean) => void;
   resetMatch: () => void;
   updateMatchFromProfile: (
@@ -438,17 +438,8 @@ export function MatchProvider({ children }: { children: React.ReactNode }) {
   );
 
   const anchorToBlockchain = useCallback(
-    async (customAnchorData: unknown = null) => {
+    async () => {
       if (!legacyDemoWorkflowEnabled || platform.authoritative) return null;
-      if (customAnchorData) {
-        setMatch((prev) => {
-          const updated = { ...prev, blockchainAnchor: customAnchorData };
-          if (!platform.authoritative) saveMatchToStorage(updated);
-          return updated;
-        });
-        return customAnchorData;
-      }
-
       try {
         const res = await api.anchorConsent({
           matchId: match.id,
@@ -506,15 +497,13 @@ export function MatchProvider({ children }: { children: React.ReactNode }) {
         ) {
           status = "agreement_finalized";
           eMessageToast(toast, "agreement_signed", {});
-          // Silently trigger background Besu anchoring without exposing web3 jargon to citizens
-          void anchorToBlockchain();
         }
         const updated = { ...prev, donorSigned, recipientSigned, status };
         if (!platform.authoritative) saveMatchToStorage(updated);
         return updated;
       });
     },
-    [anchorToBlockchain, toast, platform.authoritative, legacyDemoWorkflowEnabled],
+    [toast, platform.authoritative, legacyDemoWorkflowEnabled],
   );
 
   // Backward compatibility setter for legacy setConsentSigned(true) calls from existing forms

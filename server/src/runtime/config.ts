@@ -1,3 +1,4 @@
+
 export const RUNTIME_MODES = ['synthetic', 'partner-sandbox', 'controlled-live', 'production'] as const;
 export type RuntimeMode = (typeof RUNTIME_MODES)[number];
 
@@ -14,6 +15,9 @@ export type RuntimeConfig = {
   allowedOrigins: string[];
   rateLimitMax?: number;
   rateLimitWindowMs?: number;
+  egovBaseUrl?: string;
+  egovPartnerCode?: string;
+  egovPartnerSecret?: string;
 };
 
 export class RuntimeConfigError extends Error {
@@ -29,6 +33,13 @@ const positiveInt = (name: string, value: string | undefined, fallback: number):
   if (!Number.isInteger(parsed) || parsed <= 0) throw new RuntimeConfigError(`${name} must be a positive integer`);
   return parsed;
 };
+
+function requireHttpsBase(name: string, value: string) {
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.search || parsed.hash) throw new Error();
+  } catch { throw new RuntimeConfigError(`${name} must be an HTTPS URL without embedded credentials or query parameters`); }
+}
 
 function parseOrigins(raw: string | undefined, mode: RuntimeMode): string[] {
   if (isLiveMode(mode) && raw === undefined) {
@@ -85,6 +96,40 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
   if (isLiveMode(rawMode as RuntimeMode) && (env.DEMO_MODE === 'true' || env.SYNTHETIC_MODE === 'true')) {
     throw new RuntimeConfigError('DEMO_MODE and SYNTHETIC_MODE are strictly prohibited in live modes');
   }
+  const egovBaseUrl = env.EGOV_BASE_URL?.trim() || undefined;
+  const egovPartnerCode = env.EGOV_PARTNER_CODE?.trim() || undefined;
+  const egovPartnerSecret = env.EGOV_PARTNER_SECRET?.trim() || undefined;
+  if ((egovBaseUrl || egovPartnerCode || egovPartnerSecret) && !(egovBaseUrl && egovPartnerCode && egovPartnerSecret)) {
+    throw new RuntimeConfigError('EGOV_BASE_URL, EGOV_PARTNER_CODE, and EGOV_PARTNER_SECRET must be configured together');
+  }
+  if (egovBaseUrl) requireHttpsBase('EGOV_BASE_URL', egovBaseUrl);
+
+  const emessageBaseUrl = env.EMESSAGE_BASE_URL?.trim();
+  const emessageToken = env.EMESSAGE_API_TOKEN?.trim();
+  if (emessageBaseUrl || emessageToken) {
+    if (!emessageBaseUrl || !emessageToken) throw new RuntimeConfigError('EMESSAGE_BASE_URL and EMESSAGE_API_TOKEN must be configured together');
+    requireHttpsBase('EMESSAGE_BASE_URL', emessageBaseUrl);
+  }
+
+  const chainMode = env.EGOVCHAIN_MODE || 'disabled';
+  const aiBase = env.EGOV_AI_BASE_URL?.trim();
+  const aiAccess = env.EGOV_ACCESS_CODE?.trim();
+  if (aiBase || aiAccess) {
+    if (!aiBase || !aiAccess) throw new RuntimeConfigError('EGOV_AI_BASE_URL and EGOV_ACCESS_CODE must be configured together');
+    if (rawMode !== 'synthetic') throw new RuntimeConfigError('EGOV_AI_BASE_URL requires synthetic application mode');
+    requireHttpsBase('EGOV_AI_BASE_URL', aiBase);
+  }
+  if (chainMode !== 'disabled' && chainMode !== 'staging') throw new RuntimeConfigError('EGOVCHAIN_MODE must be disabled or staging');
+  if (chainMode === 'staging') {
+    if (rawMode !== 'synthetic') throw new RuntimeConfigError('EGOVCHAIN_MODE=staging requires synthetic application mode');
+    const base = env.EGOVCHAIN_RPC_BASE_URL;
+    const token = env.EGOVCHAIN_RPC_TOKEN;
+    if (!base?.trim() || !token?.trim()) throw new RuntimeConfigError('EGOVCHAIN_RPC_BASE_URL and EGOVCHAIN_RPC_TOKEN are required for staging');
+    if (base !== base.trim() || token !== token.trim()) throw new RuntimeConfigError('EGOVCHAIN staging settings must not contain surrounding whitespace');
+    requireHttpsBase('EGOVCHAIN_RPC_BASE_URL', base);
+  }
+  if (env.DB_POOL_MAX !== undefined && !env.DB_POOL_MAX.trim()) throw new RuntimeConfigError('DB_POOL_MAX must be a positive integer');
+  positiveInt('DB_POOL_MAX', env.DB_POOL_MAX, 10);
   return {
     mode: rawMode as RuntimeMode,
     databaseUrl,
@@ -94,23 +139,17 @@ export function loadRuntimeConfig(env: NodeJS.ProcessEnv = process.env): Runtime
     approvedService: approvedService as 'blood' | undefined,
     allowedOrigins: parseOrigins(env.ALLOWED_ORIGINS, rawMode as RuntimeMode),
     rateLimitMax: positiveInt('RATE_LIMIT_MAX', env.RATE_LIMIT_MAX, 120),
-    rateLimitWindowMs: positiveInt('RATE_LIMIT_WINDOW_MS', env.RATE_LIMIT_WINDOW_MS, 60_000)
+    rateLimitWindowMs: positiveInt('RATE_LIMIT_WINDOW_MS', env.RATE_LIMIT_WINDOW_MS, 60_000),
+    egovBaseUrl,
+    egovPartnerCode,
+    egovPartnerSecret,
   };
 }
 
 export const isLiveMode = (mode: RuntimeMode): boolean => mode === 'controlled-live' || mode === 'production';
 
-/** Legacy adapters are synthetic doubles in demo mode and disabled in live modes. */
-export function isLegacyIntegrationDisabled(mode = process.env.EBUHAY_MODE as RuntimeMode | undefined): boolean {
-  return mode !== 'partner-sandbox';
-}
-
 export function isServiceAllowed(mode: RuntimeMode, service: ServiceCode): boolean {
   return SERVICE_CODES.includes(service) && (!isLiveMode(mode) || service === 'blood');
-}
-
-export function assertServiceAllowed(mode: RuntimeMode, service: ServiceCode): void {
-  if (!isServiceAllowed(mode, service)) throw new RuntimeConfigError(`Service ${service} is disabled in ${mode} mode`);
 }
 
 export function isDisabledService(value: unknown): boolean {
@@ -123,10 +162,7 @@ export function isMainModule(metaUrl: string, modulePath: string): boolean {
 
 /** Keep provider/database credentials out of process logs and HTTP responses. */
 export function redactedErrorMessage(error: unknown): string {
-  const message = error instanceof Error ? error.message : String(error);
-  return message
-    .replace(/(postgres(?:ql)?:\/\/)[^\s"']+/gi, '$1[redacted]')
-    .replace(/([?&](?:password|pass|secret|token|key)=)[^&\s]+/gi, '$1[redacted]');
+  return error instanceof RuntimeConfigError ? error.message : 'Runtime startup failed';
 }
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';

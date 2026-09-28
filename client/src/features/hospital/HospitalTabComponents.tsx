@@ -1,414 +1,193 @@
+import type { ReactElement } from "react";
 import "../../styles/components/hospital/HospitalTabComponents.css";
-import {
-  CheckIcon,
-  ChainIcon,
-  ChevronRightIcon,
-} from "../../components/ui/Icons";
-import { formatStatus } from "../../utils/matchStatus";
-type CaseRow = {
+
+export interface SyntheticCompatibilityFixture {
   id: string;
-  donor?: string;
-  recipient?: string;
-  organ?: string;
-  type?: string;
-  urgency?: string;
-  match?: string;
-  score?: number;
-  status?: string;
-  donorSigned?: boolean;
-  recipientSigned?: boolean;
-  isLiveContext?: boolean;
-  blockchainAnchor?: {
-    txHash?: string;
-    blockNumber?: number;
-    explorerUrl?: string;
-  };
-  recipientData?: { description?: string };
-};
-type TriageProps = {
-  pendingMatches?: CaseRow[];
-  activeMatches?: CaseRow[];
-  rejectedMatches?: CaseRow[];
-  pendingCases?: CaseRow[];
-  activeCases?: CaseRow[];
-  rejectedCases?: CaseRow[];
-  match?: CaseRow;
-  handleRejectMatch?: (id: string, status?: string) => void;
-  handleApproveMatch?: (id: string) => void;
-  handleAnchor?: () => Promise<void>;
-  advanceStatus?: (status: string, id?: string) => void;
-  URGENCY_BADGES?: Record<string, string>;
-  URGENCY_LABELS?: Record<string, string>;
-  U_BADGE?: Record<string, string>;
-  U_LABEL?: Record<string, string>;
-};
+  organ: "Kidney" | "Liver" | "Heart" | "Lung" | "Pancreas";
+  syntheticDonorRef: string;
+  syntheticRecipientRef: string;
+  donorBloodType: string;
+  recipientBloodType: string;
+  whySurfaced: string;
+  missingReviewItems: readonly string[];
+  prototypeVersion: string;
+}
 
-export function ClinicalTriageTab({
-  pendingMatches,
-  activeMatches,
-  rejectedMatches,
-  pendingCases,
-  activeCases,
-  rejectedCases,
-  match = { id: "", status: "pending_hospital_approval" },
-  handleRejectMatch = () => undefined,
-  handleApproveMatch = () => undefined,
-  handleAnchor = async () => undefined,
-  advanceStatus = () => undefined,
-  URGENCY_BADGES,
-  URGENCY_LABELS,
-  U_BADGE,
-  U_LABEL,
-}: TriageProps) {
-  const pending = pendingMatches || pendingCases || [];
-  const active = activeMatches || activeCases || [];
-  const rejected = rejectedMatches || rejectedCases || [];
-  const badges = URGENCY_BADGES || U_BADGE || {};
-  const labels = URGENCY_LABELS || U_LABEL || {};
+export const RESEARCH_MOCKUP_DISCLAIMER =
+  "Unvalidated research mockup—synthetic data only. Not for compatibility, allocation, or clinical use.";
 
+export const SYNTHETIC_COMPATIBILITY_FIXTURES: readonly SyntheticCompatibilityFixture[] = [
+  {
+    id: "compat-fixture-kidney",
+    organ: "Kidney",
+    syntheticDonorRef: "SYN-DON-KIDNEY-101",
+    syntheticRecipientRef: "SYN-REC-KIDNEY-201",
+    donorBloodType: "O+",
+    recipientBloodType: "O+",
+    whySurfaced:
+      "Simulated protocol demonstration pairing for blood type O concordance under synthetic evaluation criteria.",
+    missingReviewItems: [
+      "Laboratory crossmatch testing unrecorded",
+      "HLA tissue typing data uncollected",
+      "Independent staff review pending",
+    ],
+    prototypeVersion: "v0.9-research",
+  },
+  {
+    id: "compat-fixture-liver",
+    organ: "Liver",
+    syntheticDonorRef: "SYN-DON-LIVER-102",
+    syntheticRecipientRef: "SYN-REC-LIVER-202",
+    donorBloodType: "A+",
+    recipientBloodType: "A+",
+    whySurfaced:
+      "Simulated graft parameters compared against synthetic records for exploratory layout demonstration.",
+    missingReviewItems: [
+      "Anatomical volume assessment incomplete",
+      "Simulated laboratory panel unreviewed",
+      "Transplant center administrative sign-off pending",
+    ],
+    prototypeVersion: "v0.9-research",
+  },
+  {
+    id: "compat-fixture-heart",
+    organ: "Heart",
+    syntheticDonorRef: "SYN-DON-HEART-103",
+    syntheticRecipientRef: "SYN-REC-HEART-203",
+    donorBloodType: "B-",
+    recipientBloodType: "B-",
+    whySurfaced:
+      "Exploratory research data demonstrating thoracic layout formatting in synthetic environments.",
+    missingReviewItems: [
+      "Simulated ischemic window assessment missing",
+      "Cardiology peer consultation unrecorded",
+      "Research protocol adherence review incomplete",
+    ],
+    prototypeVersion: "v0.9-research",
+  },
+  {
+    id: "compat-fixture-lung",
+    organ: "Lung",
+    syntheticDonorRef: "SYN-DON-LUNG-104",
+    syntheticRecipientRef: "SYN-REC-LUNG-204",
+    donorBloodType: "O-",
+    recipientBloodType: "O-",
+    whySurfaced:
+      "Surfaced to evaluate staff presentation of mock pulmonary records without clinical evaluation.",
+    missingReviewItems: [
+      "Simulated pulmonary mechanics report missing",
+      "Multidisciplinary review pending",
+      "Synthetic baseline documentation unresolved",
+    ],
+    prototypeVersion: "v0.9-research",
+  },
+  {
+    id: "compat-fixture-pancreas",
+    organ: "Pancreas",
+    syntheticDonorRef: "SYN-DON-PANCREAS-105",
+    syntheticRecipientRef: "SYN-REC-PANCREAS-205",
+    donorBloodType: "AB+",
+    recipientBloodType: "AB+",
+    whySurfaced:
+      "Displayed to inspect multi-organ layout rendering in the unvalidated research mockup view.",
+    missingReviewItems: [
+      "Endocrine assessment checklist unreviewed",
+      "Institutional research protocol oversight pending",
+      "Synthetic donor record verification pending",
+    ],
+    prototypeVersion: "v0.9-research",
+  },
+];
+
+export function ExperimentalCompatibilityPanel(): ReactElement {
   return (
-    <div className="hospital-triage__1-1">
-      <div>
-        <div className="section-title hospital-triage__2-1">
-          <span>Pending Hospital Demo Review ({pending.length})</span>
-          <span className="badge badge-warning hospital-triage__1-2">
-            Requires administrator review
-          </span>
+    <section
+      className="card experimental-compatibility-panel"
+      aria-labelledby="experimental-compatibility-heading"
+    >
+      <div className="experimental-compatibility-header">
+        <div className="experimental-badge-wrap">
+          <span className="badge badge-warning">Hospital Staff Read-Only Preview</span>
+          <span className="badge">Synthetic Mockup</span>
         </div>
-        {pending.length === 0 ? (
-          <div className="card empty-state hospital-triage__3-1">
-            <p className="hospital-triage__2-2">
-              No pending demo match evaluations require review.
-            </p>
-          </div>
-        ) : (
-          <div className="hospital-triage__4-1">
-            {pending.map((c) => (
-              <div
-                key={c.id}
-                className="card anim-up hospital-triage__1-3"
-                style={{
-                  background: c.isLiveContext
-                    ? "rgba(5, 150, 105, 0.02)"
-                    : "white",
-                }}
-              >
-                <div className="hospital-triage__3-2">
-                  <div className="hospital-triage__5-1">
-                    {c.isLiveContext && (
-                      <span className="badge badge-success hospital-triage__4-2">
-                        ACTIVE DEMO MATCH
-                      </span>
-                    )}
-                    {c.isLiveContext && (
-                      <span
-                        className="badge hospital-triage__2-3"
-                        style={{
-                          background: match.blockchainAnchor
-                            ? "var(--primary-10)"
-                            : "var(--background-alt)",
-                          color: match.blockchainAnchor
-                            ? "var(--primary)"
-                            : "var(--foreground-muted)",
-                          border: `1px solid ${match.blockchainAnchor ? "rgba(20, 82, 240, 0.3)" : "var(--border)"}`,
-                        }}
-                        title={
-                          match.blockchainAnchor
-                            ? `Simulated anchor: ${match.blockchainAnchor.txHash}`
-                            : "No simulated anchor saved"
-                        }
-                      >
-                        <ChainIcon size={9} />{" "}
-                        {match.blockchainAnchor
-                          ? "Simulated anchor saved"
-                          : "No simulated anchor"}
-                      </span>
-                    )}
-                    <span
-                      className={`badge badge-${c.type === "blood" ? "primary" : "success"}`}
-                    >
-                      {c.organ}
-                    </span>
-                    <span
-                      className={`badge ${badges[c.urgency || ""] || "badge-moderate"}`}
-                    >
-                      {labels[c.urgency || ""] || "Moderate"}
-                    </span>
-                  </div>
-                  <div className="hospital-triage__5-2">
-                    {c.donor} <span className="sr-only">to</span>
-                    <span className="hospital-triage__6-1" aria-hidden="true">
-                      <ChevronRightIcon size={14} />
-                    </span>{" "}
-                    {c.recipient}
-                  </div>
-                  <div className="hospital-triage__7-1">
-                    ABO Match:{" "}
-                    <strong className="hospital-triage__6-2">{c.match}</strong>{" "}
-                    / Ref ID: <code>{c.id}</code>
-                  </div>
-                  {c.isLiveContext && (
-                    <div className="hospital-triage__8-1">
-                      "{match.recipientData?.description || ""}"
-                    </div>
-                  )}
-                </div>
-
-                <div
-                  className="compat-wrap hospital-triage__9-1"
-                  role="progressbar"
-                  aria-label={`Compatibility estimate for ${c.donor} and ${c.recipient}`}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  aria-valuenow={Math.min(
-                    Math.max(Number(c.score) || 0, 0),
-                    100,
-                  )}
-                >
-                  <div className="compat-header">
-                    <span className="compat-label">Compatibility estimate</span>
-                    <span className="compat-value hospital-triage__7-2">
-                      {c.score}%
-                    </span>
-                  </div>
-                  <div className="compat-track">
-                    <div
-                      className="compat-fill compat-high hospital-triage__3-3"
-                      style={{
-                        width: `${Math.min(Number(c.score) || 0, 100)}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div
-                  className="hospital-triage__10-1"
-                  role="group"
-                  aria-label={`Actions for ${c.donor} and ${c.recipient}`}
-                >
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-sm hospital-triage__8-2"
-                    onClick={() => handleRejectMatch(c.id)}
-                  >
-                    Decline
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleApproveMatch(c.id)}
-                    className="btn btn-success hospital-triage__9-2"
-                  >
-                    <span className="hospital-triage__11-1" aria-hidden="true">
-                      <CheckIcon />
-                    </span>{" "}
-                    Approve
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <h2 id="experimental-compatibility-heading">
+          Experimental Compatibility Suggestions
+        </h2>
+        <p className="experimental-compatibility-subhead">
+          Static demonstration suggestions for research and workflow exploration only.
+          This panel is unranked, non-clinical, and disconnected from hospital candidate allocation.
+        </p>
       </div>
 
-      {active.length > 0 && (
-        <div>
-          <div className="section-title hospital-triage__12-1">
-            <span>Approved &amp; Active Demo Workflows ({active.length})</span>
-            <span className="badge badge-verified hospital-triage__10-2">
-              Demo review completed
-            </span>
-          </div>
-          <div className="hospital-triage__13-1">
-            {active.map((c) => (
-              <div key={c.id} className="card anim-up hospital-triage__4-3">
-                <div className="hospital-triage__11-2">
-                  <div className="hospital-triage__14-1">
-                    <span className="badge badge-verified">
-                      <span
-                        className="hospital-triage__15-1"
-                        aria-hidden="true"
-                      >
-                        <CheckIcon size={11} />
-                      </span>{" "}
-                      Hospital Administrator demo review completed
-                    </span>
-                    <span className="badge hospital-triage__16-1">
-                      Status:{" "}
-                      <strong>
-                        {formatStatus(
-                          (c.status || "approved") as Parameters<
-                            typeof formatStatus
-                          >[0],
-                        ).toUpperCase()}
-                      </strong>
-                    </span>
-                    {c.isLiveContext && (
-                      <span className="live-ribbon">Active Demo Match</span>
-                    )}
-                  </div>
-                  <div className="hospital-triage__17-1">
-                    {c.donor} <span className="sr-only">to</span>
-                    <span className="hospital-triage__18-1" aria-hidden="true">
-                      <ChevronRightIcon size={14} />
-                    </span>{" "}
-                    {c.recipient}{" "}
-                    <span className="hospital-triage__19-1">({c.organ})</span>
-                  </div>
-                  <div className="hospital-triage__20-1">
-                    ABO Pairing: <strong>{c.match}</strong> / Score:{" "}
-                    <strong>{c.score}%</strong>
-                  </div>
+      <div
+        className="experimental-disclaimer-banner"
+        role="note"
+        aria-label="Research disclaimer"
+      >
+        <strong>{RESEARCH_MOCKUP_DISCLAIMER}</strong>
+      </div>
 
-                  {c.isLiveContext &&
-                    (match.blockchainAnchor ||
-                      (match.donorSigned && match.recipientSigned)) && (
-                      <div className="hospital-triage__21-1">
-                        <div className="hospital-triage__22-1" role="status">
-                          <span>
-                            <span
-                              className="hospital-triage__23-1"
-                              aria-hidden="true"
-                            >
-                              <CheckIcon size={12} />
-                            </span>{" "}
-                            Both demo signature actions recorded
-                          </span>
-                          <span className="badge badge-success hospital-triage__12-2">
-                            Simulated chain 13371
-                          </span>
-                        </div>
-                        {match.blockchainAnchor ? (
-                          <div className="tx-hash hospital-triage__24-1">
-                            <div>
-                              <strong>Simulated anchor hash:</strong>{" "}
-                              <code>{match.blockchainAnchor.txHash}</code>
-                            </div>
-                            <div>
-                              <strong>Block Number:</strong> #
-                              {match.blockchainAnchor.blockNumber}
-                            </div>
-                            <div className="hospital-triage__13-2">
-                              <a
-                                href={
-                                  match.blockchainAnchor.explorerUrl ||
-                                  "https://hackathon-blockchain.e.gov.ph"
-                                }
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="hospital-triage__14-2"
-                              >
-                                View simulated anchor details{" "}
-                                <span
-                                  className="hospital-triage__25-1"
-                                  aria-hidden="true"
-                                >
-                                  <ChevronRightIcon size={13} />
-                                </span>
-                              </a>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="hospital-triage__26-1">
-                            Both citizens completed the demo signature step. The
-                            next action would simulate an anchor; it is not an
-                            immutable record.
-                          </div>
-                        )}
-                      </div>
-                    )}
-                </div>
+      <div
+        className="experimental-fixtures-list"
+        role="list"
+        aria-label="Synthetic experimental compatibility suggestions"
+      >
+        {SYNTHETIC_COMPATIBILITY_FIXTURES.map((fixture) => (
+          <article
+            key={fixture.id}
+            className="card experimental-fixture-card"
+            role="listitem"
+            aria-labelledby={`fixture-heading-${fixture.id}`}
+          >
+            <div className="fixture-card-header">
+              <h3
+                id={`fixture-heading-${fixture.id}`}
+                className="fixture-organ"
+              >
+                {fixture.organ}
+              </h3>
+              <span className="fixture-version">
+                Prototype {fixture.prototypeVersion}
+              </span>
+            </div>
 
-                <div
-                  className="hospital-triage__27-1"
-                  role="group"
-                  aria-label={`Workflow actions for ${c.donor} and ${c.recipient}`}
-                >
-                  {c.isLiveContext ? (
-                    [
-                      "agreement_finalized",
-                      "contract_signed",
-                      "ready_for_transplant",
-                    ].includes(match.status || "") ||
-                    (match.donorSigned && match.recipientSigned) ? (
-                      match.blockchainAnchor ? (
-                        <span className="badge badge-success hospital-triage__28-1">
-                          <span
-                            className="hospital-triage__29-1"
-                            aria-hidden="true"
-                          >
-                            <CheckIcon size={12} />
-                          </span>{" "}
-                          Demo workflow ready for next review step
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={handleAnchor}
-                          className="btn btn-primary hospital-triage__15-2"
-                        >
-                          <ChainIcon /> Save simulated anchor
-                        </button>
-                      )
-                    ) : (
-                      <span className="hospital-triage__30-1">
-                        Awaiting citizen e-signatures
-                      </span>
-                    )
-                  ) : (
-                    <span className="badge badge-success">
-                      <span
-                        className="hospital-triage__31-1"
-                        aria-hidden="true"
-                      >
-                        <CheckIcon size={11} />
-                      </span>{" "}
-                      Demo workflow ready
-                    </span>
-                  )}
-                </div>
+            <div className="fixture-details">
+              <div className="fixture-row">
+                <span className="fixture-label">Synthetic Donor Reference:</span>
+                <code className="fixture-value">{fixture.syntheticDonorRef}</code>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {rejected.length > 0 && (
-        <div>
-          <div className="section-title hospital-triage__16-2">
-            Declined Demo Matches ({rejected.length})
-          </div>
-          <div className="hospital-triage__32-1">
-            {rejected.map((c) => (
-              <div key={c.id} className="card hospital-triage__33-1">
-                <div className="hospital-triage__34-1">
-                  <strong className="hospital-triage__17-2">
-                    {c.donor} <span className="sr-only">to</span>
-                    <span className="hospital-triage__35-1" aria-hidden="true">
-                      <ChevronRightIcon size={13} />
-                    </span>{" "}
-                    {c.recipient}
-                  </strong>
-                  <span className="hospital-triage__36-1">
-                    This demo match was marked declined. No new match search has
-                    started.
-                  </span>
-                </div>
-                {c.isLiveContext && (
-                  <button
-                    type="button"
-                    className="btn btn-outline btn-sm"
-                    onClick={() =>
-                      advanceStatus("pending_hospital_approval", c.id)
-                    }
-                  >
-                    Re-evaluate
-                  </button>
-                )}
+              <div className="fixture-row">
+                <span className="fixture-label">Synthetic Recipient Reference:</span>
+                <code className="fixture-value">{fixture.syntheticRecipientRef}</code>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+              <div className="fixture-row">
+                <span className="fixture-label">Fictional Blood Types:</span>
+                <span className="fixture-value">
+                  Donor {fixture.donorBloodType} → Recipient {fixture.recipientBloodType}
+                </span>
+              </div>
+            </div>
+
+            <div className="fixture-section">
+              <h4 className="fixture-section-title">Why surfaced</h4>
+              <p className="fixture-why">{fixture.whySurfaced}</p>
+            </div>
+
+            <div className="fixture-section">
+              <h4 className="fixture-section-title">Missing-review items</h4>
+              <ul className="fixture-missing-list">
+                {fixture.missingReviewItems.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="fixture-footer-disclaimer" role="note">
+              <small>{RESEARCH_MOCKUP_DISCLAIMER}</small>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }

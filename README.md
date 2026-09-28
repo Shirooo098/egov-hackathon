@@ -5,7 +5,7 @@ eBuhay is a project-owned synthetic prototype and public showcase for blood-dona
 ## Approved/planned release profile
 
 - **Public Showcase** — planned public presentation.
-- **Private Synthetic Demo** — planned invitation-only walkthrough.
+- **Private Synthetic Demo** — planned walkthrough using official eGov staging SSO and isolated synthetic data.
 - **Synthetic Pilot Rehearsal** — planned isolated rehearsal of server-authorized flows.
 
 These are synthetic release profiles, not deployed healthcare services. Current data is project-owned synthetic data. Never enter real identities or health records. No partner hospital, live integration, clinical decision, automatic matching, production approval, or government endorsement is claimed. Kidney and other multi-organ workflows remain synthetic-only.
@@ -34,4 +34,4 @@ In another terminal:
 
 ## Configuration
 
-Local configuration uses server/.env.example: EBUHAY_MODE=synthetic, PORT=5000, provider doubles, and isolated DATABASE_URL/TEST_DATABASE_URL values. Keep secrets out of source control. eGov and hospital adapters are disabled or contract doubles only; never use real credentials or production identifiers.
+Local and deployed configuration uses server/.env.example: official eGov staging SSO is the only runtime Citizen login in every environment, while all healthcare workflow data remains synthetic and live-disabled. Provider doubles are automated tests only, never runtime modes or selectable login fallbacks. Staff authentication remains separate (named accounts with password plus MFA). Official staging identity never grants Staff authority. Production or controlled-live eGov use is not authorized. Authentication invitations are superseded, but case and pair workflow invitations remain. Keep secrets out of source control. Hospital and clinical adapters remain synthetic contract doubles only; never use real credentials or production identifiers.

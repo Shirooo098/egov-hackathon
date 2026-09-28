@@ -15,7 +15,6 @@ export interface AuthContextValue {
   restored: boolean;
   error: unknown;
   restoreSession: () => Promise<Session | null>;
-  redeemInvitation: (token: string, audience?: string) => Promise<Session>;
   signInStaff: (
     username: string,
     password: string,
@@ -64,48 +63,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const redeemInvitation = useCallback(
-    async (token: string, audience = "citizen") => {
-      setStatus("loading");
-      setError(null);
-      try {
-        const response = await api.auth.redeemInvitation(token);
-        const nextSession = sessionFromResponse(response);
-        if (!nextSession)
-          throw new Error("The invitation response was incomplete.");
-        const allowed =
-          audience === "staff"
-            ? [
-                "coordinator",
-                "doctor",
-                "clinical_lead",
-                "hospital_admin",
-                "scheduler",
-                "supervisor",
-              ].includes(nextSession.account.role)
-            : nextSession.account.role === "citizen";
-        if (!allowed) {
-          await api.auth.logout().catch(() => {});
-          throw new Error(
-            audience === "staff"
-              ? "This invitation is not for an authorized hospital staff account."
-              : "This invitation is not for a citizen account.",
-          );
-        }
-        setSession(nextSession);
-        setStatus("authenticated");
-        setRestored(true);
-        return nextSession;
-      } catch (cause) {
-        setSession(null);
-        setStatus("anonymous");
-        setRestored(true);
-        setError(cause);
-        throw cause;
-      }
-    },
-    [],
-  );
 
   const signInStaff = useCallback(
     async (username: string, password: string, mfaCode: string) => {
@@ -153,11 +110,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     try {
       await api.auth.logout();
-    } catch (cause) {
-      setError(cause);
-    } finally {
       setSession(null);
       setStatus("anonymous");
+      setError(null);
+    } catch (cause) {
+      setError(cause);
+      throw cause;
     }
   }, []);
 
@@ -168,7 +126,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       restored,
       error,
       restoreSession,
-      redeemInvitation,
       signInStaff,
       signOut,
     }),
@@ -178,7 +135,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       restored,
       error,
       restoreSession,
-      redeemInvitation,
       signInStaff,
       signOut,
     ],

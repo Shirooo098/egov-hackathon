@@ -12,7 +12,6 @@ type Donor = {
   last_name: string;
   location_city: string;
   donor_profile?: { is_blood_donor?: boolean; organ_pledges?: string[] };
-  everify_status?: string;
 };
 type Match = { donor: Donor; compatibilityScore: number };
 
@@ -254,15 +253,6 @@ export function FindDonorsStep({
                       />
                     </div>
                   </div>
-                  {m.donor.everify_status === "verified" ? (
-                    <span className="badge badge-verified">
-                      Demo identity profile
-                    </span>
-                  ) : (
-                    <span className="badge badge-muted">
-                      Identity not verified
-                    </span>
-                  )}
                   <button
                     className="btn btn-primary btn-sm"
                     onClick={(e) => {

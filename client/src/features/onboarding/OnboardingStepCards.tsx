@@ -4,7 +4,6 @@ import { HeartIcon, DropIcon } from "../../components/ui/Icons";
 import Stepper from "./Stepper";
 
 type PortalRole = "recipient" | "donor";
-type AuthMode = "signin" | "signup";
 type RoleCard = {
   id: PortalRole;
   title: string;
@@ -68,59 +67,6 @@ export function RoleSelectCard({
           </button>
         ))}
       </div>
-    </div>
-  );
-}
-export function AuthChoiceCard({
-  pendingRole,
-  chooseAuthMode,
-  onBack,
-}: {
-  pendingRole: string | null;
-  chooseAuthMode: (mode: AuthMode) => void;
-  onBack: () => void;
-}) {
-  return (
-    <div className="anim-in">
-      <Stepper active={2} />
-      <div className="migrated-2f55da8d">
-        <span>Portal selected:</span>
-        <strong className="migrated-bab4ced8">{pendingRole}</strong>
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm migrated-6dac5f26"
-          onClick={onBack}
-        >
-          Change
-        </button>
-      </div>
-
-      <h3 className="migrated-ca024c9a">Step 2 — Sign In or Sign Up</h3>
-
-      <div className="migrated-9cc65e78">
-        <button
-          className="btn btn-primary btn-lg btn-full btn-stacked"
-          onClick={() => chooseAuthMode("signin")}
-        >
-          <span className="btn-stacked-title">Sign In with eGov (Demo)</span>
-          <span className="btn-caption btn-caption-on-primary">
-            Use the demo exchange code supplied by the presenter
-          </span>
-        </button>
-        <button
-          className="btn btn-outline btn-lg btn-full btn-stacked"
-          onClick={() => chooseAuthMode("signup")}
-        >
-          <span className="btn-stacked-title">Sign Up with eGov (Demo)</span>
-          <span className="btn-caption">
-            Walk through the sample profile and consent steps
-          </span>
-        </button>
-      </div>
-      <p className="migrated-dc777a65">
-        This prototype shows a sample eGov exchange and face check for Recipient
-        and Donor citizen journeys. It does not verify a government identity.
-      </p>
     </div>
   );
 }

@@ -6,10 +6,10 @@ import { requireSession, requireRole } from '../middleware/auth.js';
 import { requireSameOrigin } from '../middleware/origin.js';
 import type { Account } from '../auth/service.js';
 import type { RuntimeMode } from '../runtime/config.js';
-import { maskPhoneNumber } from '../services/eMessageService.js';
-import { GENERIC_NOTIFICATION_TEMPLATES, runNotificationBatch } from '../services/notificationService.js';
+import { maskPhoneNumber, GENERIC_SMS_TEMPLATES } from '../services/eMessageService.js';
+import { GENERIC_NOTIFICATION_TEMPLATES } from '../services/notificationService.js';
 import { requireWorkflowActive } from './operations.js';
-import { consentCommitment } from '../services/EgovChainService.js';
+import { consentCommitment, egovchainEnabled, publicConsentEvent } from '../services/EgovChainService.js';
 import { caseConsentScope, latestConsentState, CONSENT_VERSION, CONSENT_PURPOSES } from '../services/ConsentPolicy.js';
 
 const router = express.Router();
@@ -249,8 +249,8 @@ router.get('/episodes/:id/consent', async (req, res, next) => {
     if (!episode.rowCount) return fail(res, 404, 'Episode not found', 'not_found');
     const hospitalId = episode.rows[0].hospitalId ? String(episode.rows[0].hospitalId) : null;
     const scope = caseConsentScope(String(req.params.id), hospitalId);
-    const result = await db().execute(sql`SELECT ec.id, ec.episode_id AS "episodeId", ec.consent_version AS "version", ec.purpose, ec.scope, ec.commitment, ec.action, ec.anchor_status AS "anchorStatus", ec.anchor_tx_hash AS "txHash", ec.anchor_block_hash AS "blockHash", ec.anchor_block_number AS "blockNumber", ec.created_at AS "createdAt"
-      FROM episode_consents ec WHERE ec.episode_id=${req.params.id} ORDER BY ec.created_at DESC,ec.id DESC`);
+    const result = await db().execute(sql`SELECT ec.id, ec.episode_id AS "episodeId", ec.consent_version AS "version", ec.purpose, ec.scope, ec.commitment, ec.action, ec.anchor_status AS "anchorStatus", ec.anchor_tx_hash AS "txHash", ec.anchor_block_hash AS "blockHash", ec.anchor_block_number AS "blockNumber", ec.created_at AS "createdAt", o.status AS "outboxStatus", o.last_error_code AS "outboxErrorCode"
+      FROM episode_consents ec LEFT JOIN consent_anchor_outbox o ON o.episode_consent_id=ec.id WHERE ec.episode_id=${req.params.id} ORDER BY ec.created_at DESC,ec.id DESC`);
     const current = latestConsentState(result.rows.filter((row) => (row as any).version === CONSENT_VERSION) as Array<{ purpose: string; action: string; scope: string }>, scope);
     return json(res, {
       requirements: {
@@ -262,7 +262,7 @@ router.get('/episodes/:id/consent', async (req, res, next) => {
         }))
       },
       current,
-      events: result.rows
+      events: result.rows.map((row) => publicConsentEvent(row as Record<string, unknown>, egovchainEnabled()))
     });
   } catch (e) { return next(e); }
 });
@@ -305,15 +305,15 @@ router.post('/episodes/:id/consent', requireSameOrigin, async (req, res, next) =
         evidence: evidence as string,
         idempotencyKey,
       });
-      const inserted = await tx.execute(sql`INSERT INTO episode_consents(episode_id, actor_account_id, consent_version, purpose, scope, evidence, commitment_salt, consent_hash, commitment, action, idempotency_key)
-        VALUES (${req.params.id}, ${actor.id}, ${consentVersion}, ${purpose}, ${scope}, ${evidence}, ${salt}, ${commitment}, ${commitment}, ${action}, ${idempotencyKey})
+      const inserted = await tx.execute(sql`INSERT INTO episode_consents(episode_id, actor_account_id, consent_version, purpose, scope, evidence, commitment_salt, consent_hash, commitment, action, idempotency_key, anchor_status)
+        VALUES (${req.params.id}, ${actor.id}, ${consentVersion}, ${purpose}, ${scope}, ${evidence}, ${salt}, ${commitment}, ${commitment}, ${action}, ${idempotencyKey}, 'deferred')
         RETURNING id, episode_id AS "episodeId", consent_version AS "version", purpose, scope, commitment, action, anchor_status AS "anchorStatus", created_at AS "createdAt"`);
       if (!inserted.rowCount) {
         return { conflict: 'Consent for this version is already recorded' };
       }
       await tx.execute(sql`INSERT INTO coordination_updates(target_reference, category, value, source, author_reference, occurred_at)
         VALUES (${req.params.id}, 'coordination_consent', ${JSON.stringify({ action, consentVersion, purpose, scope, commitment })}::jsonb, 'citizen-portal', ${actor.id}, now())`);
-      await tx.execute(sql`INSERT INTO consent_anchor_outbox(episode_consent_id, commitment) VALUES (${inserted.rows[0].id}, ${commitment})`);
+
       await tx.execute(sql`INSERT INTO audit_events(actor_account_id, action, target_reference, source, details)
         VALUES (${actor.id}, ${action === 'grant' ? 'coordination_consent_granted' : 'coordination_consent_withdrawn'}, ${req.params.id}, 'coordination', ${JSON.stringify({ consentVersion, purpose, scope, commitment })}::jsonb)`);
       if (action === 'withdraw') {
@@ -329,7 +329,7 @@ router.post('/episodes/:id/consent', requireSameOrigin, async (req, res, next) =
     });
     if (result.notFound) return fail(res, 404, 'Episode not found', 'not_found');
     if (result.conflict) return fail(res, 409, result.conflict, 'conflict');
-    return json(res, result.row, result.replay ? 200 : 201);
+    return json(res, publicConsentEvent(result.row as Record<string, unknown>, egovchainEnabled()), result.replay ? 200 : 201);
   } catch (e) { return next(e); }
 });
 
@@ -484,7 +484,7 @@ router.post('/appointments/requests', requireSameOrigin, async (req, res, next) 
     });
     if (result?.mismatch) return fail(res, 409, 'Idempotency key was reused with different request data', 'conflict');
     if (!result) return fail(res, 404, 'Episode, assignment, or hospital slot not found', 'not_found');
-    return json(res, result.row, result.replay ? 200 : 201);
+    return json(res, publicConsentEvent(result.row as Record<string, unknown>, egovchainEnabled()), result.replay ? 200 : 201);
   } catch (e) { return next(e); }
 });
 
@@ -518,7 +518,7 @@ router.post('/conversations/:id/messages', requireSameOrigin, async (req, res, n
       await tx.execute(sql`INSERT INTO audit_events(actor_account_id,action,target_reference,source,idempotency_reference,details) VALUES (${account.id},'team_message_sent',${req.params.id},'coordination-messaging',${input.idempotencyKey.trim()},${JSON.stringify({ length: messageBody.length })})`);
       return { row: { ...inserted.rows[0], senderCategory: account.role === 'citizen' ? 'citizen' : 'coordination_team' }, replay: false };
     });
-    if (!result) return fail(res, 404, 'Conversation not found', 'not_found'); if ('mismatch' in result) return fail(res, 409, 'Idempotency key was reused with different message data', 'conflict'); return json(res, result.row, result.replay ? 200 : 201);
+    if (!result) return fail(res, 404, 'Conversation not found', 'not_found'); if ('mismatch' in result) return fail(res, 409, 'Idempotency key was reused with different message data', 'conflict'); return json(res, publicConsentEvent(result.row as Record<string, unknown>, egovchainEnabled()), result.replay ? 200 : 201);
   } catch (e) { return next(e); }
 });
 
@@ -541,7 +541,10 @@ router.get('/notifications', async (req, res, next) => {
     const rawItems = hasMore ? result.rows.slice(0, limit) : result.rows;
     const items = rawItems.map((row: any) => ({
       ...row,
-      summary: GENERIC_NOTIFICATION_TEMPLATES[row.template] ?? 'A coordination update is available for your case.',
+      summary:
+        (row.channel === 'external_sms' || row.channel === 'emessage') && GENERIC_SMS_TEMPLATES[row.template]
+          ? GENERIC_SMS_TEMPLATES[row.template]
+          : (GENERIC_NOTIFICATION_TEMPLATES[row.template] ?? 'A coordination update is available for your case.'),
     }));
     const last = items[items.length - 1];
     const nextCursor = (hasMore && last) ? `${new Date(last.createdAt).toISOString()}_${last.id}` : null;
@@ -555,12 +558,14 @@ router.get('/notifications', async (req, res, next) => {
 router.get('/notifications/preferences', async (req, res, next) => {
   try {
     const account = requireAccount(req);
-    const result = await db().execute(sql`SELECT sms_consent AS "smsConsent", phone_number AS "phoneNumber" FROM notification_preferences WHERE account_id=${account.id}`);
-    if (!result.rowCount) return json(res, { smsConsent: false, phoneNumberMasked: null });
-    const row = result.rows[0] as { smsConsent: boolean; phoneNumber: string | null };
+    const result = await db().execute(sql`SELECT p.sms_consent AS "smsConsent", p.phone_number AS "phoneNumber", e.profile->>'mobile' AS "verifiedMobile"
+      FROM accounts a LEFT JOIN notification_preferences p ON p.account_id=a.id
+      LEFT JOIN egov_identities e ON e.account_id=a.id AND e.provider='egovph' WHERE a.id=${account.id}`);
+    const row = result.rows[0] as { smsConsent: boolean | null; phoneNumber: string | null; verifiedMobile: string | null } | undefined;
+    const mobile = row?.verifiedMobile && /^\+[1-9]\d{7,14}$/.test(row.verifiedMobile) ? row.verifiedMobile : null;
     return json(res, {
-      smsConsent: Boolean(row.smsConsent),
-      phoneNumberMasked: maskPhoneNumber(row.phoneNumber),
+      smsConsent: Boolean(row?.smsConsent && row.phoneNumber === mobile),
+      phoneNumberMasked: mobile ? maskPhoneNumber(mobile) : null,
     });
   } catch (e) { return next(e); }
 });
@@ -570,27 +575,20 @@ router.put('/notifications/preferences', requireSameOrigin, async (req, res, nex
     const account = requireAccount(req);
     const { smsConsent, phoneNumber } = req.body || {};
     if (typeof smsConsent !== 'boolean') return fail(res, 422, 'smsConsent must be a boolean', 'validation_error');
-    if (phoneNumber !== undefined && phoneNumber !== null) {
-      if (typeof phoneNumber !== 'string' || !/^\+[1-9]\d{7,14}$/.test(phoneNumber)) {
-        return fail(res, 422, 'Invalid phone number format (E.164 required, e.g. +639XXXXXXXXX)', 'validation_error');
-      }
-    }
+    if (phoneNumber !== undefined) return fail(res, 422, 'Phone number must come from official eGovPH SSO', 'validation_error');
+    const identity = await db().execute(sql`SELECT profile->>'mobile' AS mobile FROM egov_identities WHERE account_id=${account.id} AND provider='egovph'`);
+    const verifiedMobile = identity.rows[0]?.mobile;
+    const mobile = typeof verifiedMobile === 'string' && /^\+[1-9]\d{7,14}$/.test(verifiedMobile) ? verifiedMobile : null;
+    if (smsConsent && !mobile) return fail(res, 422, 'A verified eGovPH mobile number is required', 'verified_mobile_missing');
     const result = await db().execute(sql`INSERT INTO notification_preferences(account_id, sms_consent, phone_number, updated_at)
-      VALUES (${account.id}, ${smsConsent}, ${phoneNumber ?? null}, now())
-      ON CONFLICT (account_id) DO UPDATE SET sms_consent=${smsConsent}, phone_number=COALESCE(${phoneNumber ?? null}, notification_preferences.phone_number), updated_at=now()
+      VALUES (${account.id}, ${smsConsent}, ${smsConsent ? mobile : null}, now())
+      ON CONFLICT (account_id) DO UPDATE SET sms_consent=${smsConsent}, phone_number=${smsConsent ? mobile : null}, updated_at=now()
       RETURNING sms_consent AS "smsConsent", phone_number AS "phoneNumber"`);
     const row = result.rows[0] as { smsConsent: boolean; phoneNumber: string | null };
     return json(res, {
       smsConsent: Boolean(row.smsConsent),
-      phoneNumberMasked: maskPhoneNumber(row.phoneNumber),
+      phoneNumberMasked: mobile ? maskPhoneNumber(mobile) : null,
     });
-  } catch (e) { return next(e); }
-});
-
-router.post('/notifications/dispatch', requireSameOrigin, async (_req, res, next) => {
-  try {
-    const stats = await runNotificationBatch();
-    return json(res, stats);
   } catch (e) { return next(e); }
 });
 
@@ -604,7 +602,10 @@ router.get('/notifications/:id', async (req, res, next) => {
     const row = result.rows[0] as any;
     return json(res, {
       ...row,
-      summary: GENERIC_NOTIFICATION_TEMPLATES[row.template] ?? 'A coordination update is available for your case.',
+      summary:
+        (row.channel === 'external_sms' || row.channel === 'emessage') && GENERIC_SMS_TEMPLATES[row.template]
+          ? GENERIC_SMS_TEMPLATES[row.template]
+          : (GENERIC_NOTIFICATION_TEMPLATES[row.template] ?? 'A coordination update is available for your case.'),
     });
   } catch (e) { return next(e); }
 });
@@ -816,7 +817,7 @@ router.post('/appointments/requests/:id/changes', requireSameOrigin, async (req,
 export function createCitizenPlatformRouter(mode: RuntimeMode) {
   const citizen = express.Router();
   citizen.use((req, res, next) => {
-    if (!(/^\/services$|^\/cases(?:\/[0-9a-f-]+(?:\/episodes|\/invitation|\/claim)?)?$|^\/episodes(?:\/[0-9a-f-]+)?(?:\/intake|\/pause|\/resume|\/withdraw|\/consent)?$|^\/hospital\/cases(?:\/[0-9a-f-]+(?:\/invitation|\/claim)?)?$|^\/hospital\/linkages\/[0-9a-f-]+\/(?:verify|suspend|correct)$|^\/hospital\/slots$|^\/appointments\/requests$|^\/bookings$|^\/conversations(?:\/[0-9a-f-]+\/messages)?$|^\/notifications(?:\/(?:preferences|dispatch|[0-9a-f-]+(?:\/read)?))?$/.test(req.path))) {
+    if (!(/^\/services$|^\/cases(?:\/[0-9a-f-]+(?:\/episodes|\/invitation|\/claim)?)?$|^\/episodes(?:\/[0-9a-f-]+)?(?:\/intake|\/pause|\/resume|\/withdraw|\/consent)?$|^\/hospital\/cases(?:\/[0-9a-f-]+(?:\/invitation|\/claim)?)?$|^\/hospital\/linkages\/[0-9a-f-]+\/(?:verify|suspend|correct)$|^\/hospital\/slots$|^\/appointments\/requests$|^\/bookings$|^\/conversations(?:\/[0-9a-f-]+\/messages)?$|^\/notifications(?:\/(?:preferences|[0-9a-f-]+(?:\/read)?))?$/.test(req.path))) {
       return next('router');
     }
     (req as PlatformRequest).platformLiveMode = mode === 'controlled-live' || mode === 'production';

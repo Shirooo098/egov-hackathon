@@ -77,6 +77,7 @@ export function resetThrottle(): void { for (const buckets of bucketStores) buck
 export function redactV1Response(req: Request, res: Response, next: NextFunction): void {
   const original = res.json.bind(res);
   res.json = ((body: unknown) => {
+    if (res.statusCode === 503 && body && typeof body === 'object' && (body as { error?: unknown }).error === 'egov_unavailable') return original(body);
     if (res.statusCode >= 500) return original({ success: false, error: 'internal_error', message: 'Request failed', requestId: requestIdOf(req) });
     return original(body);
   }) as typeof res.json;
