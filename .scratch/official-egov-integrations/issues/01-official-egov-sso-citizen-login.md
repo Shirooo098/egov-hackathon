@@ -16,13 +16,15 @@ Malformed pending confirmation and cancellation IDs now return `422` before reac
 
 A 2026-09-25 read-only Agy explorer audit found no further material local gap in the scoped in-app exchange, pending confirmation, account-linking, and test paths. It does not establish a credentialed staging handoff; callback correlation is recorded as unknown rather than inferred.
 
+At `c8b0b71`, focused client SSO and Citizen routing Vitest files passed 25/25; the previously recorded server suite passed 127/127 at `c01cc6a`. Runtime source is unchanged between those revisions. These checks cover the local behavior below, not a fresh provider-issued in-app handoff.
+
 - [ ] A valid official staging in-app handoff exchanges its single-use code server-side and shows a pending verified identity without creating an eBuhay session yet.
 - [x] Explicit Citizen confirmation creates the HttpOnly eBuhay session; cancellation creates none, and an uncorrelated code never silently replaces an existing account session.
 - [x] Citizen accounts are created or linked only by provider plus stable `uniqid`; names, email addresses, and mobile numbers never trigger automatic merging.
-- [ ] Authentication fails closed when `uniqid` is missing, the provider response is malformed, or the provider is unavailable.
+- [x] Authentication fails closed when `uniqid` is missing, the provider response is malformed, or the provider is unavailable in local HTTP fixtures; the deployed staging path remains open above.
 - [ ] Partner secrets and access tokens remain server-side. The short-lived exchange code is exposed only by the documented eGovPH launch URL or widget callback and is redeemed promptly by the backend; it is absent from eBuhay responses, persistence, and application logs.
 - [x] Runtime synthetic invitation login and generated Citizen identities are removed; provider doubles remain test-only.
 - [x] Citizen SSO never grants Hospital Staff authority.
 - [x] The callback rejects replay and handles initial session restoration without overwriting a successful login.
 - [x] Callback-correlation behavior is explicitly recorded as unknown; unsupported or ambiguous paths fail closed instead of assuming `state`/nonce behavior, and any concrete unresolved authentication vulnerability blocks completion.
-- [ ] HTTP-level tests cover pending and confirmed states, cancellation, failure, replay, identity linking, session creation, and secret exclusion.
+- [x] HTTP-level tests cover pending and confirmed states, cancellation, failure, replay, identity linking, session creation, and secret exclusion in the tested local runtime.

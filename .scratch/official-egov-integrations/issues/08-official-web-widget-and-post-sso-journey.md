@@ -12,9 +12,11 @@ A tracked client regression now invokes the official widget callback with a malf
 
 A 2026-09-25 read-only Agy explorer audit found no further material local gap in the scoped widget return, pending confirmation, and session boundaries. Both credentialed entry-path checks remain open; provider callback correlation is recorded as unknown, not a generic partner-evidence deliverable.
 
+At `c8b0b71`, focused `egovSso.test.tsx` and `citizenRouting.test.tsx` passed 25/25. This verifies the local widget callback, session restoration, case choice, Staff separation, and sign-out UI paths; it does not substitute for both real staging entry paths.
+
 - [x] The official web widget uses only provider-documented launch and return behavior; eBuhay adds no independent OTP, PIN, synthetic login, or guessed provider URL.
 - [ ] Both official entry paths create or use the same `uniqid`-linked Citizen account and never grant Hospital Staff authority.
 - [ ] Partner secrets and provider access tokens remain server-side. The documented widget callback's short-lived exchange code is sent only to the backend for redemption and is absent from eBuhay responses, persistence, and application logs.
 - [x] A Citizen chooses donor or recipient case intent only after authentication; the choice does not create a second account type or a separate local Sign In/Sign Up route.
 - [x] Signing out revokes the local eBuhay session without claiming to end the eGovPH session.
-- [ ] HTTP and user-visible tests cover web-widget return, session restoration, case choice, sign-out, malformed/unavailable provider responses, and no silent account switch.
+- [x] HTTP and user-visible tests cover web-widget return, session restoration, case choice, sign-out, malformed/unavailable provider responses, and no silent account switch with local fixtures. Both actual staging entry paths remain open.
